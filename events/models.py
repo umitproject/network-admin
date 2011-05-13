@@ -19,17 +19,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from django.http import HttpResponse
+from django.db import models
+from django.utils.translation import ugettext as _
 
-def api_msg(status, message):
-    response = {
-        'status': status,
-        'message': message
-    }
-    return HttpResponse(json.dumps(response))
+class Event(models.Model):
+    message = models.CharField(max_length=300)
+    timestamp = models.DateTimeField()
+    type = models.CharField(max_length=50)
+    source_host_ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
+    source_host_ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
+    monitoring_module = models.IntegerField()
+    monitoring_module_fields = models.TextField()
 
-def api_error(message):
-    return api_msg('error', message)
-
-def api_ok(message):
-    return api_msg('ok', message)
+    def get_details(self):
+        """Returns event details extracted from monitoring module fields"""
+        fields = json.loads(self.monitoring_module_fields)
+        return fields

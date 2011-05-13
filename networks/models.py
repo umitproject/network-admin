@@ -18,18 +18,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import json
-from django.http import HttpResponse
+from django.db import models
+from django.utils.translation import ugettext as _
 
-def api_msg(status, message):
-    response = {
-        'status': status,
-        'message': message
-    }
-    return HttpResponse(json.dumps(response))
-
-def api_error(message):
-    return api_msg('error', message)
-
-def api_ok(message):
-    return api_msg('ok', message)
+class Host(models.Model):
+    """The single host in the network"""
+    name = models.CharField(max_length=250)
+    description = models.TextField()
+    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
+    ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
+    
+class Network(models.Model):
+    name= models.CharField(max_length=250)
+    description = models.TextField()

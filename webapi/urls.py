@@ -1,9 +1,13 @@
 from django.conf.urls.defaults import *
 from piston.resource import Resource
-from webapi.handlers import ReportRequestHandler
+from webapi.handlers import *
 
-report_request_handler = Resource(ReportRequestHandler)
+host_handler = Resource(HostHandler)
+event_handler = Resource(EventHandler)
 
 urlpatterns = patterns('webapi.views',
-   url(r'^request_report/$', report_request_handler),
+   url(r'^host/(?P<host_id>\d+)/$', host_handler),
+   url(r'^host/list/$', host_handler),
+   url(r'^event/report/$', event_handler),
+   url(r'^event/(?P<event_id>\d+)/$', event_handler)
 )

@@ -26,6 +26,8 @@ INSTALLED_APPS = (
 
     'webapi',
     'reports',
+    'networks',
+    'events',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
