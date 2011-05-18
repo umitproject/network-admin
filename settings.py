@@ -14,11 +14,14 @@ DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
 DBINDEXER_SITECONF = 'dbindexes'
 
+STATIC_URL = '/static/'
+
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
 INSTALLED_APPS = (
-#    'django.contrib.admin',
+    'django.contrib.admin',
     'django.contrib.contenttypes',
+    'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.sessions',
     'djangotoolbox',
@@ -28,6 +31,9 @@ INSTALLED_APPS = (
     'reports',
     'networks',
     'events',
+    'piston',
+
+    #'django_nose',
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
@@ -51,6 +57,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 # This test runner captures stdout and associates tracebacks with their
 # corresponding output. Helps a lot with print-debugging.
 TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)

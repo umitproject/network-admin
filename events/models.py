@@ -21,6 +21,7 @@
 import json
 from django.db import models
 from django.utils.translation import ugettext as _
+from django.contrib import admin
 
 class Event(models.Model):
     message = models.CharField(max_length=300)
@@ -35,3 +36,5 @@ class Event(models.Model):
         """Returns event details extracted from monitoring module fields"""
         fields = json.loads(self.monitoring_module_fields)
         return fields
+
+admin.site.register(Event)    

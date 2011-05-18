@@ -24,22 +24,28 @@ from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 from networks.models import Host
 from events.models import Event
-from webapi.views import api_error, api_ok
+from webapi.views import api_error, api_ok, api_response
+from piston.authentication import OAuthAuthentication
 
 class HostHandler(BaseHandler):
     allowed_methods = ('GET', )
     
     def read(self, request, host_id=None):
         """Returns host details or hosts list"""
+        oauth = OAuthAuthentication()
+        
+        if not oauth.is_authenticated(request):
+            return api_error(_('Authentication failed'))
+        
         if not host_id:
             # return hosts list
             hosts = Host.objects.all()
             if not hosts:
-                return api_error('The hosts list is empty')
+                return api_error(_('The hosts list is empty'))
             response = {
                 'hosts': [{'id': host.pk, 'name': host.name} for host in hosts]
             }
-            return HttpResponse(json.dumps(response))
+            return api_response(response)
         
         try:
             # return host details
@@ -54,7 +60,7 @@ class HostHandler(BaseHandler):
             'ipv6': host.ipv6
         }
         
-        return HttpResponse(json.dumps(response))
+        return api_response(response)
     
 class EventHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
@@ -89,5 +95,5 @@ class EventHandler(BaseHandler):
             'module_fields': event.monitoring_module_fields
         }
         
-        return HttpResponse(json.dumps(response))
+        return api_response(response)
 
