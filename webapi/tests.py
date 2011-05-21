@@ -18,50 +18,66 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import base64
+import datetime
 import json
+import random
+from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from networks.models import Host
+from events.models import Event
 from piston.oauth import *
 from piston.models import *
 
-class SimpleTest(TestCase):
+class BasicTest(TestCase):
     def setUp(self):
-        self.c = Client()
+        #set up Django testing client
         self.client = Client()
-        self.user = User(username='user', password='pass')
+        
+        self.username = 'user'
+        self.password = 'pass'
+        
+        #set up Django user
+        self.user = User(username=self.username)
+        self.user.set_password(self.password)
         self.user.save()
-        self.consumer = Consumer(
-            name='consumer',
-            description='lorem ipsum',
-            key='1234',
-            secret='abcd',
-            status='accepted',
-            user=self.user)
-        self.consumer.save()
+        
+        #set up some hosts
         for i in xrange(10):
             h = Host(name='host_%i' % i,
                      description='description number %i' % i,
                      ipv4='127.0.0.%i' % (i+1),
                      ipv6='0:0:0:0:0:0:7f00:%i' % (i+1))
             h.save()
-        self.log = open('/home/piotrek/dev/projekty/network-admin/log.txt', 'w')
             
+    def get_auth_string(self):
+        """Helper function - returns basic authentication string"""
+        auth = '%s:%s' % (self.username, self.password)
+        auth_string = 'Basic %s' % base64.encodestring(auth)
+        auth_string = auth_string.strip()
+        return auth_string
+    
     def test_hosts(self):
-        return
         """Select all hosts from database and get details of each """
         hosts = Host.objects.all()
+        auth_string = self.get_auth_string()
         for host in hosts:
-            response = self.client.get(reverse('host_detail', args=[host.pk]))
+            response = self.client.get(reverse('host_detail', args=[host.pk]),
+                                   HTTP_AUTHORIZATION=auth_string)
             host_json = json.loads(response.content)
             self.assertIn('host_id', host_json.keys())
     
     def test_hosts_list(self):
-        return
-        r = self.c.get('/api/host/list/')
-        j = json.loads(r.content)
+        """Select list of existing hosts"""
+        auth_string = self.get_auth_string()
+        
+        response = self.client.get('/api/host/list/',
+                                   HTTP_AUTHORIZATION=auth_string)
+        
+        j = json.loads(response.content)
         
         self.assertIn('hosts', j.keys())
 
@@ -69,21 +85,56 @@ class SimpleTest(TestCase):
         for host in hosts_list:
             self.assertIn('id', host.keys())
             self.assertIn('name', host.keys())
-            r = self.c.get('/api/host/%s/' % host['id'])
-            j = json.loads(r.content)
+            
+            response = self.client.get('/api/host/%s/' % host['id'],
+                                       HTTP_AUTHORIZATION=auth_string)
+            
+            j = json.loads(response.content)
             
             self.assertIn('host_id', j.keys())
-
-    def test_oauth(self):
-        """Test request authentication with OAuth"""
+        
+    def test_basic_auth(self):
+        """Test basic authentication""" 
         host = Host.objects.all()[0]
-        url = '/api/host/1/'
-        consumer = Consumer.objects.all()[0]
-        oaconsumer = OAuthConsumer(consumer.key, consumer.secret)
-        request = OAuthRequest.from_consumer_and_token(oaconsumer, http_url=url)
-        signature_method = OAuthSignatureMethod_HMAC_SHA1()
-        request.sign_request(signature_method, oaconsumer, consumer)
-        request.set_parameter('oauth_token', consumer.secret)
-        response = self.client.get(url, request.parameters)
-        self.log.write(str(request.parameters))
-        self.log.write(response.content)
+        url = '/api/host/%i/' % host.pk
+        
+        auth_string = self.get_auth_string()
+        
+        response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
+        
+        self.assertEqual(response.status_code, 200)
+        
+    def test_report_event(self):
+        """Report events"""
+        
+        def gen_event(index):
+            #types below come from Dragos' documentation for Network Inventory
+            types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
+            event = {
+                'message': 'event_%i' % index,
+                'type': types[random.randint(0, len(types) - 1)],
+                'timestamp': '%s' % datetime.datetime.now(),
+                'source_host_ipv4': '127.0.0.%i' % (index + 1),
+                'source_host_ipv6': '0:0:0:0:0:0:7f00:%i' % (index + 1),
+                'monitoring_module': '%i' % index,
+                'monitoring_module_fields': '',
+            }
+            return event
+        
+        events = [gen_event(i) for i in xrange(10)]
+        auth_string = self.get_auth_string()
+        for event in events:
+            response = self.client.post(reverse('report_event'),
+                                        data=event,
+                                        HTTP_AUTHORIZATION=auth_string)
+            r_json = json.loads(response.content)
+            self.assertEqual(r_json['status'], 'ok')
+            
+    def test_event_details(self):
+        """Select all reported events"""
+        for event in Event.objects.all():
+            url = '/api/event/%i/' % event.pk
+            uth_string = self.get_auth_string()
+            response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
+            j = json.loads(response.content)
+            self.assertIn('event_id', j.keys())

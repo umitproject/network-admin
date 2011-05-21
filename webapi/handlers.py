@@ -32,10 +32,6 @@ class HostHandler(BaseHandler):
     
     def read(self, request, host_id=None):
         """Returns host details or hosts list"""
-        oauth = OAuthAuthentication()
-        
-        if not oauth.is_authenticated(request):
-            return api_error(_('Authentication failed'))
         
         if not host_id:
             # return hosts list
@@ -66,18 +62,22 @@ class EventHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
     
     def create(self, request):
-        e = json.loads(request.POST['event'])
-        event = Event(message=e['message'],
+        e = request.POST
+        try:
+            event = Event(message=e['message'],
                       type=e['type'],
+                      timestamp=e['timestamp'],
                       source_host_ipv4 = e['source_host_ipv4'],
                       source_host_ipv6 = e['source_host_ipv6'],
                       monitoring_module = e['monitoring_module'],
                       monitoring_module_fields  = e['monitoring_module_fields'])
+        except KeyError:
+            return api_error(_('Report message is broken'))
         event.save()
-        return api_ok('Event reported successfully')
+        return api_ok(_('Event reported successfully'))
     
     def read(self, request, event_id=None):
-        """Returns report details"""
+        """Returns event details"""
         if not event_id:
             return api_error(_('No event ID specified'))
         

@@ -30,3 +30,13 @@ indexes:
   properties:
   - name: __key__
     direction: desc
+
+- kind: piston_resource
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: piston_token
+  properties:
+  - name: __key__
+    direction: desc
