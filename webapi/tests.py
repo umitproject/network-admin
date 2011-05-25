@@ -53,6 +53,18 @@ class BasicTest(TestCase):
                      ipv6='0:0:0:0:0:0:7f00:%i' % (i+1))
             h.save()
             
+        types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
+        for i in xrange(10):
+            e = Event(message='event_%i' % i,
+                event_type=types[random.randint(0, len(types) - 1)],
+                timestamp='%s' % str(datetime.datetime.now()),
+                source_host_ipv4='127.0.0.%i' % (i + 1),
+                source_host_ipv6='0:0:0:0:0:0:7f00:%i' % (i + 1),
+                monitoring_module='%i' % i,
+                monitoring_module_fields=''
+            )
+            e.save()
+            
     def get_auth_string(self):
         """Helper function - returns basic authentication string"""
         auth = '%s:%s' % (self.username, self.password)
@@ -61,7 +73,7 @@ class BasicTest(TestCase):
         return auth_string
     
     def test_hosts(self):
-        """Select all hosts from database and get details of each """
+        """Get all hosts details"""
         hosts = Host.objects.all()
         auth_string = self.get_auth_string()
         for host in hosts:
@@ -71,7 +83,7 @@ class BasicTest(TestCase):
             self.assertIn('host_id', host_json.keys())
     
     def test_hosts_list(self):
-        """Select list of existing hosts"""
+        """Get hosts list"""
         auth_string = self.get_auth_string()
         
         response = self.client.get('/api/host/list/',
@@ -112,8 +124,8 @@ class BasicTest(TestCase):
             types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
             event = {
                 'message': 'event_%i' % index,
-                'type': types[random.randint(0, len(types) - 1)],
-                'timestamp': '%s' % datetime.datetime.now(),
+                'event_type': types[random.randint(0, len(types) - 1)],
+                'timestamp': '%s' % str(datetime.datetime.now()),
                 'source_host_ipv4': '127.0.0.%i' % (index + 1),
                 'source_host_ipv6': '0:0:0:0:0:0:7f00:%i' % (index + 1),
                 'monitoring_module': '%i' % index,
@@ -128,13 +140,23 @@ class BasicTest(TestCase):
                                         data=event,
                                         HTTP_AUTHORIZATION=auth_string)
             r_json = json.loads(response.content)
+            print r_json
             self.assertEqual(r_json['status'], 'ok')
             
     def test_event_details(self):
-        """Select all reported events"""
+        """Get all events details"""
         for event in Event.objects.all():
             url = '/api/event/%i/' % event.pk
-            uth_string = self.get_auth_string()
+            auth_string = self.get_auth_string()
             response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
+            print response.content
             j = json.loads(response.content)
             self.assertIn('event_id', j.keys())
+            
+    def test_events_list(self):
+        """Get events list"""
+        url = '/api/event/list/'
+        auth_string = self.get_auth_string()
+        response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
+        j = json.loads(response.content)
+        self.assertIn('events', j.keys())

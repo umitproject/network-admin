@@ -62,10 +62,11 @@ class EventHandler(BaseHandler):
     allowed_methods = ('POST', 'GET')
     
     def create(self, request):
+        """Report event"""
         e = request.POST
         try:
             event = Event(message=e['message'],
-                      type=e['type'],
+                      event_type=e['event_type'],
                       timestamp=e['timestamp'],
                       source_host_ipv4 = e['source_host_ipv4'],
                       source_host_ipv6 = e['source_host_ipv6'],
@@ -77,9 +78,17 @@ class EventHandler(BaseHandler):
         return api_ok(_('Event reported successfully'))
     
     def read(self, request, event_id=None):
-        """Returns event details"""
+        """Event details or events list"""
+        
         if not event_id:
-            return api_error(_('No event ID specified'))
+            # return events list
+            events = Event.objects.all()
+            if not events:
+                return api_error(_('The events list is empty'))
+            response = {
+                'events': [{'id': event.pk, 'name': event.message} for event in events]
+            }
+            return api_response(response)
         
         try:
             event = Event.objects.get(pk=event_id)
@@ -88,7 +97,9 @@ class EventHandler(BaseHandler):
         
         response = {
             'event_id': event_id,
-            'type': event.type,
+            'message': event.message,
+            'timestamp': str(event.timestamp),
+            'event_type': event.event_type,
             'source_host_ipv4': event.source_host_ipv4,
             'source_host_ipv6': event.source_host_ipv6,
             'module_id': event.monitoring_module,

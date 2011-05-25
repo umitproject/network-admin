@@ -29,5 +29,5 @@ class Host(models.Model):
     ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
     
 class Network(models.Model):
-    name= models.CharField(max_length=250)
+    name = models.CharField(max_length=250)
     description = models.TextField()
