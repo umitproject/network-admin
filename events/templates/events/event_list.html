@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "events list" %}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Events list" %}</h2>
+<table>
+	<thead>
+		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
+	</thead>
+	<tbody>
+	{% for event in object_list %}
+		<tr>
+			<td>{{ event.timestamp }}</td>
+			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
+			<td>{{ event.event_type }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endblock %}

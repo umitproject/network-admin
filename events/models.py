@@ -26,11 +26,12 @@ from django.contrib import admin
 class Event(models.Model):
     message = models.CharField(max_length=300)
     timestamp = models.DateTimeField()
-    event_type = models.CharField(max_length=50)
+    event_type = models.CharField(max_length=50, verbose_name=_("Type"))
     source_host_ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
-    source_host_ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
-    monitoring_module = models.IntegerField()
-    monitoring_module_fields = models.TextField()
+    source_host_ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"))
+    #source_host_ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
+    monitoring_module = models.IntegerField(null=True, blank=True)
+    monitoring_module_fields = models.TextField(null=True, blank=True)
 
     def get_details(self):
         """Returns event details extracted from monitoring module fields"""

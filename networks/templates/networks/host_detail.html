@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}host {{ object.name }}{% endblock %}
+
+{% block content %}
+<h2>{{ object.name }}</h2>
+<p>{{ object.description }}</p>
+<p>IPv4: {{ object.ipv4 }}</p>
+<p>IPv6: {{ object.ipv6 }}</p>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url host_update object.pk %}">{% trans "Edit host" %}</a></li>
+	<li><a href="{% url host_delete object.pk %}">{% trans "Delete host" %}</a></li>
+	<li><a href="{% url host_list %}">{% trans "Back to hosts list" %}</a></li>
+</ul>
+{% endblock %}

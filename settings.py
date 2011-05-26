@@ -14,14 +14,14 @@ DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
 DBINDEXER_SITECONF = 'dbindexes'
 
-STATIC_URL = '/static/'
+MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'media')
+MEDIA_URL = '/media/'
 
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.contenttypes',
-    'django.contrib.staticfiles',
     'django.contrib.auth',
     'django.contrib.sessions',
     'djangotoolbox',
@@ -42,7 +42,6 @@ INSTALLED_APPS = (
 MIDDLEWARE_CLASSES = (
     # This loads the index definitions, so it has to come first
     'dbindexer.middleware.DBIndexerMiddleware',
-
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',

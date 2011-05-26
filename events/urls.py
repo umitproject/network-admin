@@ -18,20 +18,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.urlresolvers import reverse
-from django.db import models
-from django.utils.translation import ugettext as _
+from django.conf.urls.defaults import *
+from django.views.generic.list_detail import object_detail, object_list
+from events.models import Event
 
-class Host(models.Model):
-    """The single host in the network"""
-    name = models.CharField(max_length=250)
-    description = models.TextField()
-    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
-    ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), blank=True)
-                            
-    def get_absolute_url(self):
-        return reverse('host_detail', args=[self.pk])
-    
-class Network(models.Model):
-    name = models.CharField(max_length=250)
-    description = models.TextField()
+event_queryset = Event.objects.all().order_by('timestamp')
+
+urlpatterns = patterns('events.views',
+   url(r'^(?P<object_id>\d+)/$', object_detail, {'queryset': event_queryset}, name='event_detail'),
+   url(r'^list/$', object_list, {'queryset': event_queryset}, name='event_list')
+)

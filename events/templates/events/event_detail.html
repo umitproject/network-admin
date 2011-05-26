@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "event" %} "{{ object.name }}"{% endblock %}
+
+{% block content %}
+<h2>{{ object.message }}</h2>
+<p>{% trans "Timestamp" %}: {{ object.timestamp }}</p>
+<p>{% trans "Type" %}: {{ object.event_type }}</p>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url event_list %}">{% trans "Back to events list" %}</a></li>
+</ul>
+{% endblock %}

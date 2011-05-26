@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}add new host{% endblock %}
+
+{% block content %}
+<h2>Add new host</h2>
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="Add host" />
+</form>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url host_list %}">Hosts list</a></li>
+</ul>
+{% endblock %}

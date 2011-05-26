@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}host {{ object.name }}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Removing host" %}</h2>
+<p>{% blocktrans with object.name as name%}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
+<form action="" method="POST">
+	<input type="submit" value="{% trans "Remove host" %}" />
+	<p><a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a></p>
+</form>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url host_list %}">{% trans "Hosts list" %}</a></li>
+	<li><a href="{% url host_new %}">{% trans "Add new host" %}</a></li>
+</ul>
+{% endblock %}
