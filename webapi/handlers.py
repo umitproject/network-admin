@@ -64,17 +64,42 @@ class EventHandler(BaseHandler):
     def create(self, request):
         """Report event"""
         e = request.POST
+        
+        ipv4 = e.get('source_host_ipv4')
+        ipv6 = e.get('source_host_ipv6')
+        
+        if not (ipv4 or ipv6):
+            return api_error(_('No IP address specified'))
+        
+        try:
+            if ipv4 and ipv6:
+                source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6)
+            elif ipv4:
+                source_host = Host.objects.get(ipv4=ipv4)
+            elif ipv6:
+                source_host = Host.objects.get(ipv6=ipv6)
+        except Host.DoesNotExist:
+            if ipv6:
+                host_name = 'host %s, %s' % (ipv4, ipv6)
+            else:
+                host_name = 'host %s' % ipv4
+            source_host = Host(name=host_name, ipv4=ipv4, ipv6=ipv6)
+            source_host.save()
+        except MultipleObjectsReturned:
+            return api_error(_('There is more than one host with that IP'))
+            
         try:
             event = Event(message=e['message'],
                       event_type=e['event_type'],
                       timestamp=e['timestamp'],
-                      source_host_ipv4 = e['source_host_ipv4'],
-                      source_host_ipv6 = e['source_host_ipv6'],
+                      source_host=source_host,
                       monitoring_module = e['monitoring_module'],
                       monitoring_module_fields  = e['monitoring_module_fields'])
         except KeyError:
             return api_error(_('Report message is broken'))
+        
         event.save()
+        
         return api_ok(_('Event reported successfully'))
     
     def read(self, request, event_id=None):
@@ -100,8 +125,7 @@ class EventHandler(BaseHandler):
             'message': event.message,
             'timestamp': str(event.timestamp),
             'event_type': event.event_type,
-            'source_host_ipv4': event.source_host_ipv4,
-            'source_host_ipv6': event.source_host_ipv6,
+            'source_host_id': event.source_host.pk,
             'module_id': event.monitoring_module,
             'module_fields': event.monitoring_module_fields
         }

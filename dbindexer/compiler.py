@@ -1,4 +1,4 @@
-from resolver import resolver
+from .resolver import resolver
 from django.utils.importlib import import_module
 
 def __repr__(self):
@@ -30,7 +30,7 @@ class SQLCompiler(BaseCompiler):
 
 class SQLInsertCompiler(BaseCompiler):
     def execute_sql(self, return_id=False):
-        resolver.convert_query(self.query)
+        resolver.convert_insert_query(self.query)
         return super(SQLInsertCompiler, self).execute_sql(return_id=return_id)
 
 class SQLUpdateCompiler(BaseCompiler):

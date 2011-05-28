@@ -32,7 +32,7 @@ from events.models import Event
 from piston.oauth import *
 from piston.models import *
 
-class BasicTest(TestCase):
+class WebAPITest(TestCase):
     def setUp(self):
         #set up Django testing client
         self.client = Client()
@@ -54,12 +54,12 @@ class BasicTest(TestCase):
             h.save()
             
         types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
+        hosts = Host.objects.all()
         for i in xrange(10):
             e = Event(message='event_%i' % i,
                 event_type=types[random.randint(0, len(types) - 1)],
                 timestamp='%s' % str(datetime.datetime.now()),
-                source_host_ipv4='127.0.0.%i' % (i + 1),
-                source_host_ipv6='0:0:0:0:0:0:7f00:%i' % (i + 1),
+                source_host = hosts[i],
                 monitoring_module='%i' % i,
                 monitoring_module_fields=''
             )
@@ -77,7 +77,7 @@ class BasicTest(TestCase):
         hosts = Host.objects.all()
         auth_string = self.get_auth_string()
         for host in hosts:
-            response = self.client.get(reverse('host_detail', args=[host.pk]),
+            response = self.client.get(reverse('api_host_detail', args=[host.pk]),
                                    HTTP_AUTHORIZATION=auth_string)
             host_json = json.loads(response.content)
             self.assertIn('host_id', host_json.keys())
@@ -86,7 +86,7 @@ class BasicTest(TestCase):
         """Get hosts list"""
         auth_string = self.get_auth_string()
         
-        response = self.client.get('/api/host/list/',
+        response = self.client.get(reverse('api_host_list'),
                                    HTTP_AUTHORIZATION=auth_string)
         
         j = json.loads(response.content)
@@ -98,8 +98,8 @@ class BasicTest(TestCase):
             self.assertIn('id', host.keys())
             self.assertIn('name', host.keys())
             
-            response = self.client.get('/api/host/%s/' % host['id'],
-                                       HTTP_AUTHORIZATION=auth_string)
+            url = reverse('api_host_detail', args=[host['id']])
+            response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
             
             j = json.loads(response.content)
             
@@ -108,7 +108,7 @@ class BasicTest(TestCase):
     def test_basic_auth(self):
         """Test basic authentication""" 
         host = Host.objects.all()[0]
-        url = '/api/host/%i/' % host.pk
+        url = reverse('api_host_detail', args=[host.pk])
         
         auth_string = self.get_auth_string()
         
@@ -117,7 +117,35 @@ class BasicTest(TestCase):
         self.assertEqual(response.status_code, 200)
         
     def test_report_event(self):
-        """Report events"""
+        """
+        Report event for not existing host
+        and check if that host has been added successfully
+        """
+        event = {
+            'message': 'Message',
+            'event_type': 'INFO',
+            'timestamp': '%s' % str(datetime.datetime.now()),
+            'source_host_ipv4': '1.2.3.4',
+            'source_host_ipv6': '2002:0:0:0:0:0:102:304',
+            'monitoring_module': '0',
+            'monitoring_module_fields': '',
+        }
+        
+        auth_string = self.get_auth_string()
+        
+        response = self.client.post(reverse('api_report_event'),
+                                    data=event,
+                                    HTTP_AUTHORIZATION=auth_string)
+        r_json = json.loads(response.content)
+        self.assertEqual(r_json['status'], 'ok')
+        
+        try:
+            host = Host.objects.get(ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:102:304')
+        except Host.DoesNotExist:
+            self.assertTrue(False)
+        
+    def test_report_events(self):
+        """Report set of events"""
         
         def gen_event(index):
             #types below come from Dragos' documentation for Network Inventory
@@ -136,17 +164,16 @@ class BasicTest(TestCase):
         events = [gen_event(i) for i in xrange(10)]
         auth_string = self.get_auth_string()
         for event in events:
-            response = self.client.post(reverse('report_event'),
+            response = self.client.post(reverse('api_report_event'),
                                         data=event,
                                         HTTP_AUTHORIZATION=auth_string)
             r_json = json.loads(response.content)
-            print r_json
             self.assertEqual(r_json['status'], 'ok')
             
     def test_event_details(self):
         """Get all events details"""
         for event in Event.objects.all():
-            url = '/api/event/%i/' % event.pk
+            url = reverse('api_event_detail', args=[event.pk])
             auth_string = self.get_auth_string()
             response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
             print response.content
@@ -155,7 +182,7 @@ class BasicTest(TestCase):
             
     def test_events_list(self):
         """Get events list"""
-        url = '/api/event/list/'
+        url = reverse('api_event_list')
         auth_string = self.get_auth_string()
         response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
         j = json.loads(response.content)

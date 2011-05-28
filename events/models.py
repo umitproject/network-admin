@@ -22,16 +22,19 @@ import json
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib import admin
+from networks.models import Host
 
 class Event(models.Model):
     message = models.CharField(max_length=300)
     timestamp = models.DateTimeField()
     event_type = models.CharField(max_length=50, verbose_name=_("Type"))
-    source_host_ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
-    source_host_ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"))
-    #source_host_ipv6 = models.IPAddressField(verbose_name=_("IPv6 address"))
+    source_host = models.ForeignKey(Host)
     monitoring_module = models.IntegerField(null=True, blank=True)
     monitoring_module_fields = models.TextField(null=True, blank=True)
+    
+    def __unicode__(self):
+        return "<Event %s - host '%s' at [%s]>" % \
+            (self.event_type, self.source_host.name, str(self.timestamp))
 
     def get_details(self):
         """Returns event details extracted from monitoring module fields"""

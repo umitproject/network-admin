@@ -11,5 +11,6 @@
 {% block sidebar %}
 <ul>
 	<li><a href="{% url event_list %}">{% trans "Back to events list" %}</a></li>
+	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to related host" %}</a></li>
 </ul>
 {% endblock %}

@@ -26,6 +26,21 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: networks_host
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: networks_network
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: networks_networkhost
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: piston_consumer
   properties:
   - name: __key__

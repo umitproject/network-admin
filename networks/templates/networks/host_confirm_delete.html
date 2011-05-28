@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>{% trans "Removing host" %}</h2>
-<p>{% blocktrans with object.name as name%}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
+<p>{% blocktrans with object.name as name %}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
 <form action="" method="POST">
 	<input type="submit" value="{% trans "Remove host" %}" />
 	<p><a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a></p>

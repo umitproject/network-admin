@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}edit network{% endblock %}
+
+{% block content %}
+<h2>{% blocktrans with object.name as name %}Edit network "{{ name }}"{% endblocktrans %}</h2>
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="Update network" />
+</form>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url network_list %}">Networks list</a></li>
+</ul>
+{% endblock %}

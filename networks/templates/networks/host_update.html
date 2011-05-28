@@ -1,8 +1,9 @@
 {% extends "base.html" %}
-{% block title %}add new host{% endblock %}
+{% load i18n %}
+{% block title %}edit host{% endblock %}
 
 {% block content %}
-<h2>Add new host</h2>
+<h2>{% blocktrans with object.name as name %}Edit host "{{ name }}"{% endblocktrans %}</h2>
 <form action="" method="POST">
 	{{ form.as_p }}
 	<input type="submit" value="Update host" />

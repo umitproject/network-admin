@@ -4,9 +4,29 @@
 
 {% block content %}
 <h2>{{ object.name }}</h2>
+<h3>Basic info</h3>
 <p>{{ object.description }}</p>
 <p>IPv4: {{ object.ipv4 }}</p>
 <p>IPv6: {{ object.ipv6 }}</p>
+
+{% if events %}
+<h3>Events</h3>
+<table>
+	<thead>
+		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
+	</thead>
+	<tbody>
+	{% for event in events %}
+		<tr>
+			<td>{{ event.timestamp }}</td>
+			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
+			<td>{{ event.event_type }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
 {% endblock %}
 
 {% block sidebar %}

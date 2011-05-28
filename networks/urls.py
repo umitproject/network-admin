@@ -21,14 +21,15 @@
 from django.conf.urls.defaults import *
 from django.views.generic.list_detail import object_detail, object_list
 from django.views.generic.create_update import *
-from networks.models import Host
+from events.models import Event
+from networks.models import Host, Network
 from networks.forms import *
 
 host_queryset = Host.objects.all()
 
 host_delete_args = {
     'model': Host,
-    #it would be better to use reverse_lazy here (it is not supported yet):
+    #it would be better to use reverse_lazy here, but it is not supported yet:
     'post_delete_redirect': '/network/host/list/'
 }
 
@@ -37,10 +38,22 @@ host_update_args = {
     'template_name': 'networks/host_update.html'
 }
 
+network_queryset = Network.objects.all()
+
+network_update_args = {
+    'form_class': NetworkUpdateForm,
+    'template_name': 'networks/network_update.html'
+}
+
 urlpatterns = patterns('networks.views',
-   url(r'^host/(?P<object_id>\d+)/$', object_detail, {'queryset': host_queryset}, name='host_detail'),
+   url(r'^host/(?P<object_id>\d+)/$', 'host_detail', name='host_detail'),
    url(r'^host/list/$', object_list, {'queryset': host_queryset}, name='host_list'),
    url(r'^host/new/$', create_object, {'form_class': HostCreateForm}, name="host_new"),
    url(r'^host/edit/(?P<object_id>\d+)/$', update_object, host_update_args, name="host_update"),
-   url(r'^host/delete/(?P<object_id>\d+)/$', delete_object, host_delete_args, name="host_delete")
+   url(r'^host/delete/(?P<object_id>\d+)/$', delete_object, host_delete_args, name="host_delete"),
+   
+   url(r'^network/(?P<object_id>\d+)/$', 'network_detail', name='network_detail'),
+   url(r'^network/list/$', object_list, {'queryset': network_queryset}, name='network_list'),
+   url(r'^network/new/$', create_object, {'form_class': NetworkCreateForm}, name="network_new"),
+   url(r'^network/edit/(?P<object_id>\d+)/$', update_object, network_update_args, name="network_update"),
 )

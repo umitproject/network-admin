@@ -1,23 +1,57 @@
-"""
-This file demonstrates two different styles of tests (one doctest and one
-unittest). These will both pass when you run "manage.py test".
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-Replace these with more appropriate tests for your application.
-"""
+# Copyright (C) 2011 Adriano Monteiro Marques
+#
+# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+from django.core.urlresolvers import reverse
 from django.test import TestCase
+from django.test.client import Client
+from events.models import Event
+from networks.models import Host
 
-class SimpleTest(TestCase):
-    def test_basic_addition(self):
-        """
-        Tests that 1 + 1 always equals 2.
-        """
-        self.failUnlessEqual(1 + 1, 2)
+class EventTest(TestCase):
+    """Tests for hosts"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+    def test_event_detail(self):
+        """Create event and get event's details"""
+        
+        host = Host(name='Host', ipv4='1.2.3.4')
+        host.save()
+        
+        event_data = {
+            'message': 'Message',
+            'event_type': 'INFO',
+            'timestamp': '%s' % str(datetime.datetime.now()),
+            'source_host': host
+        }
+        event = Event(**event_data)
+        event.save()
+        
+        url = reverse('event_detail', args=[event.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
-__test__ = {"doctest": """
-Another way to test that 1 + 1 is equal to 2.
-
->>> 1 + 1 == 2
-True
-"""}
-
+    def test_event_list(self):
+        """Get events list"""
+        url = reverse('event_list')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)

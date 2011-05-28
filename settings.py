@@ -12,7 +12,7 @@ import os
 # Activate django-dbindexer for the default database
 DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
-DBINDEXER_SITECONF = 'dbindexes'
+AUTOLOAD_SITECONF = 'indexes'
 
 MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'media')
 MEDIA_URL = '/media/'
@@ -40,8 +40,7 @@ INSTALLED_APPS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    # This loads the index definitions, so it has to come first
-    'dbindexer.middleware.DBIndexerMiddleware',
+    # This loads the index definitions, so it has to come firsts
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
