@@ -33,9 +33,18 @@ class HostTest(TestCase):
         
     def test_host_list(self):
         """Get hosts list"""
+        for i in xrange(10):
+            host = Host(name='Host %i' % i, description='Description',
+                        ipv4='1.2.3.%i' % i, ipv6='')
+            host.save()
         response = self.client.get(reverse('host_list'))
         self.assertEqual(response.status_code, 200)
         
+    def test_host_list_empty(self):
+        """Get empty hosts list"""
+        response = self.client.get(reverse('host_list'))
+        self.assertEqual(response.status_code, 200)
+
     def test_host_detail(self):
         """Get host details"""
         host = self.host
@@ -72,3 +81,55 @@ class HostTest(TestCase):
         response = self.client.post(reverse('host_update', args=[host.pk]), host_data)
         self.assertEqual(response.status_code, 302)
         
+class NetworkTest(TestCase):
+    """Tests for networks"""
+    
+    def setUp(self):
+        self.client = Client()
+        
+    def test_network_list(self):
+        """Get networks list"""
+        for i in xrange(10):
+            network = Network(name='Network %i' % i, description='Description %i' % i)
+            network.save()
+        response = self.client.get(reverse('network_list'))
+        self.assertEqual(response.status_code, 200)
+        
+    def test_network_list_empty(self):
+        """Get empty networks list"""
+        response = self.client.get(reverse('network_list'))
+        self.assertEqual(response.status_code, 200)
+        
+    def test_network_detail(self):
+        """Get network details"""
+        network = Network(name='Network', description='Description')
+        network.save()
+        response = self.client.get(reverse('network_detail', args=[network.pk]))
+        self.assertEqual(response.status_code, 200)
+
+    def test_network_create(self):
+        """Creating new network"""
+        network_data = {
+            'name': 'New network',
+            'description': 'New network description'
+        }
+        response = self.client.post(reverse('network_new'), network_data)
+        self.assertEqual(response.status_code, 302)
+        
+    def test_network_delete(self):
+        """Deleting existing network"""
+        network = Network(name='Network', description='Description')
+        network.save()
+        response = self.client.post(reverse('network_delete', args=[network.pk]))
+        self.assertEqual(response.status_code, 302)
+        
+    def test_network_update(self):
+        """Update existing network"""
+        network = Network(name='Network', description='Description')
+        network.save()
+        network_data = {
+            'name': 'New name',
+            'description': 'New description'
+        }
+        response = self.client.post(reverse('network_update', args=[network.pk]), network_data)
+        self.assertEqual(response.status_code, 302)

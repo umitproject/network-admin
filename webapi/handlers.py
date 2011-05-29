@@ -23,7 +23,7 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 from networks.models import Host
-from events.models import Event
+from events.models import Event, EVENT_TYPES, EVENT_TYPE_DEFAULT
 from webapi.views import api_error, api_ok, api_response
 from piston.authentication import OAuthAuthentication
 
@@ -71,6 +71,7 @@ class EventHandler(BaseHandler):
         if not (ipv4 or ipv6):
             return api_error(_('No IP address specified'))
         
+        # Determine source host
         try:
             if ipv4 and ipv6:
                 source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6)
@@ -79,6 +80,7 @@ class EventHandler(BaseHandler):
             elif ipv6:
                 source_host = Host.objects.get(ipv6=ipv6)
         except Host.DoesNotExist:
+            # Create host if it does not exist in database
             if ipv6:
                 host_name = 'host %s, %s' % (ipv4, ipv6)
             else:
@@ -88,9 +90,14 @@ class EventHandler(BaseHandler):
         except MultipleObjectsReturned:
             return api_error(_('There is more than one host with that IP'))
             
+        # Determine event type. If no type was specified, set default value
+        event_type = e.get('event_type')
+        if not event_type or event_type not in EVENT_TYPES:
+            event_type = EVENT_TYPE_DEFAULT    
+            
         try:
             event = Event(message=e['message'],
-                      event_type=e['event_type'],
+                      event_type=event_type,
                       timestamp=e['timestamp'],
                       source_host=source_host,
                       monitoring_module = e['monitoring_module'],

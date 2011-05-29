@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}edit host{% endblock %}
+{% block title %}{% trans "edit host" %}{% endblock %}
 
 {% block content %}
 <h2>{% blocktrans with object.name as name %}Edit host "{{ name }}"{% endblocktrans %}</h2>
 <form action="" method="POST">
 	{{ form.as_p }}
-	<input type="submit" value="Update host" />
+	<input type="submit" value="{% trans "Update host" %}" />
 </form>
 {% endblock %}
 
 {% block sidebar %}
 <ul>
-	<li><a href="{% url host_list %}">Hosts list</a></li>
+	<li><a href="{% url host_list %}">{% trans "Hosts list" %}</a></li>
 </ul>
 {% endblock %}

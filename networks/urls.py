@@ -45,6 +45,11 @@ network_update_args = {
     'template_name': 'networks/network_update.html'
 }
 
+network_delete_args = {
+    'model': Network,
+    'post_delete_redirect': '/network/network/list/'
+}
+
 urlpatterns = patterns('networks.views',
    url(r'^host/(?P<object_id>\d+)/$', 'host_detail', name='host_detail'),
    url(r'^host/list/$', object_list, {'queryset': host_queryset}, name='host_list'),
@@ -56,4 +61,6 @@ urlpatterns = patterns('networks.views',
    url(r'^network/list/$', object_list, {'queryset': network_queryset}, name='network_list'),
    url(r'^network/new/$', create_object, {'form_class': NetworkCreateForm}, name="network_new"),
    url(r'^network/edit/(?P<object_id>\d+)/$', update_object, network_update_args, name="network_update"),
+   url(r'^network/delete/(?P<object_id>\d+)/$', delete_object, network_delete_args, name="network_delete"),
+   url(r'^network/events/(?P<object_id>\d+)/$', 'network_events', name='network_events'),
 )

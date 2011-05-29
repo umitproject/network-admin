@@ -28,7 +28,7 @@ from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from networks.models import Host
-from events.models import Event
+from events.models import Event, EVENT_TYPES
 from piston.oauth import *
 from piston.models import *
 
@@ -53,7 +53,7 @@ class WebAPITest(TestCase):
                      ipv6='0:0:0:0:0:0:7f00:%i' % (i+1))
             h.save()
             
-        types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
+        types = EVENT_TYPES
         hosts = Host.objects.all()
         for i in xrange(10):
             e = Event(message='event_%i' % i,

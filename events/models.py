@@ -24,6 +24,13 @@ from django.utils.translation import ugettext as _
 from django.contrib import admin
 from networks.models import Host
 
+EVENT_TYPES = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
+
+# This is default event type. Another values are:
+#EVENT_TYPE_DEFAULT = 'DEFAULT'
+#EVENT_TYPE_DEFAULT = 'UNKNOWN' 
+EVENT_TYPE_DEFAULT = EVENT_TYPES[2]
+
 class Event(models.Model):
     message = models.CharField(max_length=300)
     timestamp = models.DateTimeField()

@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}hosts list{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "hosts list" %}{% endblock %}
 
 {% block content %}
-<h2>Hosts list</h2>
+<h2>{% trans "Hosts list" %}</h2>
 <table>
 	<thead>
-		<tr><th>Name</th><th>IPv4</th><th>IPv6</th></tr>
+		<tr><th>{% trans "Name" %}</th><th>{% trans "IPv4 address" %}</th><th>{% trans "IPv6 address" %}</th></tr>
 	</thead>
 	<tbody>
 	{% for host in object_list %}
@@ -21,6 +22,6 @@
 
 {% block sidebar %}
 <ul>
-	<li><a href="{% url host_new %}">Add new host</a></li>
+	<li><a href="{% url host_new %}">{% trans "Add new host" %}</a></li>
 </ul>
 {% endblock %}

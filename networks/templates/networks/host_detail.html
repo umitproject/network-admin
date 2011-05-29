@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}host {{ object.name }}{% endblock %}
+{% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
 {% block content %}
 <h2>{{ object.name }}</h2>
-<h3>Basic info</h3>
+<h3>{% trans "Basic info" %}</h3>
 <p>{{ object.description }}</p>
-<p>IPv4: {{ object.ipv4 }}</p>
-<p>IPv6: {{ object.ipv6 }}</p>
+<p>{% trans "IPv4 address" %}: {{ object.ipv4 }}</p>
+<p>{% trans "IPv6 address" %}: {{ object.ipv6 }}</p>
 
 {% if events %}
-<h3>Events</h3>
+<h3>{% trans "Events" %}</h3>
 <table>
 	<thead>
 		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>

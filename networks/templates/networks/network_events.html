@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
+
+{% block content %}
+<h2>{{ object.name }}</h2>
+<h3>{% trans "Basic info" %}</h3>
+<p>{{ object.description }}</p>
+
+<h3>{% trans "Events" %}</h3>
+	
+{% if events %}
+<table>
+	<thead>
+		<tr>
+			<th>{% trans "Timestamp" %}</th>
+			<th>{% trans "Message" %}</th>
+			<th>{% trans "Event type" %}</th>
+			<th>{% trans "Host" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for event in events %}
+		<tr>
+			<td>{{ event.timestamp }}</td>
+			<td>{{ event.message }}</td>
+			<td>{{ event.event_type }}</td>
+			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
+	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li><a href="{% url network_detail object.pk %}">{% trans "Network settings" %}</a></li>
+	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
+</ul>
+{% endblock %}

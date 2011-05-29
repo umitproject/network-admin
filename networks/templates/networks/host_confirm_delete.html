@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}host {{ object.name }}{% endblock %}
+{% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
 {% block content %}
 <h2>{% trans "Removing host" %}</h2>

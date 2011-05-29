@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}add new network{% endblock %}
+{% block title %}{% trans "add new network" %}{% endblock %}
 
 {% block content %}
 <h2>{% trans "Add new network" %}</h2>
 <form action="" method="POST">
 	{{ form.as_p }}
-	<input type="submit" value="Add network" />
+	<input type="submit" value="{% trans "Add network" %}" />
 </form>
 {% endblock %}
 
 {% block sidebar %}
 <ul>
-	<li><a href="{% url network_list %}">Networks list</a></li>
+	<li><a href="{% url network_list %}">{% trans "Networks list" %}</a></li>
 </ul>
 {% endblock %}

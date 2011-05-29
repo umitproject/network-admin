@@ -1,11 +1,13 @@
 {% extends "base.html" %}
-{% block title %}networks list{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "networks list" %}{% endblock %}
 
 {% block content %}
-<h2>Networks list</h2>
+<h2>{% trans "Networks list" %}</h2>
+
 <table>
 	<thead>
-		<tr><th>Name</th><th>Number of hosts</th></tr>
+		<tr><th>{% trans "Name" %}</th><th>{% trans "Number of hosts" %}</th></tr>
 	</thead>
 	<tbody>
 	{% for network in object_list %}
@@ -16,10 +18,11 @@
 	{% endfor %}
 	</tbody>
 </table>
+
 {% endblock %}
 
 {% block sidebar %}
 <ul>
-	<li><a href="{% url network_new %}">Add new network</a></li>
+	<li><a href="{% url network_new %}">{% trans "Add new network" %}</a></li>
 </ul>
 {% endblock %}

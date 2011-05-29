@@ -1,14 +1,16 @@
 {% extends "base.html" %}
 {% load i18n %}
-{% block title %}network {{ object.name }}{% endblock %}
+{% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
 {% block content %}
 <h2>{{ object.name }}</h2>
-<h3>Basic info</h3>
+<h3>{% trans "Basic info" %}</h3>
 <p>{{ object.description }}</p>
 
+<h3>{% trans "Hosts" %}</h3>
+	
 {% if hosts %}
-<h3>Hosts</h3>
+<form action="" method="POST">
 <table>
 	<thead>
 		<tr><th>{% trans "Host name" %}</th><th>{% trans "IPv4 address" %}</th><th>{% trans "IPv6 address" %}</th></tr>
@@ -16,13 +18,32 @@
 	<tbody>
 	{% for host in hosts %}
 		<tr>
-			<td><a href="{% url host_detail host.pk %}">{{ host.name }}</a></td>
+			<td>
+				<input type="checkbox" name="remove_host" value="{{ host.pk }}" /> 
+				<a href="{% url host_detail host.pk %}">{{ host.name }}</a>
+			</td>
 			<td>{{ host.ipv4 }}</a></td>
 			<td>{{ host.ipv6 }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
 </table>
+<input type="submit" value="{% trans "Remove selected host(s)" %}" />
+</form>
+{% endif %}
+
+{% if hosts_other %}
+<form action="" method="POST">
+<p>
+	{% trans "Add host to network" %}: 
+	<select name="add_host">
+	{% for host in hosts_other %}
+		<option value="{{ host.pk }}">{{ host.name }}</option>
+	{% endfor %}
+	</select>
+	<input type="submit" value="{% trans "Add" %}" />
+</p>
+</form>
 {% endif %}
 
 {% endblock %}
@@ -30,7 +51,8 @@
 {% block sidebar %}
 <ul>
 	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
-	{#<li><a href="{% url host_delete object.pk %}">{% trans "Delete network" %}</a></li>#}
+	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li><a href="{% url network_events object.pk %}">{% trans "Network events" %}</a></li>
 	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
 </ul>
 {% endblock %}

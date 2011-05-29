@@ -39,10 +39,10 @@ class Host(models.Model):
     def get_absolute_url(self):
         return reverse('host_detail', args=[self.pk])
     
-    def delete(self):
+    def delete(self, *args, **kwargs):
         related = NetworkHost.objects.filter(host=self)
         related.delete()
-        super(Host, self).save(*args, **kwargs)
+        super(Host, self).delete(*args, **kwargs)
 
 admin.site.register(Host)
     
@@ -53,10 +53,10 @@ class Network(models.Model):
     def __unicode__(self):
         return "<Network '%s'>" % self.name
     
-    def delete(self):
+    def delete(self, *args, **kwargs):
         related = NetworkHost.objects.filter(network=self)
         related.delete()
-        super(Network, self).save(*args, **kwargs)
+        super(Network, self).delete(*args, **kwargs)
         
     def get_absolute_url(self):
         return reverse('network_detail', args=[self.pk])
@@ -67,6 +67,31 @@ class Network(models.Model):
 admin.site.register(Network)
 
 class NetworkHost(models.Model):
+    """
+    Since one cannot use ManyToManyField type in GAE [1], we have to
+    write extra model that will provide application with many-to-many
+    relationship between networks and hosts.
+    
+    To ensure that after deleting host or network its relations will
+    be removed too, we have to override delete() method for both
+    Host and Network classes. Those methods should look like that:
+    
+    def delete(self, *args, **kwargs):
+        related = NetworkHost.objects.filter(network=self)
+        related.delete()
+        super(Network, self).delete(*args, **kwargs)
+        
+    for Network class, and:
+    
+    def delete(self, *args, **kwargs):
+        related = NetworkHost.objects.filter(host=self)
+        related.delete()
+        super(Host, self).delete(*args, **kwargs)
+        
+    for Host class. 
+    
+    [1] http://www.allbuttonspressed.com/projects/djangoappengine
+    """
     network = models.ForeignKey(Network)
     host = models.ForeignKey(Host)
 
