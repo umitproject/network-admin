@@ -28,7 +28,7 @@ INSTALLED_APPS = (
     'dbindexer',
 
     'webapi',
-    'reports',
+    #'reports',
     'networks',
     'events',
     'piston',
