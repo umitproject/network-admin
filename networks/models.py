@@ -22,6 +22,7 @@ from django.contrib import admin
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext as _
+from dbindexer.api import register_index
 
 class Host(models.Model):
     """The single host in the network"""
@@ -40,11 +41,19 @@ class Host(models.Model):
         return reverse('host_detail', args=[self.pk])
     
     def delete(self, *args, **kwargs):
+        # delete all events related to this host
+        from events.models import Event
+        events = Event.objects.filter(source_host=self)
+        events.delete()
+        
+        # delete network-host relations
         related = NetworkHost.objects.filter(host=self)
         related.delete()
+        
         super(Host, self).delete(*args, **kwargs)
 
 admin.site.register(Host)
+register_index(Host, {'name': 'icontains'})
     
 class Network(models.Model):
     name = models.CharField(max_length=250)

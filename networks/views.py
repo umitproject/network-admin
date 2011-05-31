@@ -18,7 +18,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.views.generic.list_detail import object_detail
+from django.core.urlresolvers import reverse
+from django.db.models import Q
+from django.views.generic.list_detail import object_detail, object_list
 from events.models import Event
 from networks.models import Host, Network, NetworkHost
 
@@ -30,6 +32,21 @@ def host_detail(request, object_id):
         'events': Event.objects.filter(source_host=host)
     }
     return object_detail(request, queryset, object_id, extra_context=extra_context)
+
+def host_list(request, page=None):
+    
+    host_queryset = Host.objects.all()
+    
+    if request.GET.get('search'):
+        search = request.GET.get('search')
+        host_queryset = Host.objects.filter(name__icontains=search)
+
+    kwargs = {
+        'queryset': host_queryset,
+        'paginate_by': 15,
+        'extra_context': {'url': reverse('host_list')}
+    }
+    return object_list(request, page=page, **kwargs)
 
 def network_detail(request, object_id):
     """

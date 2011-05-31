@@ -1,10 +1,29 @@
 {% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
 {% load i18n %}
 {% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
 {% block content %}
 <h2>{% trans "Removing host" %}</h2>
 <p>{% blocktrans with object.name as name %}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
+<p><strong>{% trans "Remember, that ALL events related to this host will be REMOVED." %}</strong></p>
 <form action="" method="POST">
 	<input type="submit" value="{% trans "Remove host" %}" />
 	<p><a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a></p>

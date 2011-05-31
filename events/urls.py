@@ -24,7 +24,14 @@ from events.models import Event
 
 event_queryset = Event.objects.all().order_by('timestamp')
 
+event_list_args = {
+    'queryset': event_queryset,
+    'paginate_by': 2,
+    'extra_context': {'url': '/event/list/'}
+}
+
 urlpatterns = patterns('events.views',
    url(r'^(?P<object_id>\d+)/$', object_detail, {'queryset': event_queryset}, name='event_detail'),
-   url(r'^list/$', object_list, {'queryset': event_queryset}, name='event_list')
+   url(r'^list/$', object_list, event_list_args, name='event_list'),
+   url(r'^list/page/(?P<page>\d+)/$', object_list, event_list_args, name='event_list_page')
 )

@@ -20,7 +20,7 @@
 
 import base64
 import datetime
-import simplejson
+import simplejson as json
 import random
 from django.http import HttpRequest
 from django.test import TestCase
