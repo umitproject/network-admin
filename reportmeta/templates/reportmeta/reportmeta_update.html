@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "edit report" %}{% endblock %}
+
+{% block content %}
+
+{% if object_name and object_type_name %}
+<h2>{% blocktrans %}Edit report {{ object_name }}{% endblocktrans %}</h2>
+{% else %}
+<h2>{% trans "Edit report" %}</h2>
+{% endif %}
+
+<form action="" method="POST">
+	{{ form.as_p }}
+	<p>Event types:</p>
+	<ul>
+	{% for type in event_types %}
+		<li><input type="checkbox" name="event_types" 
+			{% if type in object.get_event_types %}checked="checked" {% endif %}
+			value="{{ type.pk }}" /> {{ type.name }}</li>
+	{% endfor %}
+	</ul>
+	<input type="submit" value="{% trans "Update report" %}" />
+</form>
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url reportmeta_detail object.pk %}">{% trans "Back to report" %}</a></li>
+	<li><a href="{% url reportmeta_list object.object_type.name %}">{% blocktrans with object.object_type.name as name %}Back to {{ name }} reports{% endblocktrans %}</a></li>
+	{% if object.object_type.name == 'host' %}
+	<li><a href="{% url reportmeta_list 'network' %}">{% trans "Go to network reports" %}</a></li>
+	{% else %}
+	<li><a href="{% url reportmeta_list 'host' %}">{% trans "Go to host reports" %}</a></li>
+	{% endif %}
+</ul>
+{% endblock %}

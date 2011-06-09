@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "host reports" %}{% endblock %}
+
+{% block content %}
+<h2>{% trans "Reports" %}</h2>
+
+<h4><a href="{% url reportmeta_list 'network' %}">{% trans "Networks" %}</a></h4>
+
+<table>
+	<thead>
+		<tr>
+			<th>{% trans "Name" %}</th>
+			<th>{% trans "Object name" %}</th>
+			<th>{% trans "Description" %}</th>
+			<th>{% trans "Period" %}</th>
+			<th>{% trans "Events" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for report in net_reports %}
+		<tr>
+			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name }}</a></td>
+			<td>{{ report.reported_object.name }}</td>
+			<td>{{ report.description }}</td>
+			<td>{{ report.get_period }}</td>
+			<td>
+			{% for event_type in report.get_event_types %}
+				{{ event_type.name }}{% if not forloop.last %}, {% endif %}
+			{% endfor %}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+<h4><a href="{% url reportmeta_list 'host' %}">{% trans "Hosts" %}</a></h4>
+
+<table>
+	<thead>
+		<tr>
+			<th>{% trans "Name" %}</th>
+			<th>{% trans "Object name" %}</th>
+			<th>{% trans "Description" %}</th>
+			<th>{% trans "Period" %}</th>
+			<th>{% trans "Events" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for report in host_reports %}
+		<tr>
+			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name }}</a></td>
+			<td>{{ report.reported_object.name }}</td>
+			<td>{{ report.description }}</td>
+			<td>{{ report.get_period }}</td>
+			<td>
+			{% for event_type in report.get_event_types %}
+				{{ event_type.name }}{% if not forloop.last %}, {% endif %}
+			{% endfor %}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url reportmeta_new 'network' %}">{% trans "Add network report" %}</a></li>
+	<li><a href="{% url reportmeta_new 'host' %}">{% trans "Add host report" %}</a></li>
+</ul>
+{% endblock %}
