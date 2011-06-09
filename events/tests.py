@@ -20,9 +20,10 @@
 
 import datetime
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
-from events.models import Event
+from events.models import Event, EventType
 from networks.models import Host
 
 class EventTest(TestCase):
@@ -30,6 +31,8 @@ class EventTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
+        self.client.login(username='user', password='userpassword')
         
     def test_event_detail(self):
         """Create event and get event's details"""
@@ -37,9 +40,12 @@ class EventTest(TestCase):
         host = Host(name='Host', ipv4='1.2.3.4')
         host.save()
         
+        event_type = EventType(name='INFO')
+        event_type.save()
+        
         event_data = {
             'message': 'Message',
-            'event_type': 'INFO',
+            'event_type': event_type,
             'timestamp': '%s' % str(datetime.datetime.now()),
             'source_host': host
         }

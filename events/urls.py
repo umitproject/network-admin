@@ -19,8 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import *
+from django.contrib.auth.decorators import login_required
 from django.views.generic.list_detail import object_detail, object_list
 from events.models import Event
+
+object_detail = login_required(object_detail)
+object_list = login_required(object_list)
 
 event_queryset = Event.objects.all().order_by('timestamp')
 

@@ -24,28 +24,38 @@ from django.utils.translation import ugettext as _
 from django.contrib import admin
 from networks.models import Host
 
-EVENT_TYPES = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
-
-# This is default event type. Another values are:
-#EVENT_TYPE_DEFAULT = 'DEFAULT'
-#EVENT_TYPE_DEFAULT = 'UNKNOWN' 
-EVENT_TYPE_DEFAULT = EVENT_TYPES[2]
+class EventType(models.Model):
+    """A very simple model written to make managing events types easier"""
+    name = models.CharField(max_length=50)
+    
+    def __unicode__(self):
+        return self.name
+    
+    def delete(self, *args, **kwargs):
+        from reports.models import ReportMetaEventType
+        
+        # delete relations between event type and reports
+        related = ReportMetaEventType.objects.filter(event_type=self)
+        related.delete()
+        
+        super(EventType, self).delete(*args, **kwargs)
+        
+admin.site.register(EventType)
 
 class Event(models.Model):
     message = models.CharField(max_length=300)
     timestamp = models.DateTimeField()
-    event_type = models.CharField(max_length=50, verbose_name=_("Type"))
+    event_type = models.ForeignKey(EventType)
     source_host = models.ForeignKey(Host)
     monitoring_module = models.IntegerField(null=True, blank=True)
     monitoring_module_fields = models.TextField(null=True, blank=True)
     
     def __unicode__(self):
-        return "<Event %s - host '%s' at [%s]>" % \
-            (self.event_type, self.source_host.name, str(self.timestamp))
+        return self.message
 
     def get_details(self):
         """Returns event details extracted from monitoring module fields"""
         fields = json.loads(self.monitoring_module_fields)
         return fields
 
-admin.site.register(Event)    
+admin.site.register(Event)
