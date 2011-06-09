@@ -23,7 +23,7 @@ from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 from networks.models import Host
-from events.models import Event, EVENT_TYPES, EVENT_TYPE_DEFAULT
+from events.models import Event, EventType
 from webapi.views import api_error, api_ok, api_response
 from piston.authentication import OAuthAuthentication
 
@@ -80,7 +80,7 @@ class EventHandler(BaseHandler):
             elif ipv6:
                 source_host = Host.objects.get(ipv6=ipv6)
         except Host.DoesNotExist:
-            # Create host if it does not exist in database
+            # create host if it does not exist in database
             if ipv6:
                 host_name = 'host %s, %s' % (ipv4, ipv6)
             else:
@@ -91,9 +91,12 @@ class EventHandler(BaseHandler):
             return api_error(_('There is more than one host with that IP'))
             
         # Determine event type. If no type was specified, set default value
-        event_type = e.get('event_type')
-        if not event_type or event_type not in EVENT_TYPES:
-            event_type = EVENT_TYPE_DEFAULT    
+        event_type_name = e.get('event_type')
+        
+        if not event_type_name:
+            return api_error(_('No event type specified'))
+        
+        event_type, created = EventType.objects.get_or_create(name=event_type_name)
             
         try:
             event = Event(message=e['message'],
@@ -102,8 +105,8 @@ class EventHandler(BaseHandler):
                       source_host=source_host,
                       monitoring_module = e['monitoring_module'],
                       monitoring_module_fields  = e['monitoring_module_fields'])
-        except KeyError:
-            return api_error(_('Report message is broken'))
+        except KeyError, field:
+            return api_error(_("The '%(field)s' field is missing") % {'field': field})
         
         event.save()
         
@@ -131,7 +134,7 @@ class EventHandler(BaseHandler):
             'event_id': event_id,
             'message': event.message,
             'timestamp': str(event.timestamp),
-            'event_type': event.event_type,
+            'event_type': event.event_type.name,
             'source_host_id': event.source_host.pk,
             'module_id': event.monitoring_module,
             'module_fields': event.monitoring_module_fields
