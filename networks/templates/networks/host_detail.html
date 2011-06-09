@@ -27,14 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p>{% trans "IPv4 address" %}: {{ object.ipv4 }}</p>
 <p>{% trans "IPv6 address" %}: {{ object.ipv6 }}</p>
 
-{% if events %}
+{% if object.has_events %}
 <h3>{% trans "Events" %}</h3>
 <table>
 	<thead>
 		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
 	</thead>
 	<tbody>
-	{% for event in events %}
+	{% for event in object.get_events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
 			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
@@ -49,8 +49,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block sidebar %}
 <ul>
+	<li><a href="{% url reportmeta_new 'host' object.pk %}">{% trans "Create report" %}</a></li>
 	<li><a href="{% url host_update object.pk %}">{% trans "Edit host" %}</a></li>
 	<li><a href="{% url host_delete object.pk %}">{% trans "Delete host" %}</a></li>
-	<li><a href="{% url host_list %}">{% trans "Back to hosts list" %}</a></li>
+	<li><a href="{% url host_list %}">{% trans "Back to hosts" %}</a></li>
 </ul>
 {% endblock %}

@@ -19,6 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.core.urlresolvers import reverse
+from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
 from networks.models import Host
@@ -29,6 +30,8 @@ class HostTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
+        self.client.login(username='user', password='userpassword')
         self.host = Host(name='Host', description='Description', ipv4='1.2.3.4', ipv6='')
         
     def test_host_list(self):
@@ -86,6 +89,8 @@ class NetworkTest(TestCase):
     
     def setUp(self):
         self.client = Client()
+        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
+        self.client.login(username='user', password='userpassword')
         
     def test_network_list(self):
         """Get networks list"""

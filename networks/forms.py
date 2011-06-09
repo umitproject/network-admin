@@ -24,6 +24,9 @@ from networks.models import Host, Network
 class HostCreateForm(forms.ModelForm):
     class Meta:
         model = Host
+        widgets = {
+            'user': forms.HiddenInput()
+        }
         
 class HostUpdateForm(forms.ModelForm):
     class Meta:

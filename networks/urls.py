@@ -19,11 +19,17 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import *
-from django.views.generic.list_detail import object_detail, object_list
+from django.contrib.auth.decorators import login_required
+from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
 from events.models import Event
 from networks.models import Host, Network
 from networks.forms import *
+
+object_list = login_required(object_list)
+create_object = login_required(create_object)
+update_object = login_required(update_object)
+delete_object = login_required(delete_object)
 
 host_queryset = Host.objects.all()
 
@@ -34,7 +40,7 @@ host_delete_args = {
 }
 
 host_update_args = {
-    'form_class': HostUpdateForm,
+    'form_class': HostUpdateForm(),
     'template_name': 'networks/host_update.html'
 }
 
@@ -57,10 +63,10 @@ network_delete_args = {
 }
 
 urlpatterns = patterns('networks.views',
-   url(r'^host/(?P<object_id>\d+)/$', 'host_detail', name='host_detail'),
+   url(r'^host/(?P<object_id>\d+)/$', object_detail, {'queryset': host_queryset}, name='host_detail'),
    url(r'^host/list/$', 'host_list', name='host_list'),
    url(r'^host/list/page/(?P<page>\d+)/$', 'host_list', name='host_list_page'),
-   url(r'^host/new/$', create_object, {'form_class': HostCreateForm}, name="host_new"),
+   url(r'^host/new/$', 'host_create', name="host_new"),
    url(r'^host/edit/(?P<object_id>\d+)/$', update_object, host_update_args, name="host_update"),
    url(r'^host/delete/(?P<object_id>\d+)/$', delete_object, host_delete_args, name="host_delete"),
    

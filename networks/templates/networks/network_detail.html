@@ -27,14 +27,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <h3>{% trans "Hosts" %}</h3>
 	
-{% if hosts %}
+{% if object.has_hosts %}
 <form action="" method="POST">
 <table>
 	<thead>
 		<tr><th>{% trans "Host name" %}</th><th>{% trans "IPv4 address" %}</th><th>{% trans "IPv6 address" %}</th></tr>
 	</thead>
 	<tbody>
-	{% for host in hosts %}
+	{% for host in object.get_hosts %}
 		<tr>
 			<td>
 				<input type="checkbox" name="remove_host" value="{{ host.pk }}" /> 
@@ -62,6 +62,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<input type="submit" value="{% trans "Add" %}" />
 </p>
 </form>
+{% endif %}
+
+{% if object.has_events %}
+<h3>{% trans "Events" %}</h3>
+<table>
+	<thead>
+		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
+	</thead>
+	<tbody>
+	{% for event in object.get_events %}
+		<tr>
+			<td>{{ event.timestamp }}</td>
+			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
+			<td>{{ event.event_type }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
 {% endif %}
 
 {% endblock %}

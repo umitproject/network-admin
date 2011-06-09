@@ -18,36 +18,43 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q
+from django.views.generic.create_update import create_object
 from django.views.generic.list_detail import object_detail, object_list
 from events.models import Event
 from networks.models import Host, Network, NetworkHost
+from networks.forms import HostCreateForm
 
-def host_detail(request, object_id):
-    """Simple object detail page - additional view used to make code clearer"""
-    queryset = Host.objects.all()
-    host = Host.objects.get(pk=object_id)
-    extra_context = {
-        'events': Event.objects.filter(source_host=host)
-    }
-    return object_detail(request, queryset, object_id, extra_context=extra_context)
+from search.core import search
 
+@login_required
 def host_list(request, page=None):
     
     host_queryset = Host.objects.all()
     
     if request.GET.get('search'):
-        search = request.GET.get('search')
-        host_queryset = Host.objects.filter(name__icontains=search)
+        search_phrase = request.GET.get('search')
+        host_queryset = Host.objects.none()
+        search_results = search(Host, search_phrase)
+    else:
+        search_results = None
 
     kwargs = {
         'queryset': host_queryset,
         'paginate_by': 15,
-        'extra_context': {'url': reverse('host_list')}
+        'extra_context': {'url': reverse('host_list'),
+                          'search_results': search_results}
     }
     return object_list(request, page=page, **kwargs)
 
+@login_required
+def host_create(request):
+    form_class = HostCreateForm(initial={'user': request.user.pk})
+    return create_object(request, form_class=form_class)
+
+@login_required
 def network_detail(request, object_id):
     """
     Network detail page has the following features:
@@ -72,18 +79,17 @@ def network_detail(request, object_id):
         network_host.save()
     
     queryset = Network.objects.all()
-    related_hosts = [nh.host.pk for nh in NetworkHost.objects.filter(network=network)]
-    hosts = Host.objects.filter(pk__in=related_hosts)
-    if hosts:
-        hosts_other = Host.objects.exclude(pk__in=related_hosts)
+    if network.has_hosts():
+        hosts_ids = [host.pk for host in network.get_hosts()]
+        hosts_other = Host.objects.exclude(pk__in=hosts_ids)
     else:
         hosts_other = Host.objects.all()
     extra_context = {
-        'hosts': hosts,
         'hosts_other': hosts_other
     }
     return object_detail(request, queryset, object_id, extra_context=extra_context)
 
+@login_required
 def network_events(request, object_id):
     """Display events related to network"""
     network = Network.objects.get(pk=object_id)

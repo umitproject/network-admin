@@ -19,23 +19,39 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext as _
 from dbindexer.api import register_index
 
-class Host(models.Model):
-    """The single host in the network"""
+class NetworkObject(models.Model):
+    """
+    Abstract model class for objects like host or network.
+    Every object belongs to specified user
+    """
     name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
-    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
-    ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), blank=True)
+    user = models.ForeignKey(User, blank=True, null=True)
     
     def __unicode__(self):
-        if self.ipv4 and self.ipv6:
-            return "<Host '%s' %s, %s>" % (self.name, self.ipv4, self.ipv6)
+        return self.name
+    
+    def get_short_description(self):
+        WORD_LIMIT = 15
+        words = self.description.split()
+        if len(words) > WORD_LIMIT:
+            return '%s...' % ' '.join(words[:WORD_LIMIT])
         else:
-            return "<Host '%s' %s>" % (self.name, self.ipv4 or self.ipv6)
+            return self.description
+    
+    class Meta:
+        abstract = True
+
+class Host(NetworkObject):
+    """The single host in the network"""
+    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
+    ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), blank=True)
                             
     def get_absolute_url(self):
         return reverse('host_detail', args=[self.pk])
@@ -51,16 +67,21 @@ class Host(models.Model):
         related.delete()
         
         super(Host, self).delete(*args, **kwargs)
+        
+    def get_events(self):
+        """Returns all events for the host"""
+        from events.models import Event
+        return Event.objects.filter(source_host=self)
+    
+    def has_events(self):
+        if self.get_events().count():
+            return True
+        else:
+            return False
 
 admin.site.register(Host)
-register_index(Host, {'name': 'icontains'})
     
-class Network(models.Model):
-    name = models.CharField(max_length=250)
-    description = models.TextField(blank=True)
-    
-    def __unicode__(self):
-        return "<Network '%s'>" % self.name
+class Network(NetworkObject):
     
     def delete(self, *args, **kwargs):
         related = NetworkHost.objects.filter(network=self)
@@ -72,6 +93,30 @@ class Network(models.Model):
         
     def get_hosts_count(self):
         return NetworkHost.objects.filter(network=self).count()
+    
+    def get_hosts(self):
+        """Returns all hosts in the network"""
+        return [net_host.host for net_host in NetworkHost.objects.filter(network=self)]
+    
+    def has_hosts(self):
+        """Returns True if there is any host in the network"""
+        if self.get_hosts_count():
+            return True
+        else:
+            return False
+    
+    def get_events(self):
+        """Returns events for all hosts in the network"""
+        from events.models import Event
+        hosts_ids = [host.pk for host in self.get_hosts()]
+        return Event.objects.filter(source_host__pk__in=hosts_ids)
+    
+    def has_events(self):
+        """Returns True if there are any events from host/network in the report"""
+        if self.get_events().count():
+            return True
+        else:
+            return False
     
 admin.site.register(Network)
 
