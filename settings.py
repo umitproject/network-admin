@@ -12,7 +12,7 @@ import os
 # Activate django-dbindexer for the default database
 DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
-AUTOLOAD_SITECONF = 'indexes'
+AUTOLOAD_SITECONF = 'search_indexes'
 
 MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'media')
 MEDIA_URL = '/media/'
@@ -26,9 +26,12 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'djangotoolbox',
     'dbindexer',
+    'search',
+    
+    'autoload',
 
+    'reportmeta',
     'webapi',
-    #'reports',
     'networks',
     'events',
     'piston',
@@ -44,6 +47,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    
+    'autoload.middleware.AutoloadMiddleware'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -61,3 +66,5 @@ ADMIN_MEDIA_PREFIX = '/media/admin/'
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
 
 ROOT_URLCONF = 'urls'
+
+LOGIN_URL = '/login/'

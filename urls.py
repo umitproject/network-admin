@@ -10,8 +10,11 @@ urlpatterns = patterns('',
     (r'^api/', include('webapi.urls')),
     (r'^network/', include('networks.urls')),
     (r'^event/', include('events.urls')),
+    (r'^report/', include('reportmeta.urls')),
     ('^$', 'django.views.generic.simple.direct_to_template', {'template': 'home.html'}),
     (r'^accounts/', include(admin.site.urls)),
+    
+    url(r'login/', 'django.contrib.auth.views.login', {'template_name': 'login.html'}),
 
     url(r'^oauth/request_token/$','piston.authentication.oauth_request_token'),
     url(r'^oauth/authorize/$','piston.authentication.oauth_user_auth'),

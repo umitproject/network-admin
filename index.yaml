@@ -26,6 +26,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: events_eventtype
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: networks_host
   properties:
   - name: __key__
@@ -52,6 +57,21 @@ indexes:
     direction: desc
 
 - kind: piston_token
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_reportmeta
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_reportmetaeventtype
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: reports_reporttemplate
   properties:
   - name: __key__
     direction: desc
