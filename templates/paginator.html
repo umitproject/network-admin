@@ -1,0 +1,60 @@
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+The paginator template was designed to work with standard Django pagination
+system. Therefore you should provide extra context which is:
+
+	* is_paginated - set to True if you want turn pagination on
+	* paginator - Paginator class object
+	* page_obj - Page class object, representing current page
+	
+Moreover, to make this template work with every kind of pages, there is
+one more parameter:
+
+	* url - URL address to a listing page; this address shouldn't include
+			the page number (e.g. /message/list/) which will be added here,
+			based on page object
+
+{% endcomment %}
+
+{% load i18n %}
+{% if is_paginated and paginator.num_pages > 1 %}
+<form action="{{ url }}" method="GET">
+<ul class="paginator">
+	
+	{% if page_obj.has_previous %}
+	<li><a href="{{ url }}page/{{ page_obj.previous_page_number }}/">{% trans "Previous page" %}</a></li>
+	{% endif %}
+	
+	{% if page_obj.has_next %}
+	<li><a href="{{ url }}page/{{ page_obj.next_page_number }}/">{% trans "Next page" %}</a></li>
+	{% endif %}
+	
+	<li>{% trans "Go to page" %}:
+		<select name="page">
+		{% for page_num in paginator.page_range %}
+			<option>{{ page_num }}</option>
+		{% endfor %}
+		</select>
+		<input type="submit" value="{% trans "Go" %}" />
+	</li>
+	
+</ul>
+</form>
+{% endif %}
