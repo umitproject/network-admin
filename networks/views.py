@@ -21,18 +21,20 @@
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Q
-from django.views.generic.create_update import create_object
-from django.views.generic.list_detail import object_detail, object_list
+from django.http import Http404
+from django.views.generic.create_update import *
+from django.views.generic.list_detail import *
+from django.views.generic.simple import direct_to_template, redirect_to
 from events.models import Event
 from networks.models import Host, Network, NetworkHost
-from networks.forms import HostCreateForm
+from networks.forms import *
 
 from search.core import search
 
 @login_required
 def host_list(request, page=None):
     
-    host_queryset = Host.objects.all()
+    host_queryset = Host.objects.filter(user=request.user)
     
     if request.GET.get('search'):
         search_phrase = request.GET.get('search')
@@ -51,8 +53,33 @@ def host_list(request, page=None):
 
 @login_required
 def host_create(request):
-    form_class = HostCreateForm(initial={'user': request.user.pk})
-    return create_object(request, form_class=form_class)
+    if not request.user.has_perm('networks.add_host'):
+        return direct_to_template(request, "no_permissions.html")
+    
+    if request.method == 'POST':
+        form = HostCreateForm(request.POST)
+        if form.is_valid():
+            host = form.save()
+            return redirect_to(request, url=host.get_absolute_url())
+    
+    extra_context = {
+        'form': HostCreateForm(initial={'user': request.user.pk})
+    }
+    return direct_to_template(request, 'networks/host_form.html', extra_context)
+
+@login_required
+def host_update(request, object_id):
+    if not request.user.has_perm('networks.change_host'):
+        return direct_to_template(request, "no_permissions.html")
+    return update_object(request, object_id=object_id, form_class=HostUpdateForm,
+                         template_name='networks/host_update.html')
+
+@login_required
+def host_delete(request, object_id):
+    if not request.user.has_perm('networks.delete_host'):
+        return direct_to_template(request, "no_permissions.html")
+    return delete_object(request, object_id=object_id,
+                         model=Host, post_delete_redirect=reverse('host_list'))
 
 @login_required
 def network_detail(request, object_id):
@@ -64,19 +91,28 @@ def network_detail(request, object_id):
         * removing relations between network and host(s)
     """
     
-    network = Network.objects.get(pk=object_id)
+    try:
+        network = Network.objects.get(pk=object_id, user=request.user)
+    except Network.DoesNotExist:
+        raise Http404
     
     # remove relation between the network and selected host(s)
     if request.POST.getlist('remove_host'):
-        hosts_pk = request.POST.getlist('remove_host')
-        network_host = NetworkHost.objects.filter(network=network, host__pk__in=hosts_pk)
-        network_host.delete()
+        if request.user.has_perm('network.change_network'):
+            hosts_pk = request.POST.getlist('remove_host')
+            network_host = NetworkHost.objects.filter(network=network, host__pk__in=hosts_pk)
+            network_host.delete()
+        else:
+            return direct_to_template(request, "no_permissions.html")
     
     # create relation between the network and selected host
     if request.POST.get('add_host'):
-        host = Host.objects.get(pk=request.POST.get('add_host'))
-        network_host = NetworkHost(network=network, host=host)
-        network_host.save()
+        if request.user.has_perm('network.change_network'):
+            host = Host.objects.get(pk=request.POST.get('add_host'))
+            network_host = NetworkHost(network=network, host=host)
+            network_host.save()
+        else:
+            return direct_to_template(request, "no_permissions.html")
     
     queryset = Network.objects.all()
     if network.has_hosts():
@@ -88,6 +124,36 @@ def network_detail(request, object_id):
         'hosts_other': hosts_other
     }
     return object_detail(request, queryset, object_id, extra_context=extra_context)
+
+@login_required
+def network_create(request):
+    if not request.user.has_perm('networks.add_network'):
+        return direct_to_template(request, "no_permissions.html")
+    
+    if request.method == 'POST':
+        form = NetworkCreateForm(request.POST)
+        if form.is_valid():
+            network = form.save()
+            return redirect_to(request, url=network.get_absolute_url())
+    
+    extra_context = {
+        'form': NetworkCreateForm(initial={'user': request.user.pk})
+    }
+    return direct_to_template(request, 'networks/network_form.html', extra_context)
+
+@login_required
+def network_update(request, object_id):
+    if not request.user.has_perm('networks.change_network'):
+        return direct_to_template(request, "no_permissions.html")
+    return update_object(request, object_id=object_id, form_class=NetworkUpdateForm,
+                         template_name='networks/network_update.html')
+
+@login_required
+def network_delete(request, object_id):
+    if not request.user.has_perm('networks.delete_network'):
+        return direct_to_template(request, "no_permissions.html")
+    return delete_object(request, object_id=object_id,
+                         model=Network, post_delete_redirect=reverse('network_list'))
 
 @login_required
 def network_events(request, object_id):

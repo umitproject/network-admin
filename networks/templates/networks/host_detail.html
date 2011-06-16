@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
 	</thead>
 	<tbody>
-	{% for event in object.get_events %}
+	{% for event in object.events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
 			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>

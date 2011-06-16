@@ -33,17 +33,6 @@ delete_object = login_required(delete_object)
 
 host_queryset = Host.objects.all()
 
-host_delete_args = {
-    'model': Host,
-    #it would be better to use reverse_lazy here, but it is not supported yet:
-    'post_delete_redirect': '/network/host/list/'
-}
-
-host_update_args = {
-    'form_class': HostUpdateForm(),
-    'template_name': 'networks/host_update.html'
-}
-
 network_queryset = Network.objects.all()
 
 network_list_args = {
@@ -52,29 +41,19 @@ network_list_args = {
     'extra_context': {'url': '/network/network/list/'}
 }
 
-network_update_args = {
-    'form_class': NetworkUpdateForm,
-    'template_name': 'networks/network_update.html'
-}
-
-network_delete_args = {
-    'model': Network,
-    'post_delete_redirect': '/network/network/list/'
-}
-
 urlpatterns = patterns('networks.views',
    url(r'^host/(?P<object_id>\d+)/$', object_detail, {'queryset': host_queryset}, name='host_detail'),
    url(r'^host/list/$', 'host_list', name='host_list'),
    url(r'^host/list/page/(?P<page>\d+)/$', 'host_list', name='host_list_page'),
    url(r'^host/new/$', 'host_create', name="host_new"),
-   url(r'^host/edit/(?P<object_id>\d+)/$', update_object, host_update_args, name="host_update"),
-   url(r'^host/delete/(?P<object_id>\d+)/$', delete_object, host_delete_args, name="host_delete"),
+   url(r'^host/edit/(?P<object_id>\d+)/$', 'host_update', name="host_update"),
+   url(r'^host/delete/(?P<object_id>\d+)/$', 'host_delete', name="host_delete"),
    
    url(r'^network/(?P<object_id>\d+)/$', 'network_detail', name='network_detail'),
    url(r'^network/list/$', object_list, network_list_args, name='network_list'),
    url(r'^network/list/page/(?P<page>\d+)/$', object_list, network_list_args, name='network_list_page'),
-   url(r'^network/new/$', create_object, {'form_class': NetworkCreateForm}, name="network_new"),
-   url(r'^network/edit/(?P<object_id>\d+)/$', update_object, network_update_args, name="network_update"),
-   url(r'^network/delete/(?P<object_id>\d+)/$', delete_object, network_delete_args, name="network_delete"),
+   url(r'^network/new/$', 'network_create', name="network_new"),
+   url(r'^network/edit/(?P<object_id>\d+)/$', 'network_update', name="network_update"),
+   url(r'^network/delete/(?P<object_id>\d+)/$', 'network_delete', name="network_delete"),
    url(r'^network/events/(?P<object_id>\d+)/$', 'network_events', name='network_events'),
 )

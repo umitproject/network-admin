@@ -59,6 +59,7 @@ class Host(NetworkObject):
     def delete(self, *args, **kwargs):
         # delete all events related to this host
         from events.models import Event
+        from networks.models import NetworkHost
         events = Event.objects.filter(source_host=self)
         events.delete()
         
@@ -72,12 +73,25 @@ class Host(NetworkObject):
         """Returns all events for the host"""
         from events.models import Event
         return Event.objects.filter(source_host=self)
+    events = property(get_events)
     
     def has_events(self):
         if self.get_events().count():
             return True
         else:
             return False
+        
+    def _last_event(self):
+        events = self.events.order_by('-timestamp')
+        return events[0] if events else None
+    last_event = property(_last_event)
+        
+    class Meta:
+        permissions = (
+            ("can_add", _("Can manually add a new host")),
+            ("can_delete", _("Can delete host")),
+            ("can_update", _("Can update basic host data like name or description")),
+        )
 
 admin.site.register(Host)
     
@@ -97,26 +111,35 @@ class Network(NetworkObject):
     def get_hosts(self):
         """Returns all hosts in the network"""
         return [net_host.host for net_host in NetworkHost.objects.filter(network=self)]
+    hosts = property(get_hosts)
     
     def has_hosts(self):
         """Returns True if there is any host in the network"""
-        if self.get_hosts_count():
-            return True
-        else:
-            return False
+        return True if self.hosts else False
     
     def get_events(self):
         """Returns events for all hosts in the network"""
         from events.models import Event
         hosts_ids = [host.pk for host in self.get_hosts()]
         return Event.objects.filter(source_host__pk__in=hosts_ids)
+    events = property(get_events)
     
     def has_events(self):
         """Returns True if there are any events from host/network in the report"""
-        if self.get_events().count():
-            return True
-        else:
-            return False
+        return True if self.events else False
+        
+    def _last_event(self):
+        events = self.events.order_by('-timestamp')
+        return events[0] if events else None
+    last_event = property(_last_event)
+        
+    class Meta:
+        permissions = (
+            ("can_add", _("Can create networks")),
+            ("can_update", _("Can update networks")),
+            ("can_add_host", _("Can add host to network")),
+            ("can_remove_host", _("Can remove host from network")),
+        )
     
 admin.site.register(Network)
 

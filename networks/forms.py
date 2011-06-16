@@ -36,6 +36,9 @@ class HostUpdateForm(forms.ModelForm):
 class NetworkCreateForm(forms.ModelForm):
     class Meta:
         model = Network
+        widgets = {
+            'user': forms.HiddenInput()
+        }
         
 class NetworkUpdateForm(forms.ModelForm):
     class Meta:
