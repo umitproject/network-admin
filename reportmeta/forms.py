@@ -27,13 +27,15 @@ class ReportMetaForm(forms.ModelForm):
         #fields = ('name', 'description', 'period')
         widgets = {
             'object_id': forms.HiddenInput(),
-            'object_type': forms.HiddenInput()
+            'object_type': forms.HiddenInput(),
+            'user': forms.HiddenInput()
         }
         
 class ReportMetaNewForm(forms.ModelForm):
     class Meta:
         model = ReportMeta
-        fields = ('name', 'description', 'period', 'object_type')
+        fields = ('name', 'description', 'period', 'object_type', 'user')
         widgets = {
-            'object_type': forms.HiddenInput()
+            'object_type': forms.HiddenInput(),
+            'user': forms.HiddenInput()
         }

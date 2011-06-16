@@ -62,6 +62,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block sidebar %}
 <ul>
+	<li><a href="{% url reportmeta_get_report object.pk %}">{% trans "Get report in PDF" %}</a></li>
 	<li><a href="{% url reportmeta_update object.pk %}">{% trans "Edit report" %}</a></li>
 	<li><a href="{% url reportmeta_delete object.pk %}">{% trans "Delete report" %}</a></li>
 	<li><a href="{% url reportmeta_list object.object_type.name %}">{% blocktrans with object.object_type.name as name %}Back to {{ name }} reports{% endblocktrans %}</a></li>

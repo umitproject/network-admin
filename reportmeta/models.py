@@ -19,12 +19,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext as _
 from networks.models import Host, Network
+from networks.reports import * 
 from events.models import Event, EventType
 
 PERIODS = (
@@ -44,6 +46,7 @@ class ReportMeta(models.Model):
     object_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     reported_object = generic.GenericForeignKey('object_type', 'object_id')
+    user = models.ForeignKey(User)
     
     def __unicode__(self):
         return "Report for %s" % self.reported_object.name
@@ -58,12 +61,14 @@ class ReportMeta(models.Model):
         
     def get_object_model(self):
         return self.object_type.model_class()
+    model = property(get_object_model)
     
     def get_event_types(self):
         """Returns event types related to the report"""
         related = ReportMetaEventType.objects.filter(report_meta=self)
         event_types = EventType.objects.filter(pk__in=[e.event_type.pk for e in related])
         return event_types
+    event_types = property(get_event_types)
     
     def get_events(self):
         """Returns events from host/network included in the report"""
@@ -74,17 +79,24 @@ class ReportMeta(models.Model):
             all_events = Network.objects.get(pk=self.object_id).get_events()
             events = all_events.filter(event_type__in=list(self.get_event_types()))
         return events
+    events = property(get_events)
     
     def has_events(self):
-        if self.get_events().count():
-            return True
-        else:
-            return False
+        return True if self.events else False
     
     def get_period(self):
         for period_number, period_name in PERIODS:
             if period_number == self.period:
                 return period_name
+    
+    def get_report(self):
+        if self.model == Host:
+            return HostReport(queryset=[self.reported_object])
+        elif self.model == Network:
+            return NetworkReport(queryset=[self.reported_object])
+        else:
+            return None
+    report = property(get_report)
     
 admin.site.register(ReportMeta)
         

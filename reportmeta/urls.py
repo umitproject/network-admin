@@ -22,17 +22,13 @@ from django.conf.urls.defaults import *
 from django.views.generic.create_update import delete_object
 from reportmeta.models import ReportMeta
 
-host_delete_args = {
-    'model': ReportMeta,
-    'post_delete_redirect': '/report/'
-}
-
 urlpatterns = patterns('reportmeta.views',
     url(r'^$', 'reports', name='reports'),
     url(r'^(?P<object_id>\d+)/$', 'reportmeta_detail', name='reportmeta_detail'),
+    url(r'^get/(?P<object_id>\d+)/$', 'reportmeta_get_report', name='reportmeta_get_report'),
     url(r'^list/(?P<object_type>host|network)/$', 'reportmeta_list', name='reportmeta_list'),
     url(r'^new/(?P<object_type>host|network)/$', 'reportmeta_new', name="reportmeta_new"),
     url(r'^new/(?P<object_type>host|network)/(?P<object_id>\d+)/$', 'reportmeta_new_from_object', name="reportmeta_new"),
     url(r'^edit/(?P<object_id>\d+)/$', 'reportmeta_update', name="reportmeta_update"),
-    url(r'^delete/(?P<object_id>\d+)/$', delete_object, host_delete_args, name="reportmeta_delete"),
+    url(r'^delete/(?P<object_id>\d+)/$', 'reportmeta_delete', name="reportmeta_delete"),
 )

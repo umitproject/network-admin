@@ -21,6 +21,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.http import HttpResponse
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
@@ -43,9 +44,6 @@ def reports(request):
 @login_required
 def reportmeta_detail(request, object_id):
     queryset = ReportMeta.objects.all()
-    c = {
-         'es': Event.objects.all()
-    }
     return object_detail(request, queryset, object_id)
 
 @login_required
@@ -65,6 +63,9 @@ def reportmeta_list(request, object_type):
 @login_required
 def reportmeta_new_from_object(request, object_type, object_id):
     """Displays new report form"""
+    
+    if not request.user.has_perm('reportmeta.add_reportmeta'):
+        return direct_to_template(request, "no_permissions.html")
     
     if request.method == 'POST':
         form = ReportMetaForm(request.POST)
@@ -95,6 +96,9 @@ def reportmeta_new_from_object(request, object_type, object_id):
 @login_required
 def reportmeta_new(request, object_type):
     
+    if not request.user.has_perm('reportmeta.add_reportmeta'):
+        return direct_to_template(request, "no_permissions.html")
+    
     if request.method == 'POST':
         form = ReportMetaForm(request.POST)
         if form.is_valid():
@@ -109,7 +113,12 @@ def reportmeta_new(request, object_type):
     
     objects_list = model.objects.all() 
     
-    form = ReportMetaNewForm(initial={'object_type': content_type.pk})
+    
+    initial = {
+        'object_type': content_type.pk,
+        'user': request.user.pk
+    }
+    form = ReportMetaNewForm(initial=initial)
     
     context = {
         'form': form,
@@ -121,6 +130,9 @@ def reportmeta_new(request, object_type):
 
 @login_required
 def reportmeta_update(request, object_id):
+    
+    if not request.user.has_perm('reportmeta.change_reportmeta'):
+        return direct_to_template(request, "no_permissions.html")
     
     if request.method == 'POST':
         report_meta = ReportMeta.objects.get(pk=object_id)
@@ -151,4 +163,19 @@ def reportmeta_update(request, object_id):
     }
     return update_object(request, form_class=ReportMetaForm, object_id=object_id,
                          extra_context=context, template_name="reportmeta/reportmeta_update.html")
+
+def reportmeta_delete(request, object_id):
     
+    if not request.user.has_perm('reportmeta.detele_reportmeta'):
+        return direct_to_template(request, "no_permissions.html")
+    
+    return delete_object(request, object_id=object_id,
+                         model=ReportMeta,
+                         post_delete_redirect=reverse('reportmeta_list', args=['network']))
+    
+def reportmeta_get_report(request, object_id):
+    from geraldo.generators import PDFGenerator
+    report = ReportMeta.objects.get(pk=object_id, user=request.user).report
+    response = HttpResponse(mimetype='application/pdf')
+    report.generate_by(PDFGenerator, filename=response)
+    return response
