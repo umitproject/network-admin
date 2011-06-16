@@ -22,10 +22,9 @@ import simplejson as json
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
-from networks.models import Host
+from networks.models import Host, Network
 from events.models import Event, EventType
 from webapi.views import api_error, api_ok, api_response
-from piston.authentication import OAuthAuthentication
 
 class HostHandler(BaseHandler):
     allowed_methods = ('GET', )
@@ -35,9 +34,16 @@ class HostHandler(BaseHandler):
         
         if not host_id:
             # return hosts list
-            hosts = Host.objects.all()
+            hosts = Host.objects.filter(user=request.user)
             if not hosts:
                 return api_error(_('The hosts list is empty'))
+            
+            order_by = request.GET.get('order_by', 'name')
+            if order_by == 'name':
+                hosts = hosts.order_by('name')
+            elif order_by == 'last_event':
+                hosts = sorted(hosts, key=lambda host: host.last_event)
+            
             response = {
                 'hosts': [{'id': host.pk, 'name': host.name} for host in hosts]
             }
@@ -51,11 +57,48 @@ class HostHandler(BaseHandler):
         
         response = {
             'host_id': host_id,
+            'host_name': host.name,
             'host_description': host.description,
             'ipv4': host.ipv4,
             'ipv6': host.ipv6
         }
         
+        return api_response(response)
+    
+class NetworkHandler(BaseHandler):
+    allowed_methods = ('GET', )
+    
+    def read(self, request, network_id=None):
+        
+        if not network_id:
+            # return networks list
+            networks = Network.objects.filter(user=request.user)
+            if not networks:
+                return api_error(_('The networks list is empty'))
+            
+            order_by = request.GET.get('order_by', 'name')
+            if order_by == 'name':
+                networks = networks.order_by('name')
+            elif order_by == 'last_event':
+                networks = sorted(networks, key=lambda net: net.last_event)
+            
+            response = {
+                'networks': [{'id': net.pk, 'name': net.name} for net in networks]
+            }
+            return api_response(response)
+        
+        network = Network.objects.get(pk=network_id, user=request.user)
+        
+        response = {
+            'network_id': network.pk,
+            'network_name': network.name,
+            'network_descrption': network.description
+        }
+        
+        get_hosts = request.GET.get('get_hosts', 'true')
+        if get_hosts.lower() == 'true':
+            response['hosts'] = [{'id': h.pk, 'name': h.name} for h in network.hosts]
+            
         return api_response(response)
     
 class EventHandler(BaseHandler):
@@ -92,7 +135,6 @@ class EventHandler(BaseHandler):
             
         # Determine event type. If no type was specified, set default value
         event_type_name = e.get('event_type')
-        
         if not event_type_name:
             return api_error(_('No event type specified'))
         
@@ -121,7 +163,7 @@ class EventHandler(BaseHandler):
             if not events:
                 return api_error(_('The events list is empty'))
             response = {
-                'events': [{'id': event.pk, 'name': event.message} for event in events]
+                'events': [{'id': event.pk, 'message': event.message} for event in events]
             }
             return api_response(response)
         
@@ -141,4 +183,3 @@ class EventHandler(BaseHandler):
         }
         
         return api_response(response)
-

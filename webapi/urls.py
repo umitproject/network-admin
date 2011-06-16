@@ -20,7 +20,7 @@
 
 from django.conf.urls.defaults import *
 from piston.resource import Resource
-from piston.authentication import HttpBasicAuthentication, NoAuthentication
+from piston.authentication import HttpBasicAuthentication
 from webapi.handlers import *
 
 auth = HttpBasicAuthentication()
@@ -28,10 +28,13 @@ ad = { 'authentication': auth }
 
 host_handler = Resource(HostHandler, **ad)
 event_handler = Resource(EventHandler, **ad)
+net_handler = Resource(NetworkHandler, **ad)
 
 urlpatterns = patterns('webapi.views',
    url(r'^host/(?P<host_id>\d+)/$', host_handler, name='api_host_detail'),
    url(r'^host/list/$', host_handler, name='api_host_list'),
+   url(r'^network/(?P<network_id>\d+)/$', net_handler, name='api_network_detail'),
+   url(r'^network/list/$', net_handler, name='api_network_list'),
    url(r'^event/report/$', event_handler, name='api_report_event'),
    url(r'^event/(?P<event_id>\d+)/$', event_handler, name='api_event_detail'),
    url(r'^event/list/$', event_handler, name='api_event_list'),
