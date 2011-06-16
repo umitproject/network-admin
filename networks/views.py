@@ -52,6 +52,16 @@ def host_list(request, page=None):
     return object_list(request, page=page, **kwargs)
 
 @login_required
+def host_detail(request, object_id):
+    
+    try:
+        host = Host.objects.get(pk=object_id, user=request.user)
+    except Host.DoesNotExist:
+        raise Http404
+    
+    return object_detail(request, Host.objects.all(), object_id)
+
+@login_required
 def host_create(request):
     if not request.user.has_perm('networks.add_host'):
         return direct_to_template(request, "no_permissions.html")
@@ -80,6 +90,15 @@ def host_delete(request, object_id):
         return direct_to_template(request, "no_permissions.html")
     return delete_object(request, object_id=object_id,
                          model=Host, post_delete_redirect=reverse('host_list'))
+
+@login_required
+def network_list(request):
+    network_list_args = {
+        'queryset': Network.objects.filter(user=request.user),
+        'paginate_by': 15,
+        'extra_context': {'url': '/network/network/list/'}
+    }
+    return object_list(request, **network_list_args)
 
 @login_required
 def network_detail(request, object_id):

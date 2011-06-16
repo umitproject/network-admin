@@ -33,16 +33,8 @@ delete_object = login_required(delete_object)
 
 host_queryset = Host.objects.all()
 
-network_queryset = Network.objects.all()
-
-network_list_args = {
-    'queryset': network_queryset,
-    'paginate_by': 15,
-    'extra_context': {'url': '/network/network/list/'}
-}
-
 urlpatterns = patterns('networks.views',
-   url(r'^host/(?P<object_id>\d+)/$', object_detail, {'queryset': host_queryset}, name='host_detail'),
+   url(r'^host/(?P<object_id>\d+)/$', 'host_detail', name='host_detail'),
    url(r'^host/list/$', 'host_list', name='host_list'),
    url(r'^host/list/page/(?P<page>\d+)/$', 'host_list', name='host_list_page'),
    url(r'^host/new/$', 'host_create', name="host_new"),
@@ -50,8 +42,8 @@ urlpatterns = patterns('networks.views',
    url(r'^host/delete/(?P<object_id>\d+)/$', 'host_delete', name="host_delete"),
    
    url(r'^network/(?P<object_id>\d+)/$', 'network_detail', name='network_detail'),
-   url(r'^network/list/$', object_list, network_list_args, name='network_list'),
-   url(r'^network/list/page/(?P<page>\d+)/$', object_list, network_list_args, name='network_list_page'),
+   url(r'^network/list/$', 'network_list', name='network_list'),
+   url(r'^network/list/page/(?P<page>\d+)/$', 'network_list', name='network_list_page'),
    url(r'^network/new/$', 'network_create', name="network_new"),
    url(r'^network/edit/(?P<object_id>\d+)/$', 'network_update', name="network_update"),
    url(r'^network/delete/(?P<object_id>\d+)/$', 'network_delete', name="network_delete"),
