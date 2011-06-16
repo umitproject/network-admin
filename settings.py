@@ -26,6 +26,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'djangotoolbox',
     'dbindexer',
+    'permission_backend_nonrel',
     'search',
     
     'autoload',
@@ -40,6 +41,10 @@ INSTALLED_APPS = (
 
     # djangoappengine should come last, so it can override a few manage.py commands
     'djangoappengine',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'permission_backend_nonrel.backends.NonrelPermissionBackend',
 )
 
 MIDDLEWARE_CLASSES = (

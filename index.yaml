@@ -61,6 +61,11 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: reportmeta_reportmeta
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: reports_reportmeta
   properties:
   - name: __key__
