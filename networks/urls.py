@@ -19,33 +19,33 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import *
-from django.contrib.auth.decorators import login_required
-from django.views.generic.list_detail import object_list, object_detail
-from django.views.generic.create_update import *
-from events.models import Event
-from networks.models import Host, Network
-from networks.forms import *
-
-object_list = login_required(object_list)
-create_object = login_required(create_object)
-update_object = login_required(update_object)
-delete_object = login_required(delete_object)
-
-host_queryset = Host.objects.all()
 
 urlpatterns = patterns('networks.views',
-   url(r'^host/(?P<object_id>\d+)/$', 'host_detail', name='host_detail'),
-   url(r'^host/list/$', 'host_list', name='host_list'),
-   url(r'^host/list/page/(?P<page>\d+)/$', 'host_list', name='host_list_page'),
-   url(r'^host/new/$', 'host_create', name="host_new"),
-   url(r'^host/edit/(?P<object_id>\d+)/$', 'host_update', name="host_update"),
-   url(r'^host/delete/(?P<object_id>\d+)/$', 'host_delete', name="host_delete"),
+   url(r'^host/(?P<object_id>\d+)/$',
+       'host_detail', name='host_detail'),
+   url(r'^host/list/$',
+       'host_list', name='host_list'),
+   url(r'^host/list/page/(?P<page>\d+)/$',
+       'host_list', name='host_list_page'),
+   url(r'^host/new/$',
+       'host_create', name="host_new"),
+   url(r'^host/edit/(?P<object_id>\d+)/$',
+       'host_update', name="host_update"),
+   url(r'^host/delete/(?P<object_id>\d+)/$',
+       'host_delete', name="host_delete"),
    
-   url(r'^network/(?P<object_id>\d+)/$', 'network_detail', name='network_detail'),
-   url(r'^network/list/$', 'network_list', name='network_list'),
-   url(r'^network/list/page/(?P<page>\d+)/$', 'network_list', name='network_list_page'),
-   url(r'^network/new/$', 'network_create', name="network_new"),
-   url(r'^network/edit/(?P<object_id>\d+)/$', 'network_update', name="network_update"),
-   url(r'^network/delete/(?P<object_id>\d+)/$', 'network_delete', name="network_delete"),
-   url(r'^network/events/(?P<object_id>\d+)/$', 'network_events', name='network_events'),
+   url(r'^network/(?P<object_id>\d+)/$',
+       'network_detail', name='network_detail'),
+   url(r'^network/list/$',
+       'network_list', name='network_list'),
+   url(r'^network/list/page/(?P<page>\d+)/$',
+       'network_list', name='network_list_page'),
+   url(r'^network/new/$',
+       'network_create', name="network_new"),
+   url(r'^network/edit/(?P<object_id>\d+)/$',
+       'network_update', name="network_update"),
+   url(r'^network/delete/(?P<object_id>\d+)/$',
+       'network_delete', name="network_delete"),
+   url(r'^network/events/(?P<object_id>\d+)/$',
+       'network_events', name='network_events'),
 )
