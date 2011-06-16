@@ -1,3 +1,6 @@
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../reportlab.zip'))
+
 from reportlab.lib.colors import black
 from reportlab.lib.units import cm
 

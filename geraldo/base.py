@@ -1,4 +1,6 @@
-import copy, types, new
+import copy, types, new, sys, os
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../reportlab.zip'))
 
 try: 
     set 

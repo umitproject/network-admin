@@ -1,4 +1,5 @@
-import sys
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../reportlab.zip'))
 
 from reportlab.lib.units import * # Check this - is the source of units
 from reportlab.lib.pagesizes import * # Check this - is the source of page sizes

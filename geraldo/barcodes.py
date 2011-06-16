@@ -1,5 +1,8 @@
 """Module with BarCodes functions on Geraldo."""
 
+import sys, os
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../reportlab.zip'))
+
 from graphics import Graphic
 from utils import memoize, get_attr_value, cm
 

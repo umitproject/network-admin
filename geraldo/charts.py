@@ -1,4 +1,6 @@
-import re, random, decimal
+import re, random, decimal, sys, os
+
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__) + '/../reportlab.zip'))
 
 from reportlab.graphics.shapes import Drawing, String
 from reportlab.graphics.charts.barcharts import HorizontalBarChart as OriginalHorizBarChart
