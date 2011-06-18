@@ -82,7 +82,6 @@ class HostHandler(BaseHandler):
         """
         
         if not host_id:
-            # return hosts list
             hosts = Host.objects.filter(user=request.user)
             if not hosts:
                 return api_error(_('The hosts list is empty'))
@@ -99,8 +98,7 @@ class HostHandler(BaseHandler):
             return api_response(response)
         
         try:
-            # return host details
-            host = Host.objects.get(pk=host_id)
+            host = Host.objects.get(pk=host_id, user=request.user)
         except Host.DoesNotExist:
             return api_error(_('Host does not exist'))
         
@@ -156,7 +154,6 @@ class NetworkHandler(BaseHandler):
         """ 
         
         if not network_id:
-            # return networks list
             networks = Network.objects.filter(user=request.user)
             if not networks:
                 return api_error(_('The networks list is empty'))
@@ -235,7 +232,7 @@ class EventHandler(BaseHandler):
             elif ipv6:
                 source_host = Host.objects.get(ipv6=ipv6)
         except Host.DoesNotExist:
-            # create host if it does not exist in database
+            # create host if it does not exist
             if ipv6:
                 host_name = 'host %s, %s' % (ipv4, ipv6)
             else:
@@ -287,10 +284,12 @@ class EventHandler(BaseHandler):
         """
         
         if not event_id:
-            # return events list
             events = Event.objects.all()
             if not events:
                 return api_error(_('The events list is empty'))
+            
+            events = filter(lambda event: event.user == request.user, events)
+            
             response = {
                 'events': [{'id': event.pk, 'message': event.message} for event in events]
             }
@@ -299,6 +298,9 @@ class EventHandler(BaseHandler):
         try:
             event = Event.objects.get(pk=event_id)
         except Event.DoesNotExist:
+            return api_error(_('Event does not exist'))
+        
+        if event.user != request.user:
             return api_error(_('Event does not exist'))
         
         response = {
