@@ -19,9 +19,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import simplejson as json
+
 from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib import admin
+
 from networks.models import Host
 
 class EventType(models.Model):
@@ -57,5 +59,9 @@ class Event(models.Model):
         """Returns event details extracted from monitoring module fields"""
         fields = json.loads(self.monitoring_module_fields)
         return fields
+    
+    def _user(self):
+        return self.source_host.user
+    user = property(_user)
 
 admin.site.register(Event)

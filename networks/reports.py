@@ -40,7 +40,7 @@ class HostReport(Report):
                 borders = {'bottom': True}
             ),
             
-            detail_band = ReportBand(
+            band_detail = ReportBand(
                 height=0.5*cm,
                 elements=[
                     ObjectValue(attribute_name='timestamp', top=0, left=0*cm,
@@ -86,7 +86,7 @@ class NetworkReport(Report):
                 borders = {'bottom': True}
             ),
             
-            detail_band = ReportBand(
+            band_detail = ReportBand(
                 height=0.5*cm,
                 elements=[
                     ObjectValue(attribute_name='timestamp', top=0, left=0*cm,
