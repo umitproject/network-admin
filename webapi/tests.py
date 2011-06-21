@@ -18,15 +18,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
-import datetime
+import base64, datetime, random
 import simplejson as json
-import random
+
 from django.http import HttpRequest
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
+
 from networks.models import Host
 from events.models import Event, EventType
 from piston.oauth import *
@@ -55,7 +55,8 @@ class WebAPITest(TestCase):
             h = Host(name='host_%i' % i,
                      description='description number %i' % i,
                      ipv4='127.0.0.%i' % (i+1),
-                     ipv6='0:0:0:0:0:0:7f00:%i' % (i+1))
+                     ipv6='0:0:0:0:0:0:7f00:%i' % (i+1),
+                     user=self.user)
             h.save()
             
         types = EventType.objects.all()
@@ -167,13 +168,16 @@ class WebAPITest(TestCase):
             return event
         
         events = [gen_event(i) for i in xrange(10)]
+        
+        events_json = json.dumps(events)
         auth_string = self.get_auth_string()
-        for event in events:
-            response = self.client.post(reverse('api_report_event'),
-                                        data=event,
-                                        HTTP_AUTHORIZATION=auth_string)
-            r_json = json.loads(response.content)
-            self.assertEqual(r_json['status'], 'ok')
+        
+        response = self.client.post(reverse('api_report_event'),
+                                    data={'events': events_json},
+                                    HTTP_AUTHORIZATION=auth_string)
+        print response.content
+        r_json = json.loads(response.content)
+        self.assertEqual(r_json['status'], 'ok')
             
     def test_event_details(self):
         """Get all events details"""

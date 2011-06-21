@@ -42,6 +42,7 @@ from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 from networks.models import Host, Network
 from events.models import Event, EventType
+from events.utils import create_event_from_dict, EventParseError
 
 from webapi.views import api_error, api_ok, api_response
 
@@ -55,6 +56,8 @@ class HostHandler(BaseHandler):
         """
         Returns host details if host_id is specified, otherwise returns
         hosts list.
+        
+        Method: GET
         
         Request parameters:
             * host_id (optional) - if specified, host details are returned
@@ -129,6 +132,8 @@ class NetworkHandler(BaseHandler):
         If the network_id is specified returns network details,
         otherwise returns networks list.
         
+        Method: GET
+        
         Request parematers:
             * network_id (optional) - network which details we want
             * get_hosts (optional) - if 'true' and network_id is
@@ -200,8 +205,14 @@ class EventHandler(BaseHandler):
     
     def create(self, request):
         """
-        Receives notification and saves it to the database. This method
-        is a part of private API.
+        Receives one or more notifications and saves them to the database.
+        This method is a part of private API.
+        
+        Method: POST
+        URL: /api/event/report/
+        
+        Case 1: Reporting single event (notification)
+        ---------------------------------------------
         
         Request parameters:
             * message - short message identifying the event
@@ -214,52 +225,38 @@ class EventHandler(BaseHandler):
         Response:
             * status - **ok** or **error**
             * message - details of the result
+            
+        Case 2: Reporting multiple events at once
+        -----------------------------------------
+        
+        Request parameters:
+            * events - list of events serialized with JSON
+            
+        Response:
+            * status - **ok** or **error**
+            * message - details of the result
+        
         """
-        e = request.POST
         
-        ipv4 = e.get('source_host_ipv4')
-        ipv6 = e.get('source_host_ipv6')
-        
-        if not (ipv4 or ipv6):
-            return api_error(_('No IP address specified'))
-        
-        # Determine source host (according to the class' docstring)
-        try:
-            if ipv4 and ipv6:
-                source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6)
-            elif ipv4:
-                source_host = Host.objects.get(ipv4=ipv4)
-            elif ipv6:
-                source_host = Host.objects.get(ipv6=ipv6)
-        except Host.DoesNotExist:
-            # create host if it does not exist
-            if ipv6:
-                host_name = 'host %s, %s' % (ipv4, ipv6)
-            else:
-                host_name = 'host %s' % ipv4
-            source_host = Host(name=host_name, ipv4=ipv4, ipv6=ipv6)
-            source_host.save()
-        except MultipleObjectsReturned:
-            return api_error(_('There is more than one host with that IP'))
+        if request.POST.get('events'):
+            try:
+                events = json.loads(request.POST.get('events', ''))
+            except ValueError:
+                return api_error(_('No events could be read'))
             
-        # Determine event type. If no type was specified, set default value
-        event_type_name = e.get('event_type')
-        if not event_type_name:
-            return api_error(_('No event type specified'))
-        
-        event_type, created = EventType.objects.get_or_create(name=event_type_name)
+            for event in events:
+                try:
+                    create_event_from_dict(event)
+                except EventParseError, e:
+                    api_error(_(e))
             
-        try:
-            event = Event(message=e['message'],
-                      event_type=event_type,
-                      timestamp=e['timestamp'],
-                      source_host=source_host,
-                      monitoring_module = e['monitoring_module'],
-                      monitoring_module_fields  = e['monitoring_module_fields'])
-        except KeyError, field:
-            return api_error(_("The '%(field)s' field is missing") % {'field': field})
+            return api_ok(_('Events reported successfully'))
         
-        event.save()
+        event = request.POST
+        try:
+            create_event_from_dict(event)
+        except EventParseError, e:
+            api_error(_(e))
         
         return api_ok(_('Event reported successfully'))
     
@@ -267,6 +264,8 @@ class EventHandler(BaseHandler):
         """
         If the event_id parameter is specified, returns event details,
         otherwise returns events list. This falls under the public API.
+        
+        Method: GET
         
         Response for events list:
             * events - list of events
