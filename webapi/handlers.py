@@ -221,6 +221,9 @@ class EventHandler(BaseHandler):
               its importance
             * source_host_ipv4, source_host_ipv6 - IPv4 and IPv6
               addresses of the source host
+            * monitoring_module (optional) - monitoring module identifier
+            * monitoring_module_fields (optional) - serialized monitoring
+              module parameters
               
         Response:
             * status - **ok** or **error**
