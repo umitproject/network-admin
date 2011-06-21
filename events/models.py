@@ -45,6 +45,24 @@ class EventType(models.Model):
 admin.site.register(EventType)
 
 class Event(models.Model):
+    """
+    Event model class represents single notification reported to the Network
+    Administrator. The following fields are defined:
+        * message - name and/or description of an event
+        * timestamp - moment, when event occured on host
+        * event_type - foreign key to the EventType object which simply stores
+          short and readable event name like **INFO** or **WARNING**
+        * source_host - foreign key to the Host object; this is the host from
+          where the event came
+        * monitoring_module - identifier of a monitoring module, which is
+          a module that provides more specific data about the event
+        * monitoring_module_fields - serialized fields for the monitoring
+          module; data provided by monitoring module is based on these fields
+    
+    Note 1: Only last two fields are optional.
+    Note 2: Although event hasn't *user* field specified, we can say that
+            event belongs to the user who ownes the source host.
+    """
     message = models.CharField(max_length=300)
     timestamp = models.DateTimeField()
     event_type = models.ForeignKey(EventType)
