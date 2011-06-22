@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import simplejson as json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from django.db import models
 from django.utils.translation import ugettext as _
@@ -63,11 +66,11 @@ class Event(models.Model):
     Note 2: Although event hasn't *user* field specified, we can say that
             event belongs to the user who ownes the source host.
     """
-    message = models.CharField(max_length=300)
+    message = models.TextField()
     timestamp = models.DateTimeField()
     event_type = models.ForeignKey(EventType)
     source_host = models.ForeignKey(Host)
-    monitoring_module = models.IntegerField(null=True, blank=True)
+    monitoring_module = models.CharField(max_length=50, null=True, blank=True)
     monitoring_module_fields = models.TextField(null=True, blank=True)
     
     def __unicode__(self):
@@ -77,6 +80,15 @@ class Event(models.Model):
         """Returns event details extracted from monitoring module fields"""
         fields = json.loads(self.monitoring_module_fields)
         return fields
+    
+    def _short_message(self):
+        WORD_LIMIT = 15
+        words = self.message.split()
+        if len(words) > WORD_LIMIT:
+            return '%s...' % ' '.join(words[:WORD_LIMIT])
+        else:
+            return self.message
+    short_message = property(_short_message)
     
     def _user(self):
         return self.source_host.user
