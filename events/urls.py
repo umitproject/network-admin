@@ -30,7 +30,7 @@ event_queryset = Event.objects.all().order_by('timestamp')
 
 event_list_args = {
     'queryset': event_queryset,
-    'paginate_by': 2,
+    'paginate_by': 20,
     'extra_context': {'url': '/event/list/'}
 }
 
