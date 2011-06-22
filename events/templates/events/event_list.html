@@ -30,7 +30,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% for event in object_list %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
-			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
+			<td><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
 			<td>{{ event.event_type }}</td>
 			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
 		</tr>
