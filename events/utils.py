@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from django.utils.translation import ugettext as _
 
 from networks.models import Host
@@ -26,11 +28,11 @@ from events.models import Event, EventType
 class EventParseError(Exception):
     pass
 
-def create_event_from_dict(event_dict):
+def create_event_from_dict(request, event_dict):
     """
     Creates event from dictionary and saves it in the database. A dictionary
     has to have the following fields:
-        * message,
+        * description,
         * timestamp,
         * source_host_ipv4 and/or source_host_ipv6,
         * event_type.
@@ -43,13 +45,14 @@ def create_event_from_dict(event_dict):
     model class documentation.
     """
     
-    message = event_dict.get('message')
+    message = event_dict.get('description')
     if not message:
         raise EventParseError, 'No message specified'
     
     timestamp = event_dict.get('timestamp')
     if not timestamp:
         raise EventParseError, 'No timestamp specified'
+    timestamp = datetime.datetime.fromtimestamp(timestamp)
     
     monitoring_module = event_dict.get('monitoring_module', '')
     monitoring_module_fields = event_dict.get('monitoring_module_fields', '')
@@ -63,18 +66,18 @@ def create_event_from_dict(event_dict):
     # Determine source host (according to the class' docstring)
     try:
         if ipv4 and ipv6:
-            source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6)
+            source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6, user=request.user)
         elif ipv4:
-            source_host = Host.objects.get(ipv4=ipv4)
+            source_host = Host.objects.get(ipv4=ipv4, user=request.user)
         elif ipv6:
-            source_host = Host.objects.get(ipv6=ipv6)
+            source_host = Host.objects.get(ipv6=ipv6, user=request.user)
     except Host.DoesNotExist:
         # create host if it does not exist
         if ipv6:
             host_name = 'host %s, %s' % (ipv4, ipv6)
         else:
             host_name = 'host %s' % ipv4
-        source_host = Host(name=host_name, ipv4=ipv4, ipv6=ipv6)
+        source_host = Host(name=host_name, ipv4=ipv4, ipv6=ipv6, user=request.user)
         source_host.save()
     except MultipleObjectsReturned:
         raise EventParseError, 'There is more than one host with that IP'
