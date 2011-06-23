@@ -18,12 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
-{% block title %}{% trans "event" %} "{{ object.name }}"{% endblock %}
+{% block title %}{% trans "event" %} "{{ object.short_message }}"{% endblock %}
 
 {% block content %}
-<h2>{{ object.message }}</h2>
-<p>{% trans "Timestamp" %}: {{ object.timestamp }}</p>
-<p>{% trans "Type" %}: {{ object.event_type }}</p>
+<h2>{{ object.timestamp }}</h2>
+<h3>{{ object.event_type }}</h3>
+<p>{{ object.message }}</p>
 {% endblock %}
 
 {% block sidebar %}
