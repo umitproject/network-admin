@@ -44,6 +44,7 @@ class NetworkObject(models.Model):
             return '%s...' % ' '.join(words[:WORD_LIMIT])
         else:
             return self.description
+    short_description = property(get_short_description)
     
     class Meta:
         abstract = True
