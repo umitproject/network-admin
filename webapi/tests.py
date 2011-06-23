@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64, datetime, random
+import base64, time, datetime, random
 import simplejson as json
 
 from django.http import HttpRequest
@@ -130,7 +130,7 @@ class WebAPITest(TestCase):
         event = {
             'message': 'Message',
             'event_type': 'INFO',
-            'timestamp': '%s' % str(datetime.datetime.now()),
+            'timestamp': '%s' % str(time.time()),
             'source_host_ipv4': '1.2.3.4',
             'source_host_ipv6': '2002:0:0:0:0:0:102:304',
             'monitoring_module': '0',
