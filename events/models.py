@@ -93,6 +93,10 @@ class Event(models.Model):
             return self.message
     short_message = property(_short_message)
     
+    def _html_message(self):
+        return self.message.replace('\n', '<br />')
+    html_message = property(_html_message)
+    
     def _user(self):
         return self.source_host.user
     user = property(_user)
