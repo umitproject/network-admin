@@ -83,9 +83,12 @@ class Event(models.Model):
     
     def _short_message(self):
         WORD_LIMIT = 15
+        CHAR_LIMIT = 150
         words = self.message.split()
         if len(words) > WORD_LIMIT:
             return '%s...' % ' '.join(words[:WORD_LIMIT])
+        elif len(self.message) > CHAR_LIMIT:
+            return '%s...' % self.message[:CHAR_LIMIT]
         else:
             return self.message
     short_message = property(_short_message)

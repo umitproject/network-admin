@@ -39,9 +39,12 @@ class NetworkObject(models.Model):
     
     def get_short_description(self):
         WORD_LIMIT = 15
+        CHAR_LIMIT = 150
         words = self.description.split()
         if len(words) > WORD_LIMIT:
             return '%s...' % ' '.join(words[:WORD_LIMIT])
+        elif len(self.description) > CHAR_LIMIT:
+            return '%s...' % self.description[:CHAR_LIMIT]
         else:
             return self.description
     short_description = property(get_short_description)
