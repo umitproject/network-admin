@@ -25,6 +25,7 @@ from django.http import HttpResponse
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
+
 from reportmeta.models import ReportMeta, ReportMetaEventType
 from reportmeta.forms import ReportMetaForm, ReportMetaNewForm
 from networks.models import Host, Network
@@ -36,14 +37,16 @@ def reports(request):
     host_content_type = ContentType.objects.get_for_model(Host)
     net_content_type = ContentType.objects.get_for_model(Network)
     context = {
-        'host_reports': ReportMeta.objects.filter(object_type=host_content_type),
-        'net_reports': ReportMeta.objects.filter(object_type=net_content_type)
+        'host_reports': ReportMeta.objects.filter(object_type=host_content_type,
+                                                  user=request.user),
+        'net_reports': ReportMeta.objects.filter(object_type=net_content_type,
+                                                 user=request.user)
     }
     return direct_to_template(request, 'reportmeta/reports.html', extra_context=context)
 
 @login_required
 def reportmeta_detail(request, object_id):
-    queryset = ReportMeta.objects.all()
+    queryset = ReportMeta.objects.filter(user=request.user)
     return object_detail(request, queryset, object_id)
 
 @login_required
@@ -54,7 +57,8 @@ def reportmeta_list(request, object_type):
     else:
         model = Network
     content_type = ContentType.objects.get_for_model(model)
-    queryset = ReportMeta.objects.filter(object_type=content_type.pk)
+    queryset = ReportMeta.objects.filter(object_type=content_type.pk,
+                                         user=request.user)
     context = {
         'object_type': object_type
     }
@@ -111,8 +115,7 @@ def reportmeta_new(request, object_type):
         model = Network
     content_type = ContentType.objects.get_for_model(model)
     
-    objects_list = model.objects.all() 
-    
+    objects_list = model.objects.filter(user=request.user) 
     
     initial = {
         'object_type': content_type.pk,
