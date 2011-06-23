@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <h2>{{ object.timestamp }}</h2>
 <h3>{{ object.event_type }}</h3>
-<p>{{ object.message }}</p>
+<p>{{ object.html_message|safe }}</p>
 {% endblock %}
 
 {% block sidebar %}

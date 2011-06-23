@@ -37,7 +37,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% for event in object.events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
-			<td><a href="{% url event_detail event.pk %}">{{ event.message }}</a></td>
+			<td><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
 			<td>{{ event.event_type }}</td>
 		</tr>
 	{% endfor %}
