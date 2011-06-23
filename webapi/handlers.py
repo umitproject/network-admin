@@ -34,7 +34,10 @@ So far we are using system which simply sends user login and password
 encoded with the base64 library.
 """
 
-import simplejson as json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
@@ -249,7 +252,7 @@ class EventHandler(BaseHandler):
             
             for event in events:
                 try:
-                    create_event_from_dict(event)
+                    create_event_from_dict(request, event)
                 except EventParseError, e:
                     api_error(_(e))
             
@@ -257,7 +260,7 @@ class EventHandler(BaseHandler):
         
         event = request.POST
         try:
-            create_event_from_dict(event)
+            create_event_from_dict(request, event)
         except EventParseError, e:
             api_error(_(e))
         
