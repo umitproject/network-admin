@@ -68,9 +68,6 @@ def reportmeta_list(request, object_type):
 def reportmeta_new_from_object(request, object_type, object_id):
     """Displays new report form"""
     
-    if not request.user.has_perm('reportmeta.add_reportmeta'):
-        return direct_to_template(request, "no_permissions.html")
-    
     if request.method == 'POST':
         form = ReportMetaForm(request.POST)
         if form.is_valid():
@@ -99,9 +96,6 @@ def reportmeta_new_from_object(request, object_type, object_id):
 
 @login_required
 def reportmeta_new(request, object_type):
-    
-    if not request.user.has_perm('reportmeta.add_reportmeta'):
-        return direct_to_template(request, "no_permissions.html")
     
     if request.method == 'POST':
         form = ReportMetaForm(request.POST)
@@ -134,9 +128,6 @@ def reportmeta_new(request, object_type):
 @login_required
 def reportmeta_update(request, object_id):
     
-    if not request.user.has_perm('reportmeta.change_reportmeta'):
-        return direct_to_template(request, "no_permissions.html")
-    
     if request.method == 'POST':
         report_meta = ReportMeta.objects.get(pk=object_id)
         form = ReportMetaForm(request.POST, instance=report_meta)
@@ -168,9 +159,6 @@ def reportmeta_update(request, object_id):
                          extra_context=context, template_name="reportmeta/reportmeta_update.html")
 
 def reportmeta_delete(request, object_id):
-    
-    if not request.user.has_perm('reportmeta.detele_reportmeta'):
-        return direct_to_template(request, "no_permissions.html")
     
     return delete_object(request, object_id=object_id,
                          model=ReportMeta,

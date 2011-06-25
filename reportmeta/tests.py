@@ -34,10 +34,12 @@ class ReportMetaTest(TestCase):
         self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
         self.client.login(username='user', password='userpassword')
         
-        self.host = Host(name='Host', description='Description', ipv4='1.2.3.4', ipv6='')
+        self.host = Host(name='Host', description='Description',
+                         ipv4='1.2.3.4', ipv6='', user=self.user)
         self.host.save()
         
-        self.network = Network(name='Network', description='Description')
+        self.network = Network(name='Network', description='Description',
+                               user=self.user)
         self.network.save()
         
         self.net_host = NetworkHost(network=self.network, host=self.host)
@@ -46,7 +48,8 @@ class ReportMetaTest(TestCase):
     def test_reportmeta_host_list(self):
         for i in xrange(10):
             report_meta = ReportMeta(name='report %i' % i, description='description', period=7,
-                                     object_type=ContentType.objects.get_for_model(Host), object_id=self.host.pk)
+                                     object_type=ContentType.objects.get_for_model(Host),
+                                     object_id=self.host.pk, user=self.user)
             report_meta.save()
         response = self.client.get(reverse('reportmeta_list', args=['host']))
         self.assertEqual(response.status_code, 200)
@@ -54,20 +57,23 @@ class ReportMetaTest(TestCase):
     def test_reportmeta_network_list(self):
         for i in xrange(10):
             report_meta = ReportMeta(name='report %i' % i, description='description', period=7,
-                                     object_type=ContentType.objects.get_for_model(Network), object_id=self.network.pk)
+                                     object_type=ContentType.objects.get_for_model(Network),
+                                     object_id=self.network.pk, user=self.user)
             report_meta.save()
         response = self.client.get(reverse('reportmeta_list', args=['network']))
         self.assertEqual(response.status_code, 200)
     
     def test_reportmeta_detail(self):
         report_meta = ReportMeta(name='host report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Host), object_id=self.host.pk)
+                                 object_type=ContentType.objects.get_for_model(Host),
+                                 object_id=self.host.pk, user=self.user)
         report_meta.save()
         response = self.client.get(reverse('reportmeta_detail', args=[report_meta.pk]))
         self.assertEqual(response.status_code, 200)
         
         report_meta = ReportMeta(name='network report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Network), object_id=self.network.pk)
+                                 object_type=ContentType.objects.get_for_model(Network),
+                                 object_id=self.network.pk, user=self.user)
         report_meta.save()
         response = self.client.get(reverse('reportmeta_detail', args=[report_meta.pk]))
         self.assertEqual(response.status_code, 200)
@@ -78,7 +84,8 @@ class ReportMetaTest(TestCase):
             'description': 'New host report description',
             'period': 1,
             'object_type': ContentType.objects.get_for_model(Host).pk,
-            'object_id': self.host.pk
+            'object_id': self.host.pk,
+            'user': self.user.pk
         }
         
         reportmeta_network_data = {
@@ -86,7 +93,8 @@ class ReportMetaTest(TestCase):
             'description': 'New network report description',
             'period': 31,
             'object_type': ContentType.objects.get_for_model(Network).pk,
-            'object_id': self.network.pk
+            'object_id': self.network.pk,
+            'user': self.user.pk
         }
         
         response = self.client.post(reverse('reportmeta_new', args=['host']), reportmeta_host_data)
@@ -97,11 +105,13 @@ class ReportMetaTest(TestCase):
     
     def test_reportmeta_update(self):
         reportmeta_host = ReportMeta(name='host report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Host), object_id=self.host.pk)
+                                 object_type=ContentType.objects.get_for_model(Host),
+                                 object_id=self.host.pk, user=self.user)
         reportmeta_host.save()
         
         reportmeta_net = ReportMeta(name='network report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Network), object_id=self.network.pk)
+                                 object_type=ContentType.objects.get_for_model(Network),
+                                 object_id=self.network.pk, user=self.user)
         reportmeta_net.save()
         
         reportmeta_host_data = {
@@ -109,7 +119,8 @@ class ReportMetaTest(TestCase):
             'description': 'Updated host report description',
             'period': 1,
             'object_type': ContentType.objects.get_for_model(Host).pk,
-            'object_id': self.host.pk
+            'object_id': self.host.pk,
+            'user': self.user.pk
         }
         
         reportmeta_network_data = {
@@ -117,7 +128,8 @@ class ReportMetaTest(TestCase):
             'description': 'Updated network report description',
             'period': 31,
             'object_type': ContentType.objects.get_for_model(Network).pk,
-            'object_id': self.network.pk
+            'object_id': self.network.pk,
+            'user': self.user.pk
         }
         
         response = self.client.post(reverse('reportmeta_update', args=[reportmeta_host.pk]), reportmeta_host_data)
@@ -127,11 +139,13 @@ class ReportMetaTest(TestCase):
     
     def test_reportmeta_delete(self):
         reportmeta_host = ReportMeta(name='host report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Host), object_id=self.host.pk)
+                                 object_type=ContentType.objects.get_for_model(Host),
+                                 object_id=self.host.pk, user=self.user)
         reportmeta_host.save()
         
         reportmeta_net = ReportMeta(name='network report', description='description', period=7,
-                                 object_type=ContentType.objects.get_for_model(Network), object_id=self.network.pk)
+                                 object_type=ContentType.objects.get_for_model(Network),
+                                 object_id=self.network.pk, user=self.user)
         reportmeta_net.save()
         
         response = self.client.post(reverse('reportmeta_delete', args=[reportmeta_host.pk]))
