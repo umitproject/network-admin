@@ -128,7 +128,7 @@ class WebAPITest(TestCase):
         and check if that host has been added successfully
         """
         event = {
-            'message': 'Message',
+            'description': 'Message',
             'event_type': 'INFO',
             'timestamp': '%s' % str(time.time()),
             'source_host_ipv4': '1.2.3.4',
@@ -157,9 +157,9 @@ class WebAPITest(TestCase):
             #types below come from Dragos' documentation for Network Inventory
             types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
             event = {
-                'message': 'event_%i' % index,
+                'description': 'event_%i' % index,
                 'event_type': types[random.randint(0, len(types) - 1)],
-                'timestamp': '%s' % str(datetime.datetime.now()),
+                'timestamp': '%s' % str(time.time()),
                 'source_host_ipv4': '127.0.0.%i' % (index + 1),
                 'source_host_ipv6': '0:0:0:0:0:0:7f00:%i' % (index + 1),
                 'monitoring_module': '%i' % index,

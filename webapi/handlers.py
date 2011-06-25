@@ -218,7 +218,7 @@ class EventHandler(BaseHandler):
         ---------------------------------------------
         
         Request parameters:
-            * message - short message identifying the event
+            * description - short message identifying the event
             * timestamp - when the event occurred
             * event_type - type of the event which should also describe
               its importance
@@ -254,7 +254,8 @@ class EventHandler(BaseHandler):
                 try:
                     create_event_from_dict(request, event)
                 except EventParseError, e:
-                    api_error(_(e))
+                    message = str(e)
+                    return api_error(_(message))
             
             return api_ok(_('Events reported successfully'))
         
@@ -262,7 +263,8 @@ class EventHandler(BaseHandler):
         try:
             create_event_from_dict(request, event)
         except EventParseError, e:
-            api_error(_(e))
+            message = str(e)
+            return api_error(_(message))
         
         return api_ok(_('Event reported successfully'))
     
@@ -280,7 +282,7 @@ class EventHandler(BaseHandler):
                 
         Response for event details:
             * event_id
-            * message - event message
+            * description - event message
             * timestamp - event timestamp
             * event_type - type of event 
             * source_host_id - identifier of source host
@@ -296,7 +298,7 @@ class EventHandler(BaseHandler):
             events = filter(lambda event: event.user == request.user, events)
             
             response = {
-                'events': [{'id': event.pk, 'message': event.message} for event in events]
+                'events': [{'id': event.pk, 'description': event.message} for event in events]
             }
             return api_response(response)
         
@@ -310,7 +312,7 @@ class EventHandler(BaseHandler):
         
         response = {
             'event_id': event_id,
-            'message': event.message,
+            'description': event.message,
             'timestamp': str(event.timestamp),
             'event_type': event.event_type.name,
             'source_host_id': event.source_host.pk,
