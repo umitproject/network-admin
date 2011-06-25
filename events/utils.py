@@ -52,7 +52,7 @@ def create_event_from_dict(request, event_dict):
     timestamp = event_dict.get('timestamp')
     if not timestamp:
         raise EventParseError, 'No timestamp specified'
-    timestamp = datetime.datetime.fromtimestamp(timestamp)
+    timestamp = datetime.datetime.fromtimestamp(float(timestamp))
     
     monitoring_module = event_dict.get('monitoring_module', '')
     monitoring_module_fields = event_dict.get('monitoring_module_fields', '')
