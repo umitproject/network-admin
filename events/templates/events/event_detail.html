@@ -23,12 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <h2>{{ object.timestamp }}</h2>
 <h3>{{ object.event_type }}</h3>
-<p>{{ object.html_message|safe }}</p>
+<p class="notification-message">{{ object.html_message|safe }}</p>
 {% endblock %}
 
 {% block sidebar %}
 <ul>
 	<li><a href="{% url event_list %}">{% trans "Back to events list" %}</a></li>
-	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to related host" %}</a></li>
+	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to source host" %}</a></li>
 </ul>
 {% endblock %}
