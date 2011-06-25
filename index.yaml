@@ -36,12 +36,27 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: networks_hostaccess
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: networks_network
   properties:
   - name: __key__
     direction: desc
 
+- kind: networks_networkaccess
+  properties:
+  - name: __key__
+    direction: desc
+
 - kind: networks_networkhost
+  properties:
+  - name: __key__
+    direction: desc
+
+- kind: networks_useraccess
   properties:
   - name: __key__
     direction: desc
