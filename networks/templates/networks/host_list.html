@@ -40,7 +40,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		</tr>
 	</thead>
 	<tbody>
-	{% for host in object_list %}
+	{% for host in object_list %} 
 		<tr>
 			<td><a href="{% url host_detail host.pk %}">{{ host.name }}</a></td>
 			<td>{{ host.get_short_description }}</td>

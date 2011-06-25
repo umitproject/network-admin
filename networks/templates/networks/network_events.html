@@ -54,8 +54,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block sidebar %}
 <ul>
+	{% if can_edit %}
 	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
+	{% endif %}
+	
+	{% if object.user == request.user %}
 	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	{% endif %}
+	
 	<li><a href="{% url network_detail object.pk %}">{% trans "Network settings" %}</a></li>
 	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
 </ul>

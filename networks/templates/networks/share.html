@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "sharing" %} {{ object.name }}{% endblock %}
+
+{% block content %}
+<h2>Sharing {{ object.name }}</h2>
+
+{% if object.sharing_users %}
+<table>
+	<thead>
+		<tr>
+			<th>{% trans "User" %}</th>
+			<th>{% trans "Edit" %}</th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for user, edit in object.sharing_users %}
+		<tr>
+			<td>{{ user.username }}</td>
+			<td><a href="{% url share_edit object_type object.pk user.pk %}">{% if edit %}yes{% else %}no{% endif %}</a></td>
+			<td><a href="{% url share_not object_type object.pk user.pk %}">{% trans "remove" %}</a></td>
+		</tr>	
+	{% endfor %}
+	</tbody>
+</table>
+{% else %}
+<p>{% blocktrans %}Only you have access to this {{ object_type }}.{% endblocktrans %}</p>
+{% endif %}
+
+{% if other_users %}
+<form action="{% url share object_type object.pk %}" method="POST">
+	<select name="share">
+	{% for user in other_users %}
+		<option value="{{ user.pk }}">{{ user.username }}</option>
+	{% endfor %}
+	</select>
+	<input type="submit" value="{% trans 'Share' %}" />
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	{% if object_type == 'host' %}
+	<li><a href="{% url host_detail object.pk %}">{% trans "Back to host" %}</a></li>
+	{% else %}
+	<li><a href="{% url network_detail object.pk %}">{% trans "Back to network" %}</a></li>
+	{% endif %}
+	
+	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
+</ul>
+{% endblock %}

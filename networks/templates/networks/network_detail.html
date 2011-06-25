@@ -22,6 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 <h2>{{ object.name }}</h2>
+
+{% if object.user != request.user %}
+<p><strong>Owned by {{ object.user.username }}</strong></p>
+{% endif %}
+
 <h3>{% trans "Basic info" %}</h3>
 <p>{{ object.description }}</p>
 
@@ -64,31 +69,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </form>
 {% endif %}
 
-{% if object.has_events %}
-<h3>{% trans "Events" %}</h3>
-<table>
-	<thead>
-		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
-	</thead>
-	<tbody>
-	{% for event in object.events %}
-		<tr>
-			<td>{{ event.timestamp }}</td>
-			<td><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
-			<td>{{ event.event_type }}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
-{% endif %}
-
 {% endblock %}
 
 {% block sidebar %}
 <ul>
+	{% if can_edit %}
 	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
+	{% endif %}
+	
+	{% if object.user == request.user %}
 	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li><a href="{% url share_list 'network' object.pk %}">{% trans "Share" %}</a></li>
+	{% endif %}
+	
 	<li><a href="{% url network_events object.pk %}">{% trans "Network events" %}</a></li>
 	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
 </ul>
+
+{% if object.sharing_users and object.user == request.user %}
+<p>
+<strong>{% trans "Shared with" %}: </strong>
+{% for user, edit in object.sharing_users %}
+{% if not forloop.first %}, {% endif %}{{ user.username }}
+{% endfor %}
+</p>
+{% endif %}
+
 {% endblock %}
