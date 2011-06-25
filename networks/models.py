@@ -19,6 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
+from django.contrib.contenttypes import generic
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
@@ -89,6 +91,80 @@ class Host(NetworkObject):
         events = self.events.order_by('-timestamp')
         return events[0] if events else None
     last_event = property(_last_event)
+    
+    def in_network(self, network):
+        try:
+            h = NetworkHost.objects.get(network=network, host=self)
+        except NetworkHost.DoesNotExist:
+            return False
+        return True
+    
+    def user_has_access(self, user):
+        from networks.models import HostAccess
+        if user == self.user:
+            return True
+        
+        try:
+            ac = HostAccess.objects.get(user=user, host=self)
+        except HostAccess.DoesNotExist:
+            return False
+        
+        return True
+    
+    def user_can_edit(self, user):
+        from networks.models import HostAccess
+        if user == self.user:
+            return True
+        
+        try:
+            ac = HostAccess.objects.get(user=user, host=self)
+        except HostAccess.DoesNotExist:
+            return False
+        
+        if ac.edit == True:
+            return True
+        else:
+            return False
+    
+    def share(self, user):
+        from networks.models import HostAccess
+        if user == self.user:
+            return None
+        ac, created = HostAccess.objects.get_or_create(user=user, host=self)
+        ac.shared_directly = True
+        ac.save()
+        return ac
+    
+    def share_not(self, user):
+        from networks.models import HostAccess
+        if user == self.user:
+            return
+        try:
+            ac = HostAccess.objects.get(user=user, host=self)
+        except HostAccess.DoesNotExist:
+            return
+        ac.delete()
+        
+    def share_edit(self, user):
+        from networks.models import HostAccess
+        if user == self.user:
+            return
+        
+        try:
+            ac = HostAccess.objects.get(user=user, host=self)
+        except NetworkAccess.DoesNotExist:
+            return
+        
+        ac.edit = False if ac.edit else True
+        ac.save()
+        
+    def _sharing_users(self):
+        from networks.models import HostAccess
+        pks = [ac.user.pk for ac in HostAccess.objects.filter(host=self)]
+        users = User.objects.filter(pk__in=pks)
+        edit = [self.user_can_edit(user) for user in users]
+        return zip(users, edit)
+    sharing_users = property(_sharing_users)
         
     class Meta:
         permissions = (
@@ -97,8 +173,23 @@ class Host(NetworkObject):
             ("can_update", _("Can update basic host data like name or description")),
         )
 
-admin.site.register(Host)
+class HostAdmin(admin.ModelAdmin):
+    list_display = ('name', 'ipv4', 'ipv6', 'user')
+
+admin.site.register(Host, HostAdmin)
+
+class HostAccess(models.Model):
+    user = models.ForeignKey(User)
+    host = models.ForeignKey(Host)
+    edit = models.BooleanField(default=True)
+    # share_directly is set to True if host was shared not through network
+    share_directly = models.BooleanField(default=False)
     
+    def __unicode__(self):
+        return 'Host %s owned by %s' % (self.host.name, self.user.username)
+    
+admin.site.register(HostAccess)
+
 class Network(NetworkObject):
     
     def delete(self, *args, **kwargs):
@@ -114,12 +205,16 @@ class Network(NetworkObject):
     
     def get_hosts(self):
         """Returns all hosts in the network"""
-        return [net_host.host for net_host in NetworkHost.objects.filter(network=self)]
+        pks = [nh.host.pk for nh in NetworkHost.objects.filter(network=self)]
+        return Host.objects.filter(pk__in=pks)
     hosts = property(get_hosts)
     
     def has_hosts(self):
         """Returns True if there is any host in the network"""
         return True if self.hosts else False
+    
+    def has_host(self, host):
+        return True if host in self.hosts else False
     
     def get_events(self):
         """Returns events for all hosts in the network"""
@@ -136,6 +231,91 @@ class Network(NetworkObject):
         events = self.events.order_by('-timestamp')
         return events[0] if events else None
     last_event = property(_last_event)
+    
+    def user_has_access(self, user):
+        from networks.models import NetworkAccess
+        if user == self.user:
+            return True
+        
+        try:
+            ac = NetworkAccess.objects.get(user=user, network=self)
+        except NetworkAccess.DoesNotExist:
+            return False
+        
+        return True
+    
+    def user_can_edit(self, user):
+        from networks.models import NetworkAccess
+        if user == self.user:
+            return True
+        
+        try:
+            ac = NetworkAccess.objects.get(user=user, network=self)
+        except NetworkAccess.DoesNotExist:
+            return False
+        
+        if ac.edit == True:
+            return True
+        else:
+            return False
+    
+    def share(self, user):
+        """Share the network with other user"""
+        from networks.models import NetworkAccess
+        if user == self.user:
+            return None
+        # share the network
+        net_ac, created = NetworkAccess.objects.get_or_create(user=user, network=self)
+        if created:
+            # share hosts
+            for host in self.hosts:
+                ac, created = HostAccess.objects.get_or_create(user=user, host=host)
+        return net_ac
+    
+    def share_not(self, user):
+        from networks.models import NetworkAccess
+        if user == self.user:
+            return
+        
+        try:
+            net_ac = NetworkAccess.objects.get(user=user, network=self)
+        except NetworkAccess.DoesNotExist:
+            return
+        net_ac.delete()
+        
+        for host in self.hosts:
+            host_ac = HostAccess.objects.get(user=user, host=host)
+            
+            if host_ac.share_directly:
+                continue
+            
+            shared_nets = [na.network for na in NetworkAccess.objects.filter(user=user)]
+            for net in shared_nets:
+                if net.has_host(host):
+                    break
+            else:
+                host_ac.delete()
+                
+    def share_edit(self, user):
+        from networks.models import NetworkAccess
+        if user == self.user:
+            return
+        
+        try:
+            ac = NetworkAccess.objects.get(user=user, network=self)
+        except NetworkAccess.DoesNotExist:
+            return
+        
+        ac.edit = False if ac.edit else True
+        ac.save()
+                
+    def _sharing_users(self):
+        from networks.models import NetworkAccess
+        pks = [ac.user.pk for ac in NetworkAccess.objects.filter(network=self)]
+        users = User.objects.filter(pk__in=pks)
+        edit = [self.user_can_edit(user) for user in users]
+        return zip(users, edit)
+    sharing_users = property(_sharing_users)
         
     class Meta:
         permissions = (
@@ -144,8 +324,21 @@ class Network(NetworkObject):
             ("can_add_host", _("Can add host to network")),
             ("can_remove_host", _("Can remove host from network")),
         )
+
+class NetworkAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user')
+
+admin.site.register(Network, NetworkAdmin)
+
+class NetworkAccess(models.Model):
+    user = models.ForeignKey(User)
+    network = models.ForeignKey(Network)
+    edit = models.BooleanField(default=True)
     
-admin.site.register(Network)
+    def __unicode__(self):
+        return 'Network %s owned by %s' % (self.network.name, self.user.username)
+    
+admin.site.register(NetworkAccess)
 
 class NetworkHost(models.Model):
     """
