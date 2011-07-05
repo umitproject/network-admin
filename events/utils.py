@@ -22,6 +22,7 @@ import datetime
 
 from django.utils.translation import ugettext as _
 
+from netadmin.permissions import filter_user_objects
 from networks.models import Host
 from events.models import Event, EventType
 
@@ -98,3 +99,8 @@ def create_event_from_dict(request, event_dict):
     event.save()
     
     return event
+
+def filter_user_events(user):
+    hosts = filter_user_objects(user, Host)
+    pks = [host.pk for host in hosts]
+    return Event.objects.filter(source_host__pk__in=pks)

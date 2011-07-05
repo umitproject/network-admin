@@ -21,21 +21,17 @@
 from django.conf.urls.defaults import *
 from django.contrib.auth.decorators import login_required
 from django.views.generic.list_detail import object_detail, object_list
+
 from events.models import Event
 
 object_detail = login_required(object_detail)
-object_list = login_required(object_list)
 
-event_queryset = Event.objects.all().order_by('timestamp')
-
-event_list_args = {
-    'queryset': event_queryset,
-    'paginate_by': 20,
-    'extra_context': {'url': '/event/list/'}
-}
+event_queryset = Event.objects.all()
 
 urlpatterns = patterns('events.views',
    url(r'^(?P<object_id>\d+)/$', object_detail, {'queryset': event_queryset}, name='event_detail'),
-   url(r'^list/$', object_list, event_list_args, name='event_list'),
-   url(r'^list/page/(?P<page>\d+)/$', object_list, event_list_args, name='event_list_page')
+   url(r'^list/$', 'events_list', name='event_list'),
+   url(r'^list/page/(?P<page>\d+)/$', 'events_list', name='event_list_page'),
+   
+   url(r'^search/$', 'events_search', name='events_search'),
 )

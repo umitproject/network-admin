@@ -29,6 +29,7 @@ from django.contrib import admin
 
 from networks.models import Host
 
+
 class EventType(models.Model):
     """A very simple model written to make managing events types easier"""
     name = models.CharField(max_length=50)
