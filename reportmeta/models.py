@@ -25,9 +25,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
 from django.utils.translation import ugettext as _
-from networks.models import Host, Network
-from networks.reports import * 
-from events.models import Event, EventType
+
+from networks.reports import HostReport, NetworkReport
+from events.models import EventType
 
 PERIODS = (
     (1, _('Daily')),
@@ -72,13 +72,8 @@ class ReportMeta(models.Model):
     
     def get_events(self):
         """Returns events from host/network included in the report"""
-        events = Event.objects.filter(event_type__in=list(self.get_event_types()))
-        if self.get_object_model() == Host:
-            events = events.filter(source_host__pk=self.object_id)
-        if self.get_object_model() == Network:
-            all_events = Network.objects.get(pk=self.object_id).get_events()
-            events = all_events.filter(event_type__in=list(self.get_event_types()))
-        return events
+        events =  self.reported_object.events
+        return events.filter(event_type__in=self.event_types)
     events = property(get_events)
     
     def has_events(self):
@@ -90,9 +85,9 @@ class ReportMeta(models.Model):
                 return period_name
     
     def get_report(self):
-        if self.model == Host:
+        if self.model.__name__ == 'Host':
             return HostReport(queryset=[self.reported_object])
-        elif self.model == Network:
+        elif self.model.__name__ == 'Network':
             return NetworkReport(queryset=[self.reported_object])
         else:
             return None
