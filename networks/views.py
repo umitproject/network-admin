@@ -22,50 +22,40 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.views.generic.create_update import *
 from django.views.generic.list_detail import *
 from django.views.generic.simple import direct_to_template, redirect_to
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
+from search.core import search
 
 from events.models import Event
 from networks.models import Host, Network, NetworkHost
 from networks.forms import *
-from networks.utils import *
+from netadmin.permissions import *
 
-from search.core import search
 
 @login_required
 def host_list(request, page=None):
-    
-    host_queryset = filter_by_user(Host, request.user)
-    
-    if request.GET.get('search'):
-        search_phrase = request.GET.get('search')
-        host_queryset = Host.objects.none()
-        search_results = search(Host, search_phrase)
+    search_phrase = request.GET.get('s')
+    if search_phrase:
+        hosts = search(Host, search_phrase)
     else:
-        search_results = None
+        hosts = filter_user_objects(request.user, Host)
 
-    kwargs = {
-        'queryset': host_queryset,
-        'paginate_by': 15,
-        'extra_context': {'url': reverse('host_list'),
-                          'search_results': search_results},
-        'template_name': 'networks/host_list.html'
+    extra_context = {
+        'hosts': hosts,
+        'url': reverse('host_list'),
     }
-    return object_list(request, page=page, **kwargs)
+    return direct_to_template(request, 'networks/host_list.html',
+                              extra_context=extra_context)
 
 @login_required
 def host_detail(request, object_id):
     
-    host = get_object_or_404(Host, pk=object_id)
-    
-    if not user_has_access(host, request.user):
-        return direct_to_template(request, "no_permissions.html")
+    host, edit = get_object_or_forbidden(Host, object_id, request.user)
     
     extra_context = {
-        'can_edit': user_can_edit(host, request.user)
+        'can_edit': edit
     }
     
     return object_detail(request, Host.objects.all(), object_id,
@@ -88,36 +78,41 @@ def host_create(request):
 @login_required
 def host_update(request, object_id):
     
-    host = get_object_or_404(Host, pk=object_id)
+    host, edit = get_object_or_forbidden(Host, object_id, request.user)
     
-    if not user_can_edit(host, request.user):
-        return direct_to_template(request, "no_permissions.html")
+    if not edit:
+        raise HttpResponseForbidden
     
-    return update_object(request, object_id=object_id, form_class=HostUpdateForm,
+    return update_object(request, object_id=object_id,
+                         form_class=HostUpdateForm,
                          template_name='networks/host_update.html')
 
 @login_required
 def host_delete(request, object_id):
     
-    host = get_object_or_404(Host, pk=object_id)
+    host, edit = get_object_or_forbidden(Host, object_id, request.user)
     
     if host.user != request.user:
-        return direct_to_template(request, "no_permissions.html")
+        raise HttpResponseForbidden
     
-    return delete_object(request, object_id=object_id,
-                         model=Host, post_delete_redirect=reverse('host_list'))
+    return delete_object(request, object_id=object_id, model=Host,
+                         post_delete_redirect=reverse('host_list'))
 
 @login_required
 def network_list(request):
     
-    net_queryset = filter_by_user(Network, request.user)
+    search_phrase = request.GET.get('s')
+    if search_phrase:
+        nets = search(Network, search_phrase)
+    else:
+        nets = filter_user_objects(request.user, Network)
     
-    network_list_args = {
-        'queryset': net_queryset,
-        'paginate_by': 15,
-        'extra_context': {'url': '/network/network/list/'}
+    extra_context = {
+        'networks': nets,
+        'url': '/network/network/list/'
     }
-    return object_list(request, **network_list_args)
+    return direct_to_template(request, 'networks/network_list.html',
+                              extra_context=extra_context)
 
 @login_required
 def network_detail(request, object_id):
@@ -128,18 +123,14 @@ def network_detail(request, object_id):
         * creating relations between network and host
         * removing relations between network and host(s)
     """
-    network = get_object_or_404(Network, pk=object_id)
-    
-    if not user_has_access(network, request.user):
-        return direct_to_template(request, "no_permissions.html")
-    
-    edit = user_can_edit(network, request.user)
+    network, edit = get_object_or_forbidden(Network, object_id, request.user)
     
     # remove relation between the network and selected host(s)
     if request.POST.getlist('remove_host'):
         if edit:
             hosts_pk = request.POST.getlist('remove_host')
-            network_host = NetworkHost.objects.filter(network=network, host__pk__in=hosts_pk)
+            network_host = NetworkHost.objects.filter(network=network,
+                                                      host__pk__in=hosts_pk)
             network_host.delete()
     
     # create relation between the network and selected host
@@ -150,8 +141,8 @@ def network_detail(request, object_id):
             network_host.save()
     
     queryset = Network.objects.all()
-    if network.has_hosts():
-        hosts_ids = [host.pk for host in network.get_hosts()]
+    if network.hosts:
+        hosts_ids = [host.pk for host in network.hosts]
         hosts_other = Host.objects.exclude(pk__in=hosts_ids)
     else:
         hosts_other = Host.objects.all()
@@ -159,7 +150,8 @@ def network_detail(request, object_id):
         'hosts_other': hosts_other,
         'can_edit': edit
     }
-    return object_detail(request, queryset, object_id, extra_context=extra_context)
+    return object_detail(request, queryset, object_id,
+                         extra_context=extra_context)
 
 @login_required
 def network_create(request):
@@ -173,40 +165,37 @@ def network_create(request):
     extra_context = {
         'form': NetworkCreateForm(initial={'user': request.user.pk})
     }
-    return direct_to_template(request, 'networks/network_form.html', extra_context)
+    return direct_to_template(request, 'networks/network_form.html',
+                              extra_context)
 
 @login_required
 def network_update(request, object_id):
     
-    network = get_object_or_404(Network, pk=object_id)
+    network, edit = get_object_or_forbidden(Network, object_id, request.user)
     
-    if not user_can_edit(network, request.user):
-        return direct_to_template(request, "no_permissions.html")
+    if not edit:
+        raise HttpResponseForbidden
     
-    return update_object(request, object_id=object_id, form_class=NetworkUpdateForm,
+    return update_object(request, object_id=object_id,
+                         form_class=NetworkUpdateForm,
                          template_name='networks/network_update.html')
 
 @login_required
 def network_delete(request, object_id):
     
-    network = get_object_or_404(Network, pk=object_id)
+    network, edit = get_object_or_forbidden(Network, object_id, request.user)
     
     if network.user != request.user:
-        return direct_to_template(request, "no_permissions.html")
+        raise HttpResponseForbidden
     
-    return delete_object(request, object_id=object_id,
-                         model=Network, post_delete_redirect=reverse('network_list'))
+    return delete_object(request, object_id=object_id, model=Network,
+                         post_delete_redirect=reverse('network_list'))
 
 @login_required
 def network_events(request, object_id):
     """Display events related to network"""
     
-    network = get_object_or_404(Network, pk=object_id)
-    
-    if not user_has_access(network, request.user):
-        return direct_to_template(request, "no_permissions.html")
-    
-    edit = user_can_edit(network, request.user)
+    network, edit = get_object_or_forbidden(Network, object_id, request.user)
 
     queryset = Network.objects.all()
     related_hosts = [nh.host.pk for nh in NetworkHost.objects.filter(network=network)]
@@ -222,52 +211,44 @@ def network_events(request, object_id):
 @login_required
 def share(request, object_type, object_id):
     model = Network if object_type == 'network' else Host
-    obj = model.objects.get(pk=object_id)
-    
+    obj, edit = get_object_or_forbidden(model, object_id, request.user)
     user_id = request.POST.get('share')
     if user_id:
         user = User.objects.get(pk=user_id)
-        obj.share(user)
-    
+        grant_access(obj, user)
     return share_list(request, object_type, object_id)
 
 @login_required
 def share_not(request, object_type, object_id, user_id):
     model = Network if object_type == 'network' else Host
-    obj = model.objects.get(pk=object_id)
-        
+    obj, edit = get_object_or_forbidden(model, object_id, request.user)
     user = User.objects.get(pk=user_id)
-    
-    obj.share_not(user)
-    
+    revoke_access(obj, user)
     return share_list(request, object_type, object_id)
 
 @login_required
 def share_edit(request, object_type, object_id, user_id):
     model = Network if object_type == 'network' else Host
-    obj = model.objects.get(pk=object_id)
-    
+    obj, edit = get_object_or_forbidden(model, object_id, request.user)
     user = User.objects.get(pk=user_id)
-    
-    obj.share_edit(user)
-    
+    if edit:
+        revoke_edit(obj, user)
+    else:
+        grant_edit(obj, user)
     return share_list(request, object_type, object_id)
 
 @login_required
 def share_list(request, object_type, object_id):
     model = Network if object_type == 'network' else Host
-    obj = model.objects.get(pk=object_id)
-    
-    all_users = User.objects.all()
+    obj, edit = get_object_or_forbidden(model, object_id, request.user)
+    all_users = User.objects.exclude(pk=request.user.pk)
     other_users = []
     for user in all_users:
-        if not obj.user_has_access(user):
+        if not user_has_access(obj, user):
             other_users.append(user)
-    
     extra_context = {
         'object': obj,
         'object_type': object_type,
         'other_users': other_users
     }
-    
     return direct_to_template(request, 'networks/share.html', extra_context)

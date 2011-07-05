@@ -25,7 +25,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <form action="" method="GET" class="search_form">
 	<p>{% trans "Search for hosts" %}: 
-		<input type="text" name="search" value="{{ request.GET.search }}"/>
+		<input type="text" name="s" value="{{ request.GET.s }}"/>
 		<input type="submit" value="{% trans "Search" %}" />
 	</p>
 </form>
@@ -40,22 +40,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		</tr>
 	</thead>
 	<tbody>
-	{% for host in object_list %} 
+	{% for host in hosts %} 
 		<tr>
 			<td><a href="{% url host_detail host.pk %}">{{ host.name }}</a></td>
 			<td>{{ host.get_short_description }}</td>
 			<td>{{ host.ipv4 }}</td>
 			<td>{{ host.ipv6 }}</td>
 		</tr>
-	{% empty %}
-		{% for host in search_results %}
-			<tr>
-				<td><a href="{% url host_detail host.pk %}">{{ host.name }}</a></td>
-				<td>{{ host.get_short_description }}</td>
-				<td>{{ host.ipv4 }}</td>
-				<td>{{ host.ipv6 }}</td>
-			</tr>
-		{% endfor %}
 	{% endfor %}
 	</tbody>
 </table>

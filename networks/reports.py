@@ -15,10 +15,14 @@ class HostReport(Report):
                 style={'fontName': 'Helvetica-Bold', 'fontSize': 14}),
             SystemField(expression='%(now:%m-%d-%Y)s', top=1*cm, left=0, width=BAND_WIDTH,
                 style={'fontName': 'Helvetica', 'fontSize': 12}, borders={'bottom': True}, height=-0.7*cm),
-            Label(text="Name", top=2*cm, left=0, style={'fontName': 'Helvetica-Bold'}),
-            Label(text="IPv4 address", top=3*cm, left=0, style={'fontName': 'Helvetica-Bold'}),
-            Label(text="IPv6 address", top=4*cm, left=0, style={'fontName': 'Helvetica-Bold'}),
-            Label(text="Description", top=5*cm, left=0, style={'fontName': 'Helvetica-Bold'}),
+            Label(text="Name", top=2*cm, left=0,
+                style={'fontName': 'Helvetica-Bold'}),
+            Label(text="IPv4 address", top=3*cm, left=0,
+                style={'fontName': 'Helvetica-Bold'}),
+            Label(text="IPv6 address", top=4*cm, left=0,
+                style={'fontName': 'Helvetica-Bold'}),
+            Label(text="Description", top=5*cm, left=0,
+                style={'fontName': 'Helvetica-Bold'}),
             ObjectValue(attribute_name='name', top=2*cm, left=3*cm, width=12*cm),
             ObjectValue(attribute_name='ipv4', top=3*cm, left=3*cm, width=12*cm),
             ObjectValue(attribute_name='ipv6', top=4*cm, left=3*cm, width=12*cm),
@@ -33,9 +37,12 @@ class HostReport(Report):
             band_header = ReportBand(
                 height = 0.6*cm,
                 elements=[
-                    Label(text='Timestamp', top=0, left=0*cm, style={'fontName': 'Helvetica-Bold'}),
-                    Label(text='Message', top=0, left=5*cm, style={'fontName': 'Helvetica-Bold'}),
-                    Label(text='Event type', top=0, left=14*cm, style={'fontName': 'Helvetica-Bold'}),
+                    Label(text='Timestamp', top=0, left=0*cm,
+                        style={'fontName': 'Helvetica-Bold'}),
+                    Label(text='Message', top=0, left=5*cm,
+                        style={'fontName': 'Helvetica-Bold'}),
+                    Label(text='Event type', top=0, left=14*cm,
+                        style={'fontName': 'Helvetica-Bold'}),
                 ],
                 borders = {'bottom': True}
             ),
@@ -44,7 +51,7 @@ class HostReport(Report):
                 height=0.5*cm,
                 elements=[
                     ObjectValue(attribute_name='timestamp', top=0, left=0*cm,
-                                get_value=lambda instance: instance.timestamp.strftime('%m-%d-%Y %H:%M')),
+                        get_value=lambda instance: instance.timestamp.strftime('%m-%d-%Y %H:%M')),
                     ObjectValue(attribute_name='message', top=0, left=5*cm),
                     ObjectValue(attribute_name='event_type', top=0, left=14*cm),
                 ]

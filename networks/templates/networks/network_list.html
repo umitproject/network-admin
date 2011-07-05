@@ -22,15 +22,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 <h2>{% trans "Networks list" %}</h2>
+
+<form action="" method="GET" class="search_form">
+	<p>{% trans "Search for hosts" %}: 
+		<input type="text" name="s" value="{{ request.GET.s }}"/>
+		<input type="submit" value="{% trans "Search" %}" />
+	</p>
+</form>
+
 <table>
 	<thead>
 		<tr><th>{% trans "Name" %}</th><th>{% trans "Number of hosts" %}</th></tr>
 	</thead>
 	<tbody>
-	{% for network in object_list %}
+	{% for network in networks %}
 		<tr>
 			<td><a href="{% url network_detail network.pk %}">{{ network.name }}</a></td>
-			<td>{{ network.get_hosts_count }}</td>
+			<td>{{ network.hosts.count }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>

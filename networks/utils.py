@@ -20,54 +20,6 @@
 
 from networks.models import Host, Network, HostAccess, NetworkAccess
 
-def user_has_access(obj, user):
-    if obj.__class__ not in [Host, Network]:
-        return False
-    
-    if obj.user == user:
-        return True
-    
-    if obj.__class__ == Host:
-        try:
-            ac = HostAccess.objects.get(user=user, host=obj)
-        except HostAccess.DoesNotExist:
-            return False
-        return True
-    
-    if obj.__class__ == Network:
-        try:
-            ac = NetworkAccess.objects.get(user=user, network=obj)
-        except NetworkAccess.DoesNotExist:
-            return False
-        return True
-
-def user_can_edit(obj, user):
-    if obj.__class__ not in [Host, Network]:
-        return False
-    
-    if obj.user == user:
-        return True
-    
-    if obj.__class__ == Host:
-        try:
-            ac = HostAccess.objects.get(user=user, host=obj)
-        except HostAccess.DoesNotExist:
-            return False
-        if ac.edit == True:
-            return True
-        else:
-            return False
-    
-    if obj.__class__ == Network:
-        try:
-            ac = NetworkAccess.objects.get(user=user, network=obj)
-        except NetworkAccess.DoesNotExist:
-            return False
-        if ac.edit == True:
-            return True
-        else:
-            return False
-
 def filter_by_user(model, user):
     if model not in [Host, Network]:
         return None
