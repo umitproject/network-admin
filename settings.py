@@ -5,6 +5,8 @@ from djangoappengine.settings_base import *
 
 import os
 
+DEBUG = True
+
 # Uncomment this if you're using the high-replication datastore.
 # TODO: Once App Engine fixes the "s~" prefix mess we can remove this.
 #DATABASES['default']['HIGH_REPLICATION'] = True
@@ -12,7 +14,6 @@ import os
 # Activate django-dbindexer for the default database
 DATABASES['native'] = DATABASES['default']
 DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
-AUTOLOAD_SITECONF = 'search_indexes'
 
 MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'media')
 MEDIA_URL = '/media/'
@@ -27,15 +28,17 @@ INSTALLED_APPS = (
     'djangotoolbox',
     'dbindexer',
     'permission_backend_nonrel',
-    'search',
-    
     'autoload',
-
+    
     'reportmeta',
     'webapi',
     'networks',
     'events',
     'piston',
+    
+    'netadmin.permissions',
+    
+    'search',
 
     #'django_nose',
 
@@ -46,6 +49,9 @@ INSTALLED_APPS = (
 AUTHENTICATION_BACKENDS = (
     'permission_backend_nonrel.backends.NonrelPermissionBackend',
 )
+
+AUTOLOAD_SITECONF = 'search_indexes'
+#SEARCH_BACKEND = 'search.backends.gae_background_tasks'
 
 MIDDLEWARE_CLASSES = (
     # This loads the index definitions, so it has to come firsts

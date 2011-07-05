@@ -26,6 +26,17 @@ indexes:
   - name: __key__
     direction: desc
 
+- kind: events_event
+  properties:
+  - name: event_type_id
+  - name: source_host_id
+  - name: timestamp
+
+- kind: events_event
+  properties:
+  - name: source_host_id
+  - name: timestamp
+
 - kind: events_eventtype
   properties:
   - name: __key__
@@ -95,3 +106,8 @@ indexes:
   properties:
   - name: __key__
     direction: desc
+
+- kind: search_relationindex_events_event_search_index
+  properties:
+  - name: search_index_search_list_field
+  - name: timestamp
