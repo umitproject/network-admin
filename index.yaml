@@ -21,6 +21,17 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: events_alert
+  properties:
+  - name: user_id
+  - name: level
+
+- kind: events_alert
+  properties:
+  - name: user_id
+  - name: level
+    direction: desc
+
 - kind: events_event
   properties:
   - name: __key__
@@ -34,8 +45,21 @@ indexes:
 
 - kind: events_event
   properties:
+  - name: event_type_id
   - name: source_host_id
   - name: timestamp
+    direction: desc
+
+- kind: events_event
+  properties:
+  - name: source_host_id
+  - name: timestamp
+
+- kind: events_event
+  properties:
+  - name: source_host_id
+  - name: timestamp
+    direction: desc
 
 - kind: events_eventtype
   properties:

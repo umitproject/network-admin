@@ -29,17 +29,17 @@ INSTALLED_APPS = (
     'dbindexer',
     'permission_backend_nonrel',
     'autoload',
-    
-    'reportmeta',
-    'webapi',
-    'networks',
-    'events',
     'piston',
-    
-    'netadmin.permissions',
-    
     'search',
-
+    
+    'netadmin.reportmeta',
+    'netadmin.webapi',
+    'netadmin.networks',
+    'netadmin.events',
+    'netadmin.users',
+    'netadmin.permissions',
+    'netadmin.notifier',
+    
     #'django_nose',
 
     # djangoappengine should come last, so it can override a few manage.py commands
