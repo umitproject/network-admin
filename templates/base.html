@@ -16,7 +16,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n events_tags %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="en" lang="en">	
 	<head>
@@ -29,11 +29,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				<h1><span><a href="">Network Administrator</a></span></h1>
 				<div id="navigation">
 					<ul>
+						{% if request.user.is_authenticated %}
 						<li><a href="{% url event_list %}">{% trans "Events" %}</a></li>
 						<li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
 						<li><a href="{% url host_list %}">{% trans "Hosts" %}</a></li>
 						<li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
-						<li><a href="/accounts/">{% trans "Admin" %}</a></li>
+						<li><a href="{% url user_profile_private %}">{% trans "My profile" %}</a></li>
+						<li>{% trans "Alerts" %}: {% alerts_counter request.user.pk %}</li>
+						{% else %}
+						<li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
+						{% endif %}
 					</ul>
 				</div>
 			</div>
