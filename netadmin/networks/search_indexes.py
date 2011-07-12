@@ -18,24 +18,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from networks.models import Host, Network, HostAccess, NetworkAccess
+import search
+from search.core import startswith
 
-def filter_by_user(model, user):
-    if model not in [Host, Network]:
-        return None
-    
-    if model == Host:
-        pks = [ac.host.pk for ac in HostAccess.objects.filter(user=user)]
-        hosts = []
-        for h in Host.objects.all().only('id'):
-            if h.user == user or h.pk in pks:
-                hosts.append(h.pk)
-        return Host.objects.filter(pk__in=hosts)
-    
-    if model == Network:
-        pks = [ac.network.pk for ac in NetworkAccess.objects.filter(user=user)]
-        networks = []
-        for n in Network.objects.all().only('id'):
-            if n.user == user or n.pk in pks:
-                networks.append(n.pk)
-        return Network.objects.filter(pk__in=networks)
+from netadmin.networks.models import Host, Network
+
+
+search.register(Host, ('name', 'description', 'ipv4', 'ipv6'),
+                indexer=startswith)
+
+search.register(Network, ('name', 'description'),
+                indexer=startswith)

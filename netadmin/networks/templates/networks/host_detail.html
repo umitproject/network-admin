@@ -38,7 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p>{% trans "IPv6 address" %}: {{ object.ipv6 }}</p>
 {% endif %}
 
-{% if object.has_events %}
+{% if object.events %}
 <h3>{% trans "Events" %}</h3>
 <table>
 	<thead>
@@ -48,7 +48,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% for event in object.events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
-			<td class="notification-message"><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
+			<td class="notification-message">
+				<a href="{% url event_detail event.pk %}">
+				{% if event.short_message %}
+					{{ event.short_message }}
+				{% else %}
+					{{ event.message|slice:":100" }}
+				{% endif %}
+				</a>
+			</td>
 			<td>{{ event.event_type }}</td>
 		</tr>
 	{% endfor %}

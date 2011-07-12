@@ -22,16 +22,20 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
-from django.views.generic.create_update import *
-from django.views.generic.list_detail import *
+from django.views.generic.create_update import create_object, update_object, \
+    delete_object
+from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.simple import direct_to_template, redirect_to
-from django.http import HttpResponseForbidden
+from django.http import Http404
 from search.core import search
 
-from events.models import Event
-from networks.models import Host, Network, NetworkHost
-from networks.forms import *
-from netadmin.permissions import *
+from netadmin.events.models import Event
+from netadmin.networks.models import Host, Network, NetworkHost
+from netadmin.networks.forms import HostCreateForm, HostUpdateForm, \
+    NetworkCreateForm, NetworkUpdateForm
+from netadmin.permissions.utils import filter_user_objects, \
+    get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
+    revoke_edit, user_has_access
 
 
 @login_required
@@ -81,7 +85,7 @@ def host_update(request, object_id):
     host, edit = get_object_or_forbidden(Host, object_id, request.user)
     
     if not edit:
-        raise HttpResponseForbidden
+        raise Http404()
     
     return update_object(request, object_id=object_id,
                          form_class=HostUpdateForm,
@@ -93,7 +97,7 @@ def host_delete(request, object_id):
     host, edit = get_object_or_forbidden(Host, object_id, request.user)
     
     if host.user != request.user:
-        raise HttpResponseForbidden
+        raise Http404()
     
     return delete_object(request, object_id=object_id, model=Host,
                          post_delete_redirect=reverse('host_list'))
@@ -174,7 +178,7 @@ def network_update(request, object_id):
     network, edit = get_object_or_forbidden(Network, object_id, request.user)
     
     if not edit:
-        raise HttpResponseForbidden
+        raise Http404()
     
     return update_object(request, object_id=object_id,
                          form_class=NetworkUpdateForm,
@@ -186,7 +190,7 @@ def network_delete(request, object_id):
     network, edit = get_object_or_forbidden(Network, object_id, request.user)
     
     if network.user != request.user:
-        raise HttpResponseForbidden
+        raise Http404()
     
     return delete_object(request, object_id=object_id, model=Network,
                          post_delete_redirect=reverse('network_list'))

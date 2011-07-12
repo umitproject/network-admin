@@ -23,9 +23,10 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
 
-from networks.models import Host
-from networks.forms import *
-from networks.utils import *
+from netadmin.networks.models import Host, Network
+from netadmin.permissions.utils import user_has_access, user_can_edit, \
+    grant_access, revoke_access, revoke_edit 
+
 
 class HostTest(TestCase):
     """Tests for hosts"""
@@ -33,8 +34,10 @@ class HostTest(TestCase):
     def setUp(self):
         self.client = Client()
         self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
+        self.user.save()
         self.client.login(username='user', password='userpassword')
         self.host = Host(name='Host', description='Description', ipv4='1.2.3.4', ipv6='', user=self.user)
+        self.host.save()
         
     def test_host_list(self):
         """Get hosts list"""
@@ -52,9 +55,7 @@ class HostTest(TestCase):
 
     def test_host_detail(self):
         """Get host details"""
-        host = self.host
-        host.save()
-        response = self.client.get(reverse('host_detail', args=[host.pk]))
+        response = self.client.get(reverse('host_detail', args=[self.host.pk]))
         self.assertEqual(response.status_code, 200)
 
     def test_host_create(self):
@@ -63,27 +64,28 @@ class HostTest(TestCase):
             'name': 'New host',
             'description': 'New host description',
             'ipv4': '12.34.56.78',
-            'ipv6': '2002:0:0:0:0:0:c22:384e'
+            'ipv6': '2002:0:0:0:0:0:c22:384e',
+            'user': self.user.pk
         }
         response = self.client.post(reverse('host_new'), host_data)
         self.assertEqual(response.status_code, 301)
         
     def test_host_delete(self):
         """Deleting existing host"""
-        host = self.host
+        host = Host(name='Host', description='Description',
+                    ipv4='1.2.3.4', ipv6='', user=self.user)
         host.save()
         response = self.client.post(reverse('host_delete', args=[host.pk]))
         self.assertEqual(response.status_code, 302)
         
     def test_host_update(self):
         """Update existing host"""
-        host = self.host
-        host.save()
         host_data = {
             'name': 'New name',
             'description': 'New description'
         }
-        response = self.client.post(reverse('host_update', args=[host.pk]), host_data)
+        url = reverse('host_update', args=[self.host.pk])
+        response = self.client.post(url, host_data)
         self.assertEqual(response.status_code, 302)
         
 class NetworkTest(TestCase):
@@ -120,7 +122,8 @@ class NetworkTest(TestCase):
         """Creating new network"""
         network_data = {
             'name': 'New network',
-            'description': 'New network description'
+            'description': 'New network description',
+            'user': self.user.pk
         }
         response = self.client.post(reverse('network_new'), network_data)
         self.assertEqual(response.status_code, 301)
@@ -170,18 +173,18 @@ class UserAccessTest(TestCase):
         self.assertEqual(access, False)
         
     def test_user_host_share(self):
-        self.host.share(self.other_user)
+        grant_access(self.host, self.other_user)
         access = user_has_access(self.host, self.other_user)
         self.assertEqual(access, True)
         
         access = user_can_edit(self.host, self.other_user)
         self.assertEqual(access, True)
         
-        self.host.share_edit(self.other_user)
+        revoke_edit(self.host, self.other_user)
         access = user_can_edit(self.host, self.other_user)
         self.assertEqual(access, False)
         
-        self.host.share_not(self.other_user)
+        revoke_access(self.host, self.other_user)
         access = user_has_access(self.host, self.other_user)
         self.assertEqual(access, False)
         
@@ -193,17 +196,17 @@ class UserAccessTest(TestCase):
         self.assertEqual(access, False)
         
     def test_user_network_share(self):
-        self.net.share(self.other_user)
+        grant_access(self.net, self.other_user)
         access = user_has_access(self.net, self.other_user)
         self.assertEqual(access, True)
         
         access = user_can_edit(self.net, self.other_user)
         self.assertEqual(access, True)
         
-        self.net.share_edit(self.other_user)
+        revoke_edit(self.net, self.other_user)
         access = user_can_edit(self.net, self.other_user)
         self.assertEqual(access, False)
         
-        self.net.share_not(self.other_user)
+        revoke_access(self.net, self.other_user)
         access = user_has_access(self.net, self.other_user)
         self.assertEqual(access, False)

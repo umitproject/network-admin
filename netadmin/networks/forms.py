@@ -19,7 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
-from networks.models import Host, Network
+
+from netadmin.networks.models import Host, Network
+
 
 class HostCreateForm(forms.ModelForm):
     class Meta:

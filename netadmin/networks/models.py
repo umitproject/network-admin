@@ -81,7 +81,7 @@ class Host(NetworkObject):
         super(Host, self).delete(*args, **kwargs)
         
     def _events(self):
-        return self.event_set.all()
+        return self.event_set.all().order_by('-timestamp')
     events = property(_events)
     
     def _latest_event(self):
@@ -127,8 +127,9 @@ class Network(NetworkObject):
         return True if host in self.hosts else False
     
     def _events(self):
-        from events.models import Event
-        return Event.objects.filter(source_host__in=list(self.hosts))
+        from netadmin.events.models import Event
+        events = Event.objects.filter(source_host__in=list(self.hosts))
+        return events.order_by('-timestamp') 
     events = property(_events)
     
     def _latest_event(self):

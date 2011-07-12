@@ -20,7 +20,8 @@
 
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('networks.views',
+
+urlpatterns = patterns('netadmin.networks.views',
     url(r'^host/(?P<object_id>\d+)/$',
         'host_detail', name='host_detail'),
     url(r'^host/list/$',
