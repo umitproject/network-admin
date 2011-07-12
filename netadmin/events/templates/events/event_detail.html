@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "event" %} "{{ object.short_message }}"{% endblock %}
+
+{% block content %}
+<h2>{{ object.timestamp }}{% if object.short_message %}: {{ object.short_message }}{% endif %}</h2>
+<h3>{{ object.event_type }}</h3>
+
+{% if not object.source_host %}
+<p><strong>Network-wide event</strong></p>
+{% endif %}
+
+{% comment %}
+<p>{% trans "Checked" %}: {% if object.checked %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</p>
+{% endcomment %}
+
+<p class="notification-message">{{ object.html_message|safe }}</p>
+
+{% if object.fields_data %}
+<h4>{{ object.fields_class }}</h4>
+<ul>
+{% for field, value in object.get_details.items %}
+	<li><strong>{{ field }}</strong>: {{ value }}</li>
+{% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url event_list %}">{% trans "Back to events list" %}</a></li>
+	{% if object.source_host %}
+	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to source host" %}</a></li>
+	{% endif %}
+</ul>
+{% endblock %}

@@ -18,17 +18,38 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
-{% block title %}{% trans "event" %} "{{ object.short_message }}"{% endblock %}
+{% block title %}{% trans "alerts" %}{% endblock %}
 
 {% block content %}
-<h2>{{ object.timestamp }}</h2>
-<h3>{{ object.event_type }}</h3>
-<p class="notification-message">{{ object.html_message|safe }}</p>
+<h2>{% trans "Alerts" %}</h2>
+
+{% if alerts %}
+<table>
+	<thead>
+		<tr><th>{% trans "Level" %}</th><th>{% trans "Event type" %}</th><th></th></tr>
+	</thead>
+	<tbody>
+	{% for alert in alerts %}
+		<tr>
+			<td>{% ifchanged alert.level %}{{ alert.get_level_display }}{% endifchanged %}</td>
+			<td>{{ alert.event_type.name }}</td>
+			<td><a href="{% url alerts_remove alert.pk %}">{% trans "Remove" %}</a></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+<h3>{% trans "Create alert" %}</h3>
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="Add alert" />
+</form>
+
 {% endblock %}
 
 {% block sidebar %}
 <ul>
 	<li><a href="{% url event_list %}">{% trans "Back to events list" %}</a></li>
-	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to source host" %}</a></li>
 </ul>
 {% endblock %}

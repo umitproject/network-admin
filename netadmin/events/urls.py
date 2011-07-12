@@ -19,19 +19,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import *
-from django.contrib.auth.decorators import login_required
-from django.views.generic.list_detail import object_detail, object_list
 
-from events.models import Event
+from netadmin.events.models import Event
 
-object_detail = login_required(object_detail)
 
-event_queryset = Event.objects.all()
-
-urlpatterns = patterns('events.views',
-   url(r'^(?P<object_id>\d+)/$', object_detail, {'queryset': event_queryset}, name='event_detail'),
+urlpatterns = patterns('netadmin.events.views',
+   url(r'^(?P<object_id>\d+)/$', 'event_detail', name='event_detail'),
+   url(r'^check/(?P<object_id>\d+)/$', 'event_check', name='event_check'),
    url(r'^list/$', 'events_list', name='event_list'),
    url(r'^list/page/(?P<page>\d+)/$', 'events_list', name='event_list_page'),
    
    url(r'^search/$', 'events_search', name='events_search'),
+   
+   url(r'^alerts/level/(?P<level_id>\d+)/$', 'alerts_list', name='alerts_list'),
+   url(r'^alerts/edit/$', 'alerts_edit', name='alerts_edit'),
+   url(r'^alerts/remove/(?P<object_id>\d+)/$', 'alerts_edit', name='alerts_remove')
 )

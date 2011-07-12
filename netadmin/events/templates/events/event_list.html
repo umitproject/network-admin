@@ -21,7 +21,43 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{% trans "events list" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Events list" %}</h2>
+
+{% if alerts %}
+<h2>{% trans "Alerts" %} - {{ level_name|lower }}</h2>
+
+<table>
+	<thead>
+		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th><th>{% trans "Host" %}</th></tr>
+	</thead>
+	<tbody>
+	{% for event in alerts %}
+		<tr>
+			<td>{{ event.timestamp }}</td>
+			<td class="notification-message">
+				<a href="{% url event_detail event.pk %}">
+				{% if event.short_message %}
+					{{ event.short_message }}
+				{% else %}
+					{{ event.message|slice:":100" }}
+				{% endif %}
+				</a>
+			</td>
+			<td>{{ event.event_type }}</td>
+			<td>
+			{% if event.source_host %}
+				<a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a>
+			{% else %}
+				Network-wide event
+			{% endif %}
+			</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endif %}
+
+{% if events %}
+<h2>{% trans "Events" %}</h2>
 
 <form action="{% if adv_search %}{% url events_search %}{% endif %}" method="GET">
 	{{ search_form.as_p }}
@@ -44,14 +80,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% for event in events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
-			<td class="notification-message"><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
+			<td class="notification-message">
+				<a href="{% url event_detail event.pk %}">
+				{% if event.short_message %}
+					{{ event.short_message }}
+				{% else %}
+					{{ event.message|slice:":100" }}
+				{% endif %}
+				</a>
+			</td>
 			<td>{{ event.event_type }}</td>
 			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
 		</tr>
 	{% endfor %}
 	</tbody>
 </table>
+{% endif %}
 
 {% include "paginator.html" %}
 
+{% endblock %}
+
+{% block sidebar %}
+<ul>
+	<li><a href="{% url alerts_edit %}">{% trans "Alerts settings" %}</a></li>
+</ul>
 {% endblock %}
