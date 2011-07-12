@@ -23,15 +23,18 @@ from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test.client import Client
-from reportmeta.models import ReportMeta, ReportMetaEventType
-from networks.models import Network, Host, NetworkHost
+
+from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType
+from netadmin.networks.models import Network, Host, NetworkHost
+
 
 class ReportMetaTest(TestCase):
     """Tests for reports meta"""
     
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
+        self.user = User.objects.create_user('user', 'user@something.com',
+                                             'userpassword')
         self.client.login(username='user', password='userpassword')
         
         self.host = Host(name='Host', description='Description',

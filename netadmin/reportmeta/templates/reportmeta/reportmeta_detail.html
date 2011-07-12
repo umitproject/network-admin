@@ -38,16 +38,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <h2>{% trans "Events" %}</h2>
 
-{% if object.has_events %}
+{% if object.events %}
 <table>
 	<thead>
 		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th><th>{% trans "Host" %}</th></tr>
 	</thead>
 	<tbody>
-	{% for event in object.get_events %}
+	{% for event in object.events %}
 		<tr>
 			<td>{{ event.timestamp }}</td>
-			<td><a href="{% url event_detail event.pk %}">{{ event.short_message }}</a></td>
+			<td>
+				<a href="{% url event_detail event.pk %}">
+				{% if event.short_event %}
+					{{ event.short_message }}
+				{% else %}
+					{{ event.message|slice:":100" }}
+				{% endif %}
+				</a>
+			</td>
 			<td>{{ event.event_type }}</td>
 			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
 		</tr>

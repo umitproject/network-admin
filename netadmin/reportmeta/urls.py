@@ -20,9 +20,11 @@
 
 from django.conf.urls.defaults import *
 from django.views.generic.create_update import delete_object
-from reportmeta.models import ReportMeta
 
-urlpatterns = patterns('reportmeta.views',
+from netadmin.reportmeta.models import ReportMeta
+
+
+urlpatterns = patterns('netadmin.reportmeta.views',
     url(r'^$', 'reports', name='reports'),
     url(r'^(?P<object_id>\d+)/$', 'reportmeta_detail', name='reportmeta_detail'),
     url(r'^get/(?P<object_id>\d+)/$', 'reportmeta_get_report', name='reportmeta_get_report'),

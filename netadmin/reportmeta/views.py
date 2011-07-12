@@ -26,10 +26,11 @@ from django.views.generic.simple import direct_to_template, redirect_to
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
 
-from reportmeta.models import ReportMeta, ReportMetaEventType
-from reportmeta.forms import ReportMetaForm, ReportMetaNewForm
-from networks.models import Host, Network
-from events.models import Event, EventType
+from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType
+from netadmin.reportmeta.forms import ReportMetaForm, ReportMetaNewForm
+from netadmin.networks.models import Host, Network
+from netadmin.events.models import Event, EventType
+
 
 @login_required
 def reports(request):
