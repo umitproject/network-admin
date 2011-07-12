@@ -41,13 +41,14 @@ except ImportError:
 
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-
 from piston.handler import BaseHandler
-from networks.models import Host, Network
-from events.models import Event, EventType
-from events.utils import create_event_from_dict, EventParseError
 
-from webapi.views import api_error, api_ok, api_response
+from netadmin.networks.models import Host, Network
+from netadmin.notifier.utils import Notifier
+from netadmin.events.models import Event, EventType
+from netadmin.events.utils import get_event_data, EventParseError
+from netadmin.webapi.views import api_error, api_ok, api_response
+
 
 class HostHandler(BaseHandler):
     """
@@ -244,27 +245,39 @@ class EventHandler(BaseHandler):
         
         """
         
+        notifier = Notifier()
+        notifier.validate()
+        
         if request.POST.get('events'):
             try:
                 events = json.loads(request.POST.get('events', ''))
             except ValueError:
                 return api_error(_('No events could be read'))
             
-            for event in events:
+            for event_dict in events:
                 try:
-                    create_event_from_dict(request, event)
+                    event_data = get_event_data(request, event_dict)
                 except EventParseError, e:
                     message = str(e)
                     return api_error(_(message))
+                event = Event(**event_data)
+                event.save()
+                
+                if event.is_alert(request.user):
+                    notifier.queue.push(event, request.user)
             
             return api_ok(_('Events reported successfully'))
         
-        event = request.POST
         try:
-            create_event_from_dict(request, event)
+            event_data = get_event_data(request, request.POST)
         except EventParseError, e:
             message = str(e)
             return api_error(_(message))
+        event = Event(**event_data)
+        event.save()
+        
+        if event.is_alert(request.user):
+            notifier.queue.push(event, request.user)
         
         return api_ok(_('Event reported successfully'))
     
@@ -283,6 +296,7 @@ class EventHandler(BaseHandler):
         Response for event details:
             * event_id
             * description - event message
+            * description - event short message
             * timestamp - event timestamp
             * event_type - type of event 
             * source_host_id - identifier of source host
@@ -313,11 +327,13 @@ class EventHandler(BaseHandler):
         response = {
             'event_id': event_id,
             'description': event.message,
+            'short_description': event.short_message,
             'timestamp': str(event.timestamp),
             'event_type': event.event_type.name,
+            'protocol': event.protocol,
             'source_host_id': event.source_host.pk,
-            'module_id': event.monitoring_module,
-            'module_fields': event.monitoring_module_fields
+            'fields_class': event.fields_class,
+            'fields_data': event.fields_data
         }
         
         return api_response(response)

@@ -21,7 +21,9 @@
 from django.conf.urls.defaults import *
 from piston.resource import Resource
 from piston.authentication import HttpBasicAuthentication
-from webapi.handlers import *
+
+from netadmin.webapi.handlers import *
+
 
 # set up basic authentication
 auth = HttpBasicAuthentication()
@@ -32,7 +34,7 @@ host_handler = Resource(HostHandler, **ad)
 event_handler = Resource(EventHandler, **ad)
 net_handler = Resource(NetworkHandler, **ad)
 
-urlpatterns = patterns('webapi.views',
+urlpatterns = patterns('netadmin.webapi.views',
     # Host handler
     url(r'^host/(?P<host_id>\d+)/$', host_handler, name='api_host_detail'),
     url(r'^host/list/$', host_handler, name='api_host_list'),

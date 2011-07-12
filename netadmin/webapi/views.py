@@ -18,8 +18,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import simplejson as json
+try:
+    import simplejson as json
+except ImportError:
+    import json
+    
 from django.http import HttpResponse
+
 
 def api_response(response):
     """Returns JSON generated from Python data structure""" 

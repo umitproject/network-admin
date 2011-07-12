@@ -18,7 +18,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64, time, datetime, random
+import base64
+import time
+import datetime
+import random
 import simplejson as json
 
 from django.http import HttpRequest
@@ -26,11 +29,12 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-
-from networks.models import Host
-from events.models import Event, EventType
 from piston.oauth import *
 from piston.models import *
+
+from netadmin.networks.models import Host
+from netadmin.events.models import Event, EventType
+
 
 class WebAPITest(TestCase):
     def setUp(self):
@@ -63,11 +67,13 @@ class WebAPITest(TestCase):
         hosts = Host.objects.all()
         for i in xrange(10):
             e = Event(message='event_%i' % i,
+                short_message='short message #%i' % i,
                 event_type=random.choice(types),
+                protocol='SMTP',
                 timestamp='%s' % str(datetime.datetime.now()),
                 source_host = hosts[i],
-                monitoring_module='%i' % i,
-                monitoring_module_fields=''
+                fields_class='Class%i' % i,
+                fields_data=''
             )
             e.save()
             
@@ -129,12 +135,15 @@ class WebAPITest(TestCase):
         """
         event = {
             'description': 'Message',
+            'short_description': 'Short message',
             'event_type': 'INFO',
+            'protocol': 'SMTP',
             'timestamp': '%s' % str(time.time()),
+            'hostname': 'host_a',
             'source_host_ipv4': '1.2.3.4',
             'source_host_ipv6': '2002:0:0:0:0:0:102:304',
-            'monitoring_module': '0',
-            'monitoring_module_fields': '',
+            'fields_class': 'ClassName',
+            'fields_data': '',
         }
         
         auth_string = self.get_auth_string()
@@ -158,12 +167,14 @@ class WebAPITest(TestCase):
             types = ['CRITICAL', 'WARNING', 'INFO', 'RECOVERY']
             event = {
                 'description': 'event_%i' % index,
+                'short_description': 'event short description %i' % index,
                 'event_type': types[random.randint(0, len(types) - 1)],
+                'protocol': 'SMTP',
                 'timestamp': '%s' % str(time.time()),
                 'source_host_ipv4': '127.0.0.%i' % (index + 1),
                 'source_host_ipv6': '0:0:0:0:0:0:7f00:%i' % (index + 1),
-                'monitoring_module': '%i' % index,
-                'monitoring_module_fields': '',
+                'fields_class': 'Class%i' % index,
+                'fields_data': '',
             }
             return event
         
