@@ -1,0 +1,8 @@
+{% extends "charts/chart.html" %}
+{% block chart_package %}
+google.load('visualization', '1', {'packages':['annotatedtimeline']});
+{% endblock %}
+
+{% block chart_style %}
+style="width: {{ chart.width }}px; height: {{ chart.height }}px;"
+{% endblock %}

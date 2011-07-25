@@ -1,0 +1,32 @@
+<script type="text/javascript">
+	{% block chart_package %}
+	google.load('visualization', '1', {'packages':['corechart']});
+	{% endblock %}
+	google.setOnLoadCallback(function(){
+		var data = new google.visualization.DataTable();
+		
+		data.addRows({{ chart.num_rows }});
+		
+		{% for column in chart.columns %}
+			data.addColumn('{{ column.type }}', '{{ column.label }}');
+			{% for value in column.data %}
+				{% if column.type == 'string' %}
+					data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, '{{ value }}');
+				{% else %}
+					data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, {{ value }});
+				{% endif %}
+			{% endfor %}
+		{% endfor %}
+		
+		new google.visualization.{{ chart.chart_type }}(document.getElementById('chart_div')).
+			draw(data, {
+				title: '{{ chart.title }}',
+				width: {{ chart.width }},
+				height: {{ chart.height }}
+				{% block chart_options %}
+				{% endblock %} 
+			}
+		);
+	});
+</script>
+<div id="chart_div" {% block chart_style %}{% endblock %}></div>
