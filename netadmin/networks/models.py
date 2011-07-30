@@ -21,8 +21,8 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from django.core.urlresolvers import reverse
 from django.db import models
+from django.db.models import permalink
 from django.utils.translation import ugettext as _
 
 from netadmin.permissions.models import ObjectPermission
@@ -65,9 +65,13 @@ class Host(NetworkObject):
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
                             blank=True)
+    
+    def __unicode__(self):
+        return "Host '%s'" % self.name
                             
+    @permalink
     def get_absolute_url(self):
-        return reverse('host_detail', args=[self.pk])
+        return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
         # delete all events related to this host
@@ -95,6 +99,19 @@ class Host(NetworkObject):
         return Network.objects.filter(pk__in=nets)
     network = property(_networks)
     
+    def _fields(self):
+        from netadmin.events.models import EventFieldsNotValid
+        fields_list = []
+        for event in self.events:
+            try:
+                for field in event.fields.keys():
+                    if field not in fields_list:
+                        fields_list.append(field)
+            except EventFieldsNotValid:
+                pass
+        return fields_list
+    fields = property(_fields)
+    
     def in_network(self, network):
         try:
             nh = self.networkhost_set.get(network=network)
@@ -104,8 +121,12 @@ class Host(NetworkObject):
 
 class Network(NetworkObject):
     
+    def __unicode__(self):
+        return "Network '%s'" % self.name
+    
+    @permalink
     def get_absolute_url(self):
-        return reverse('network_detail', args=[self.pk])
+        return ('network_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
         related = NetworkHost.objects.filter(network=self)
