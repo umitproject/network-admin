@@ -24,14 +24,28 @@ from netadmin.events.models import Event
 
 
 urlpatterns = patterns('netadmin.events.views',
-   url(r'^(?P<object_id>\d+)/$', 'event_detail', name='event_detail'),
-   url(r'^check/(?P<object_id>\d+)/$', 'event_check', name='event_check'),
-   url(r'^list/$', 'events_list', name='event_list'),
-   url(r'^list/page/(?P<page>\d+)/$', 'events_list', name='event_list_page'),
+    url(r'^(?P<object_id>\d+)/$', 'event_detail', name='event_detail'),
+    url(r'^message/(?P<message_slug>[-\w]+)/$', 'event_detail', name='event_detail'),
+    url(r'^check/(?P<object_id>\d+)/$', 'event_check', name='event_check'),
+    
+    url(r'^list/$', 'events_list', name='events_list'),
+    url(r'^list/page/(?P<page>\d+)/$', 'events_list', name='event_list_page'),
+    
+    url(r'^alerts/$', 'events_alerts', name='events_alerts'),
+    url(r'^alerts/(?P<alert_level_id>\d+)/$', 'events_alerts', name='event_alert_level'),
+    url(r'^alerts/(?P<alert_level_slug>[-\w]+)/$', 'events_alerts', name='event_alert_level'),
+    
+    url(r'^date/(?P<year>\d+)/$', 'events_date', name='events_date'),
+    url(r'^date/(?P<year>\d+)/(?P<month>\d+)/$', 'events_date', name='events_date'),
+    url(r'^date/(?P<year>\d+)/(?P<month>\d+)/(?P<day>\d+)/$', 'events_date', name='events_date'),
+    
+    url(r'^type/edit/$', 'eventtype_edit', name='eventtype_edit'),
+    url(r'^type/(?P<event_type_id>\d+)/$', 'eventtype_detail', name='eventtype_detail'),
+    url(r'^type/(?P<event_type_slug>[-\w]+)/$', 'eventtype_detail', name='eventtype_detail'),
    
-   url(r'^search/$', 'events_search', name='events_search'),
+    url(r'^search/$', 'events_search', name='event_search'),
+    
+    url(r'^stats/$', 'events_stats', name='events_stats'),
    
-   url(r'^alerts/level/(?P<level_id>\d+)/$', 'alerts_list', name='alerts_list'),
-   url(r'^alerts/edit/$', 'alerts_edit', name='alerts_edit'),
-   url(r'^alerts/remove/(?P<object_id>\d+)/$', 'alerts_edit', name='alerts_remove')
+    url(r'^notify/$', 'events_notify', name='events_notify'),
 )

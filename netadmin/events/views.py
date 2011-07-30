@@ -21,28 +21,110 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.db.models.query import QuerySet
+from django.http import Http404, HttpResponse
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import get_object_or_404
+from django.utils.translation import ugettext as _
 from search.core import search
 
+from netadmin.events.charts import EventTypesChart, EventTypesCountChart
 from netadmin.events.forms import EventSearchForm, EventSearchSimpleForm, \
-    AlertForm
-from netadmin.events.models import Event, EventType, Alert
+    EventTypeFormset
+from netadmin.events.models import Event, EventType, EventNotification, \
+    ALERT_LEVELS
 from netadmin.events.utils import filter_user_events
+from netadmin.notifier.utils import NotifierQueue, NotifierEmptyQueue
 from netadmin.permissions.utils import user_has_access, \
     get_object_or_forbidden
 
 
 @login_required
-def events_list(request, adv_search=False):
-    if adv_search:
-        form_class = EventSearchForm
-    else:
-        form_class = EventSearchSimpleForm
+def events_list(request, events=None, alerts=None, search_form=None,
+                events_header=_("All events"), 
+                template_name='events/event_list.html', extra_context=None):
+    if not events and not isinstance(events, QuerySet):
+        events = filter_user_events(request.user)
         
-    search_form = form_class(request.GET)
+    if not search_form:
+        search_form = EventSearchSimpleForm()
+        
+    eventtypes = EventType.objects.filter(user=request.user)
+    eventtypes_chart = EventTypesChart(7, eventtypes)
+    eventtypescount_chart = EventTypesCountChart(eventtypes)
+    
+    events = events.order_by('-timestamp')
+        
+    context = {
+        'alerts': alerts,
+        'events': events,
+        'events_header': events_header,
+        'search_form': search_form,
+        'eventtypes_chart': eventtypes_chart,
+        'eventtypescount_chart': eventtypescount_chart
+    }
+    
+    if extra_context:
+        context.update(extra_context)
+    
+    return direct_to_template(request, template_name,
+                              extra_context=context)
+
+@login_required
+def events_alerts(request, alert_level_id=None, alert_level_slug=None):
+    
+    levels = reversed(ALERT_LEVELS)
+    
+    if alert_level_id:
+        for id, name in levels:
+            if id == int(alert_level_id):
+                levels = [(id, name)]
+                break
+    elif alert_level_slug:
+        for id, name in levels:
+            if name.lower() == alert_level_slug:
+                levels = [(id, name)]
+                break
+    
+    alerts = []
+    for lvl_id, lvl_name in levels:
+        # we ignore zero-level alert
+        if not lvl_id:
+            break
+        types = EventType.objects.filter(user=request.user, alert_level=lvl_id)
+        if types:
+            types_pks = [t.pk for t in types]
+            events = Event.objects.filter(event_type__pk__in=types_pks)
+            events = events.order_by('-timestamp')
+            alert = (events, lvl_name)
+            alerts.append(alert)
+    
+    try:
+        no_alert_type = EventType.objects.get(alert_level=0)
+        events = Event.objects.filter(event_type=no_alert_type)
+    except EventType.DoesNotExist:
+        events = Event.objects.none()
+    
+    return events_list(request, events, alerts,
+                       events_header=_("Other events"))
+
+@login_required
+def events_date(request, year, month=None, day=None):
+    year, month, day = int(year), int(month), int(day)
+    date_begin = datetime.datetime(year, month, day)
+    date_end = datetime.datetime(year, month, day+1)
+    
+    events = filter_user_events(request.user)
+    events = events.filter(timestamp__gte=date_begin, timestamp__lte=date_end)
+    
+    header = _("Events on %s") % date_begin.date()
+    
+    return events_list(request, events, events_header=header)
+
+@login_required
+def events_search(request):
+    search_form = EventSearchForm(request.user, request.GET)
     
     events = None
     
@@ -50,10 +132,7 @@ def events_list(request, adv_search=False):
         cleaned_data = search_form.cleaned_data
         
         search_phrase = cleaned_data.get('message')
-        if search_phrase:
-            events = search(Event, search_phrase)
-        else:
-            events = filter_user_events(request.user)
+        events = search(Event, search_phrase)
         
         date_after = cleaned_data.get('date_after')
         if date_after:
@@ -71,29 +150,43 @@ def events_list(request, adv_search=False):
         # filter events by user access
         events = [e for e in events if user_has_access(e, request.user)]
     else:
-        search_form = form_class()
-        events = filter_user_events(request.user).order_by('-timestamp')
+        search_form = EventSearchForm(request.user)
     
     extra_context = {
-        'events': events,
-        'url': '/event/list/',
-        'search_form': search_form,
-        'adv_search': adv_search,
+        'adv_search': True,
     }
     
-    return direct_to_template(request, 'events/event_list.html',
-                              extra_context=extra_context)
+    return events_list(request, events, search_form=search_form,
+                       template_name='events/event_search.html',
+                       extra_context=extra_context)
     
 @login_required
-def event_detail(request, object_id):
-    event = Event.objects.get(pk=object_id)
-    if not user_has_access(event.source_host, request.user):
-        raise Http404()
-    return object_detail(request, Event.objects.all(), object_id)
+def events_stats(request):
+    eventtypes = EventType.objects.filter(user=request.user)
+    
+    eventtypes_chart = EventTypesChart(7, eventtypes)
+    eventtypescount_chart = EventTypesCountChart(eventtypes)
+    
+    context = {
+        'eventtypes_chart': eventtypes_chart,
+        'eventtypescount_chart': eventtypescount_chart
+    }
+    
+    return direct_to_template(request, "events/event_stats.html",
+                              extra_context=context)
 
 @login_required
-def events_search(request):
-    return events_list(request, adv_search=True)
+def event_detail(request, object_id=None, message_slug=None):
+    if object_id:
+        event = Event.objects.get(pk=object_id)
+    elif message_slug:
+        event = Event.objects.get(message_slug=message_slug)
+    else:
+        return events_list(request)
+    if not user_has_access(event.source_host, request.user):
+        raise Http404()
+    return object_detail(request, Event.objects.all(),
+                         slug=message_slug, slug_field='message_slug')
 
 @login_required
 def event_check(request, object_id):
@@ -101,48 +194,46 @@ def event_check(request, object_id):
     if not event.checked:
         event.checked = True
         event.save()
+        
+@login_required
+def eventtype_detail(request, event_type_id=None, event_type_slug=None):
+    if event_type_id:
+        et = EventType.objects.get(pk=event_type_id)
+    elif event_type_slug:
+        et = EventType.objects.get(name_slug=event_type_slug)
+    else:
+        return events_list(request)
+    events = Event.objects.filter(event_type__pk=et.pk)
+    header = _("%s events") % et.name
+    return events_list(request, events, events_header=header)
 
 @login_required
-def alerts_edit(request, object_id=None):
-    alert = Alert(user=request.user)
-    form = AlertForm(instance=alert)
-    
+def eventtype_edit(request):
     if request.method == 'POST':
-        form = AlertForm(request.POST)
-        if form.is_valid():
-            alert = form.save(commit=False)
-            alert.user = request.user
-            alert.save()
+        eventtype_formset = EventTypeFormset(request.POST)
+        if eventtype_formset.is_valid():
+            eventtype_formset.save()
     
-    if request.method == 'GET':
-        if object_id:
-            try:
-                alert = Alert.objects.get(pk=object_id, user=request.user)
-                alert.delete()
-            except Alert.DoesNotExist:
-                # Just ignore the request - someone probably mistyped URL
-                # or refreshed the page after removing alert.
-                pass
-       
-    extra_context = {
-        'form': form,
-        'alerts': Alert.objects.filter(user=request.user).order_by('-level')
-    }
-    return direct_to_template(request, 'events/alerts.html',
-                              extra_context=extra_context)
-
-@login_required    
-def alerts_list(request, level_id):
-    alerts = Alert.objects.filter(user=request.user, level=level_id)
-    et_pks = [a.event_type.pk for a in alerts]
-    user_events = filter_user_events(request.user)
-    
-    events = user_events.filter(event_type__pk__in=et_pks)
-    events = events.order_by('-timestamp')
+    event_types = EventType.objects.filter(user=request.user).order_by('name')
+    eventtype_formset = EventTypeFormset(queryset=event_types)
     
     extra_context = {
-        'alerts': events,
-        'level_name': alerts[0].get_level_display()
+        'eventtype_formset': eventtype_formset
     }
-    return direct_to_template(request, 'events/event_list.html',
+    return direct_to_template(request, 'events/eventtype_edit.html',
                               extra_context=extra_context)
+    
+@login_required
+def events_notify(request):
+    notifier = NotifierQueue(EventNotification)
+    try:
+        log = notifier.send_emails(_("You have new alert(s) "
+                                     "in Network Administrator"),
+                                   clear_queue=False)
+    except NotifierEmptyQueue:
+        log = []
+    if log:
+        response = "<p>Emails sent:</p>%s" % '<br />'.join(log)
+    else:
+        response = "<p>No emails to send</p>"
+    return HttpResponse(response)
