@@ -18,23 +18,33 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import StringIO
+
 from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
+from django.http import HttpResponse
 from django.utils.translation import ugettext as _
+from geraldo.generators import PDFGenerator
 
 from netadmin.networks.reports import HostReport, NetworkReport
+from netadmin.notifier.models import NotifierScheduleJob
 from netadmin.events.models import EventType
 
 
-PERIODS = (
-    (1, _('Daily')),
-    (7, _('Weekly')),
-    (31, _('Monthly'))
+DAILY = 0
+WEEKLY = 1
+MONTHLY = 2
+
+REPORT_PERIOD = (
+    (DAILY, _("Daily")),
+    (WEEKLY, _("Weekly")),
+    (MONTHLY, _("Monthly"))
 )
+
 
 class ReportMeta(models.Model):
     """
@@ -43,7 +53,7 @@ class ReportMeta(models.Model):
     """
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    period = models.IntegerField(choices=PERIODS)
+    report_period = models.IntegerField(choices=REPORT_PERIOD, default=0)
     object_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     reported_object = generic.GenericForeignKey('object_type', 'object_id')
@@ -79,10 +89,10 @@ class ReportMeta(models.Model):
         return events.filter(event_type__pk__in=pks)
     events = property(get_events)
     
-    def get_period(self):
-        for period_number, period_name in PERIODS:
-            if period_number == self.period:
-                return period_name
+    def get_period_name(self):
+        for number, name in REPORT_PERIOD:
+            if number == self.report_period:
+                return name
     
     def get_report(self):
         if self.model.__name__ == 'Host':
@@ -93,7 +103,16 @@ class ReportMeta(models.Model):
             return None
     report = property(get_report)
     
-admin.site.register(ReportMeta)
+    def get_notification_form_class(self):
+        from netadmin.reportmeta.forms import ReportDailyForm, \
+            ReportWeeklyForm, ReportMonthlyForm
+        period = self.report_period
+        if period == 0:
+            return ReportDailyForm
+        elif period == 1:
+            return ReportWeeklyForm
+        elif period == 2:
+            return ReportMonthlyForm
         
 class ReportMetaEventType(models.Model):
     """
@@ -103,4 +122,27 @@ class ReportMetaEventType(models.Model):
     report_meta = models.ForeignKey(ReportMeta)
     event_type = models.ForeignKey(EventType)
     
+class ReportNotification(NotifierScheduleJob):
+    report_meta = models.ForeignKey(ReportMeta)
+    
+    def __unicode__(self):
+        return "Notification for report %s" % self.report_meta.name
+    
+    def message(self):
+        return _("<h2>%s</h2><p>%s</p>") % \
+            (self.report_meta.name, self.report_meta.description)
+            
+    def attachment(self):
+        report_file = HttpResponse(mimetype='application/pdf')
+        report = self.report_meta.report
+        report.generate_by(PDFGenerator, filename=report_file)
+        att = {
+            'name': 'report.pdf',
+            'data': report_file.content,
+            'mimetype': 'application/pdf'
+        }
+        return att
+
+admin.site.register(ReportMeta) 
 admin.site.register(ReportMetaEventType)
+admin.site.register(ReportNotification)

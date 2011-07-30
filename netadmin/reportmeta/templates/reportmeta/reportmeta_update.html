@@ -29,7 +29,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endif %}
 
 <form action="" method="POST">
-	{{ form.as_p }}
+	{{ form.errors }}
+	{% for field in form %}
+		{% if field.is_hidden %}
+			{{ field }}
+		{% else %}
+			{% if field.name == 'report_period' %}
+				<fieldset>
+					<legend>{% trans "Notifications" %}</legend>
+					<p>{{ field.label_tag }}: {{ field }}</p>
+					{{ schedule_form.as_p }}
+				</fieldset>
+			{% else %}
+				<p>{{ field.label_tag }}: {{ field }}</p>
+			{% endif %}
+		{% endif %}
+	{% endfor %}
 	<p>Event types:</p>
 	<ul>
 	{% for type in event_types %}

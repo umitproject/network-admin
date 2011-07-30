@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <h2>{% trans "Removing report" %}</h2>
 <p>{% blocktrans with object.name as name %}Do you really want to remove report {{ name }}?{% endblocktrans %}</p>
 <form action="" method="POST">
-	<input type="submit" value="{% trans "Remove host" %}" />
+	<input type="submit" value="{% trans "Remove report" %}" />
 	<p><a href="{% url reportmeta_detail object.pk %}">{% trans "Cancel" %}</a></p>
 </form>
 {% endblock %}

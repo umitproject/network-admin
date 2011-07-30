@@ -29,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endif %}
 
 <form action="" method="POST">
+	{{ form.errors }}
 	{{ form.as_p }}
 	{% if objects_list %}
 	<p>{{ object_type_name|capfirst }}: 
