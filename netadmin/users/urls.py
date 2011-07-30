@@ -28,5 +28,8 @@ from django.views.generic.list_detail import object_list, object_detail
 urlpatterns = patterns('netadmin.users.views',
     url(r'^search/$', 'user_search', name='user_search'),
     url(r'^profile/$', 'user_private', name='user_profile_private'),
-    url(r'^(?P<slug>\w+)/$', 'user_public', name='user_profile_public'),
+    url(r'^public/(?P<slug>\w+)/$', 'user_public', name='user_profile_public'),
+    url(r'^register/$', 'user_register', name='user_register'),
+    url(r'^confirm/$', 'user_register_confirm', name='user_register_confirm'),
+    url(r'^activate/(?P<code>\w+)/$', 'user_activation', name='user_activation'),
 )

@@ -18,14 +18,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import random
+
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template
+from django.utils.translation import ugettext as _
 from search.core import search
 
-from netadmin.users.forms import UserForm, UserProfileForm
+from netadmin.users.forms import UserForm, UserProfileForm, \
+    UserRegistrationForm
+from netadmin.users.models import UserActivationCode
 
 
 def user_public(request, slug):
@@ -76,4 +81,49 @@ def user_search(request):
     }
         
     return direct_to_template(request, 'users/user_search.html',
+                              extra_context=extra_context)
+    
+def user_register(request, template_name="users/user_registration.html"):
+    if request.method == 'POST':
+        registration_form = UserRegistrationForm(request.POST)
+        if registration_form.is_valid():
+            user = registration_form.save()
+            # generate random activation code
+            random.seed()
+            code = random.getrandbits(128)
+            activation = UserActivationCode(user=user, code=code)
+            activation.save()
+            return user_register_confirm(request, activation.code)
+    registration_form = UserRegistrationForm()
+    extra_context = {
+        'registration_form': registration_form
+    }
+    return direct_to_template(request, template_name,
+                              extra_context=extra_context)
+    
+def user_register_confirm(request, code=None,
+                          template_name="users/user_registration_confirm.html"):
+    if code:
+        activation = UserActivationCode.objects.get(code=code)
+    else:
+        activation = None
+    extra_context = {
+        'activation': activation
+    }
+    return direct_to_template(request, template_name,
+                              extra_context=extra_context)
+    
+def user_activation(request, code,
+                    template_name="users/user_activation.html"):
+    activation = UserActivationCode.objects.get(code=code)
+    active = activation.is_active()
+    if active:
+        user = activation.user
+        user.is_active = True
+        user.save()
+    extra_context = {
+        'active': active,
+        'activation': activation
+    }
+    return direct_to_template(request, template_name,
                               extra_context=extra_context)

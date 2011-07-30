@@ -18,22 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
-{% block title %}{% trans "user" %} {{ object.username }}{% endblock %}
+{% block title %}{% trans "register new account" %}{% endblock %}
 
 {% block content %}
-<h2>Your profile</h2>
-
-<form action="" method="POST">{% csrf_token %}
-	{{ user_form.as_p }}
-	{{ profile_form.as_p }}
-	<input type="submit" value="{% trans 'Update my profile' %}" />
+<h2>{% trans "Register new account" %}</h2>
+<form action="" method="POST">
+	{{ registration_form.as_p }}
+	<input type="submit" value="{% trans "Register account" %}" />
 </form>
-
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url user_profile_public object.username %}">{% trans "Show my public profile" %}</a></li>
-	<li><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-</ul>
 {% endblock %}
