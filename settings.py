@@ -7,6 +7,8 @@ import os
 
 DEBUG = True
 
+GAE_MAIL_ACCOUNT = 'wasilewski.piotrek@gmail.com'
+
 # Uncomment this if you're using the high-replication datastore.
 # TODO: Once App Engine fixes the "s~" prefix mess we can remove this.
 #DATABASES['default']['HIGH_REPLICATION'] = True
@@ -39,6 +41,8 @@ INSTALLED_APPS = (
     'netadmin.users',
     'netadmin.permissions',
     'netadmin.notifier',
+    'netadmin.utils.charts',
+    'netadmin.plugins',
     
     #'django_nose',
 

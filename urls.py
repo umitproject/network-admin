@@ -12,14 +12,15 @@ urlpatterns = patterns('',
     (r'^event/', include('netadmin.events.urls')),
     (r'^report/', include('netadmin.reportmeta.urls')),
     (r'^user/', include('netadmin.users.urls')),
-    (r'^notifier/', include('netadmin.notifier.urls')),
     
     ('^$', 'django.views.generic.simple.direct_to_template',
      {'template': 'home.html'}),
-    (r'^accounts/', include(admin.site.urls)),
+    (r'^admin/', include(admin.site.urls)),
     
     url(r'login/', 'django.contrib.auth.views.login',
         {'template_name': 'login.html'}, name='login_page'),
+    url(r'^logout/$', 'django.contrib.auth.views.logout',
+        {'next_page': '/'}, name='logout'),
 
     url(r'^oauth/request_token/$','piston.authentication.oauth_request_token'),
     url(r'^oauth/authorize/$','piston.authentication.oauth_user_auth'),
