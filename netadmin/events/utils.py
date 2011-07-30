@@ -76,15 +76,18 @@ def get_event_data(request, event_dict):
     hostname = event_dict.get('hostname')
     
     try:
+        # TODO
+        # filter by user=request.user!!!
         if hostname:
-            source_host = Host.objects.get(name=hostname)
+            source_host = Host.objects.get(name=hostname, user=request.user)
         else:
             if ipv4 and ipv6:
-                source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6)
+                source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6,
+                                               user=request.user)
             elif ipv4:
-                source_host = Host.objects.get(ipv4=ipv4)
+                source_host = Host.objects.get(ipv4=ipv4, user=request.user)
             elif ipv6:
-                source_host = Host.objects.get(ipv6=ipv6)
+                source_host = Host.objects.get(ipv6=ipv6, user=request.user)
             else:
                 source_host = None
     except Host.DoesNotExist:
@@ -93,9 +96,10 @@ def get_event_data(request, event_dict):
         source_host.save()
     
     try:
-        event_type = EventType.objects.get(name=event_type_name)
+        event_type = EventType.objects.get(name=event_type_name,
+                                           user=request.user)
     except EventType.DoesNotExist:
-        event_type = EventType(name=event_type_name)
+        event_type = EventType(name=event_type_name, user=request.user)
         event_type.save()
         
     fields_data_dict = {}
