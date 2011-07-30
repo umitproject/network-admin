@@ -4,5 +4,5 @@ google.load('visualization', '1', {'packages':['annotatedtimeline']});
 {% endblock %}
 
 {% block chart_style %}
-style="width: {{ chart.width }}px; height: {{ chart.height }}px;"
+style="width: {{ chart.size.0 }}px; height: {{ chart.size.1 }}px;"
 {% endblock %}

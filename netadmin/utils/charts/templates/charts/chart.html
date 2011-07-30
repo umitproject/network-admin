@@ -1,24 +1,18 @@
+{% load charts %}
 <script type="text/javascript">
-	{% block chart_package %}
-	google.load('visualization', '1', {'packages':['corechart']});
-	{% endblock %}
-	google.setOnLoadCallback(function(){
+	charts.push(function(){
 		var data = new google.visualization.DataTable();
 		
-		data.addRows({{ chart.num_rows }});
+		data.addRows({{ chart|length }});
 		
-		{% for column in chart.columns %}
-			data.addColumn('{{ column.type }}', '{{ column.label }}');
+		{% for column in chart %}
+			data.addColumn('{{ column.column_type }}', '{{ column.column_label }}');
 			{% for value in column.data %}
-				{% if column.type == 'string' %}
-					data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, '{{ value }}');
-				{% else %}
-					data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, {{ value }});
-				{% endif %}
+				data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, {{ value|safe }});
 			{% endfor %}
 		{% endfor %}
 		
-		new google.visualization.{{ chart.chart_type }}(document.getElementById('chart_div')).
+		new google.visualization.{{ chart.chart_type }}(document.getElementById('chart-{{ chart|chart_hash }}')).
 			draw(data, {
 				title: '{{ chart.title }}',
 				width: {{ chart.width }},
@@ -29,4 +23,4 @@
 		);
 	});
 </script>
-<div id="chart_div" {% block chart_style %}{% endblock %}></div>
+<div id="chart-{{ chart|chart_hash }}" {% block chart_style %}{% endblock %}></div>

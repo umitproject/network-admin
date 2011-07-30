@@ -23,14 +23,59 @@ import datetime
 from django import template
 from django.utils.translation import ugettext as _
 
+from netadmin.utils.charts import GOOGLE_CHARTS_PACKAGES, InvalidChartsPackage
+
 
 register = template.Library()
 
 
 @register.inclusion_tag('charts/chart.html')
-def chart(chart):
+def chart(chart, width=None, height=None):
+    if width:
+        chart.width = width
+    if height:
+        chart.height = height
     return {'chart': chart}
 
 @register.inclusion_tag('charts/chart_annotatedtimeline.html')
 def chart_annotatedtimeline(chart):
     return {'chart': chart}
+
+@register.filter
+def chart_hash(chart):
+    return hash(chart)
+
+@register.inclusion_tag('charts/charts_init.html')
+def init_charts(args):
+    #for package in args:
+    #    if package not in GOOGLE_CHARTS_PACKAGES:
+    #        raise InvalidChartsPackage(_("Unknown package '%s'") % package)
+    context = {
+        'packages': args
+    }
+    return context
+
+@register.tag('init_charts')
+def init_charts(parser, token):
+    args = token.contents.split()
+    args = [arg.strip("'").encode('ascii') for arg in args[1:]]
+    return InitChartNode(*args)
+
+class InitChartNode(template.Node):
+    def __init__(self, *args, **kwargs):
+        for package in args:
+            if package not in GOOGLE_CHARTS_PACKAGES:
+                raise InvalidChartsPackage(_("Unknown package '%s'") % package)
+        self.packages = list(args)
+
+    def render(self, context):
+        return """
+            <script type="text/javascript">
+                google.load('visualization', '1', {'packages': %s });
+                charts = []
+            </script>
+        """ % self.packages
+
+@register.inclusion_tag('charts/charts_show.html')
+def show_charts():
+    return
