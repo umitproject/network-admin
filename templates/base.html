@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<head>
 		<title>Network Administrator &#8211; {% block title %}{% endblock %}</title>
 		<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" />
+		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 	</head>
 	<body>
 		<div id="container">
@@ -30,17 +31,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				<div id="navigation">
 					<ul>
 						{% if request.user.is_authenticated %}
-						<li><a href="{% url event_list %}">{% trans "Events" %}</a></li>
+						<li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
 						<li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
 						<li><a href="{% url host_list %}">{% trans "Hosts" %}</a></li>
 						<li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
 						<li><a href="{% url user_profile_private %}">{% trans "My profile" %}</a></li>
-						<li>{% trans "Alerts" %}: {% alerts_counter request.user.pk %}</li>
+						<li><a href="{% url logout %}">{% trans "Log out" %}</a></li>
 						{% else %}
 						<li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
+						<li><a href="{% url user_register %}">{% trans "Register" %}</a></li>
 						{% endif %}
 					</ul>
 				</div>
+				{% if request.user.is_authenticated %}
+				<p>{% trans "Alerts" %}: {% alerts_counter request.user.pk %}</p>
+				{% endif %}
 			</div>
 			<div id="sidebar">
 				{% block sidebar %}{% endblock %}
