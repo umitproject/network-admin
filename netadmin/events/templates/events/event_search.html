@@ -17,43 +17,32 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags charts %}
-{% block title %}{% trans "events list" %}{% endblock %}
+{% load i18n events_tags %}
+{% block title %}{% trans "search for events" %}{% endblock %}
 
 {% block content %}
 
-<h2>{% trans "Events" %}</h2>
+<h2>
+{% if request.GET.message %}
+	{% blocktrans with request.GET.message as message %}Search for events with message '{{ message }}'{% endblocktrans %}
+{% else %}
+	{% trans "No message selected" %}
+{% endif %}
+</h2>
 
 <form action="{% url event_search %}" method="GET">
 	{{ search_form.as_p }}
-	<input type="hidden" name="event_type" value="0" />
 	<p><input type="submit" value="{% trans 'Search' %}" /> 
+	<a href="{% url event_search %}">{% trans "Clear all filters" %}</a>
 	</p>
 </form>
 
-{% init_charts 'corechart' %}
-
-<div style="position: absolute; margin-left: -20px">
-	{% chart eventtypes_chart 430 200 %}
-</div>
-
-<div style="float: right; margin-right: -50px">
-{% chart eventtypescount_chart 400 200 %}
-</div>
-
-<div style="clear: both"></div>
-
-{% show_charts %}
-
-{% if alerts %}
-	<h3>{% trans "Alerts" %}</h3>
-	{% for alert_events, alert_name in alerts %}
-		{% events_list alert_events alert_name %}
-	{% endfor %}
-{% endif %}
-
 {% if events %}
-	{% events_list events events_header %}
+	{% events_list events %}
+{% else %}
+	{% if request.GET.message %}
+		<p>{% trans "No results" %}.</p>
+	{% endif %}
 {% endif %}
 
 {% include "paginator.html" %}
@@ -64,7 +53,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <ul>
 	<li><a href="{% url eventtype_edit %}">{% trans "Manage events types" %}</a></li>
 	<li><a href="{% url events_list %}">{% trans "Browse all events" %}</a></li>
-	<li><a href="{% url events_stats %}">{% trans "Events statistics" %}</a></li>
 	<li><a href="{% url events_alerts %}">{% trans "Alerts" %}</a></li>
 </ul>
 {% endblock %}

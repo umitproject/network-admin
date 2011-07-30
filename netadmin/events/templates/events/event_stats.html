@@ -17,40 +17,21 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags actions %}
-{% block title %}{% trans "event" %} "{{ object.short_message }}"{% endblock %}
+{% load i18n charts %}
+{% block title %}{% trans "events statistics" %}{% endblock %}
 
 {% block content %}
-<h2>
-{{ object.timestamp|action:"event_header_timestamp" }}
-{% if object.short_message %}: {{ object.short_message|action:"event_header_message" }}{% endif %}
-</h2>
-<h3>{{ object.event_type|action:"event_header_event_type" }}</h3>
+<h2>{% trans "Events statistics" %}</h2>
 
-{% if not object.source_host %}
-<p><strong>{% trans "Network-wide event" %}</strong></p>
-{% endif %}
+<h3>{% trans "Types of events" %}</h3>
 
-{% comment %}
-<p>{% trans "Checked" %}: {% if object.checked %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</p>
-{% endcomment %}
+{% init_charts 'corechart' %}
 
-<p class="notification-message">{{ object.html_message|action:"event_html_message"|safe }}</p>
+{% chart eventtypes_chart %}
 
-{% if object.fields_data %}
-<h4>{{ object.fields_class|action:"event_detail_field_class" }}</h4>
-<ul>
-{% for field, value in object.get_details.items %}
-	<li>
-	{% filter action:"event_field_list_item" %}
-		{{ field|action:"event_field_list_name" }}: {{ value|action:"event_field_list_value" }}
-	{% endfilter %}
-	</li>
-{% endfor %}
-</ul>
-{% endif %}
+{% chart eventtypescount_chart %}
 
-{% similar_events object %}
+{% show_charts %}
 
 {% endblock %}
 

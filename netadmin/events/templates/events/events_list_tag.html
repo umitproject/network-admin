@@ -1,0 +1,39 @@
+{% load i18n %}
+{% if events %}
+	{% if title %}
+	<h3>{% trans title %}</h3>
+	{% endif %}
+	<table>
+		<thead>
+			<tr>
+				<th>{% trans "Timestamp" %}</th>
+				<th>{% trans "Message" %}</th>
+				<th>{% trans "Type" %}</th>
+				<th>{% trans "Protocol" %}</th>
+				<th>{% trans "Host" %}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for event in events %}
+			<tr>
+				<td>
+					<a href="{% url events_date event.timestamp.year event.timestamp.month event.timestamp.day %}">{{ event.timestamp.date }}</a>,
+					{{ event.timestamp.time }}
+				</td>
+				<td class="notification-message">
+					<a href="{% url event_detail event.message_slug %}">
+					{% if event.short_message %}
+						{{ event.short_message }}
+					{% else %}
+						{{ event.message|slice:":100" }}
+					{% endif %}
+					</a>
+				</td>
+				<td><a href="{% url eventtype_detail event.event_type.name_slug %}">{{ event.event_type }}</a></td>
+				<td>{{ event.protocol }}</td>
+				<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% endif %}
