@@ -18,6 +18,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -48,7 +50,7 @@ def host_list(request, page=None):
 
     extra_context = {
         'hosts': hosts,
-        'url': reverse('host_list'),
+        'url': reverse('host_list')
     }
     return direct_to_template(request, 'networks/host_list.html',
                               extra_context=extra_context)

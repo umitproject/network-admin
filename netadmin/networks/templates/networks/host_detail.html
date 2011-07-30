@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n events_tags %}
 {% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
 {% block content %}
@@ -39,29 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endif %}
 
 {% if object.events %}
-<h3>{% trans "Events" %}</h3>
-<table>
-	<thead>
-		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th></tr>
-	</thead>
-	<tbody>
-	{% for event in object.events %}
-		<tr>
-			<td>{{ event.timestamp }}</td>
-			<td class="notification-message">
-				<a href="{% url event_detail event.pk %}">
-				{% if event.short_message %}
-					{{ event.short_message }}
-				{% else %}
-					{{ event.message|slice:":100" }}
-				{% endif %}
-				</a>
-			</td>
-			<td>{{ event.event_type }}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+	{% events_list object.events "Events" %}
 {% endif %}
 
 {% endblock %}
