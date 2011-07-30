@@ -21,15 +21,13 @@
 import datetime
 
 from django import forms
+from django.forms.models import modelformset_factory
 from django.forms.widgets import RadioSelect, Select
 from django.forms.extras.widgets import SelectDateWidget
 from django.utils.translation import ugettext as _
 
-from netadmin.events.models import EventType, Alert
+from netadmin.events.models import EventType
 
-
-EVENT_TYPES = [(et.pk, et.name) for et in EventType.objects.all()]
-EVENT_TYPE_CHOICES = [('0', 'any')] + EVENT_TYPES
 
 YEARS_RANGE = range(2000, datetime.datetime.now().year + 1)
 _years_widget = SelectDateWidget(years=YEARS_RANGE)
@@ -39,30 +37,26 @@ class EventSearchSimpleForm(forms.Form):
                               required=False)
 
 class EventSearchForm(EventSearchSimpleForm):
-    event_type = forms.ChoiceField(choices=EVENT_TYPE_CHOICES, initial=0,
-                                   widget=RadioSelect, label=_("Type"))
+    event_type = forms.ChoiceField()
     date_after = forms.DateField(label=_("After"), required=False, 
                                  widget=_years_widget)
     date_before = forms.DateField(label=_("Before"), required=False,
                                   widget=_years_widget)
     
-class AlertForm(forms.ModelForm):
+    def __init__(self, user, *args, **kwargs):
+        super(EventSearchForm, self).__init__(*args, **kwargs)
+        # filter event types by user access
+        event_types = EventType.objects.filter(user=user)
+        choices = [('0', 'any')] + [(et.pk, et.name) for et in event_types]
+        self.fields['event_type'] = forms.ChoiceField(choices=choices,
+                                                      label=_("Type"))
     
-    def clean(self):
-        # Since GAE doesn't support "unique" property, we have to
-        # check it here if fields "user" and "event_type" are unique.
-        cleaned_data = self.cleaned_data
-        user = cleaned_data.get('user')
-        event_type = cleaned_data.get('event_type')
-        try:
-            alert = Alert.objects.get(user=user, event_type=event_type)
-        except Alert.DoesNotExist:
-            return cleaned_data
-        raise forms.ValidationError("Event type may be assigned to one "
-                                    "level only.")
-        
+class EventTypeForm(forms.ModelForm):
     class Meta:
-        model = Alert
+        model = EventType
+        fields = ('name', 'alert_level', 'notify')
         widgets = {
-            'user': forms.HiddenInput()
+            'name': forms.HiddenInput()
         }
+
+EventTypeFormset = modelformset_factory(EventType, form=EventTypeForm)
