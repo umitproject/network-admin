@@ -51,7 +51,8 @@ class WebAPITest(TestCase):
         
         #set up events types
         for name in ['INFO', 'WARNING', 'CRITICAL']:
-            event_type = EventType(name=name)
+            event_type = EventType(name=name, user=self.user,
+                                   alert_level=1)
             event_type.save()
         
         #set up some hosts

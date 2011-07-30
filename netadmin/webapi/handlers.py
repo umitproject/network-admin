@@ -44,8 +44,8 @@ from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 
 from netadmin.networks.models import Host, Network
-from netadmin.notifier.utils import Notifier
-from netadmin.events.models import Event, EventType
+from netadmin.notifier.utils import NotifierQueue
+from netadmin.events.models import Event, EventType, EventNotification
 from netadmin.events.utils import get_event_data, EventParseError
 from netadmin.webapi.views import api_error, api_ok, api_response
 
@@ -245,8 +245,7 @@ class EventHandler(BaseHandler):
         
         """
         
-        notifier = Notifier()
-        notifier.validate()
+        notifier = NotifierQueue(EventNotification)
         
         if request.POST.get('events'):
             try:
@@ -263,8 +262,8 @@ class EventHandler(BaseHandler):
                 event = Event(**event_data)
                 event.save()
                 
-                if event.is_alert(request.user):
-                    notifier.queue.push(event, request.user)
+                if event.event_type.notify:
+                    notifier.push(user=request.user, event=event)
             
             return api_ok(_('Events reported successfully'))
         
@@ -276,8 +275,8 @@ class EventHandler(BaseHandler):
         event = Event(**event_data)
         event.save()
         
-        if event.is_alert(request.user):
-            notifier.queue.push(event, request.user)
+        if event.event_type.notify:
+            notifier.push(user=request.user, event=event)
         
         return api_ok(_('Event reported successfully'))
     
