@@ -27,23 +27,50 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.template.defaultfilters import slugify
 
 from netadmin.networks.models import Host
+from netadmin.notifier.models import NotifierQueueItem
 
 
 ALERT_LEVELS = (
-    (0, _('Low')),
-    (1, _('Medium')),
-    (2, _('High'))
+    (0, _('No alert')),
+    (1, _('Low')),
+    (2, _('Medium')),
+    (3, _('High'))
 )
 
 
+class EventFieldNotFound(Exception):
+    pass
+
+class EventFieldsNotValid(Exception):
+    pass
+
 class EventType(models.Model):
-    """A very simple model written to make managing events types easier"""
+    """
+    Describes type of an event, e.g. INFO, CRITICAL etc. Note that every event
+    type is linked with user - its owner. That is because events types are
+    created automatically, when events are reported so every user may have
+    different set of types.
+    
+    Alert level has no effect on reporting events or managing them. This field
+    only indicates importance of events and is used to distinguish those of
+    them which should be treated differently.
+    """
     name = models.CharField(max_length=50)
+    name_slug = models.SlugField(blank=True)
+    user = models.ForeignKey(User)
+    alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
+    notify = models.BooleanField(default=False)
     
     def __unicode__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.name_slug = slugify(self.name)
+        super(EventType, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
         from netadmin.reports.models import ReportMetaEventType
@@ -57,32 +84,38 @@ class EventType(models.Model):
     def _events(self):
         return Event.objects.filter(event_type=self)
     events = property(_events)
+    
+    def _pending_events(self):
+        return self.events.filter(checked=False)
+    pending_events = property(_pending_events)
 
 
 class Event(models.Model):
     """
     Event model class represents single notification reported to the Network
     Administrator. The following fields are defined:
-        * message - name and/or description of an event
+        * message - description of an event
+        * short_message - shorter description (could be used as a title)
+        * message_slug - slug made of short_message
         * timestamp - moment, when event occured on host
+        * protocol - network protocol
         * event_type - foreign key to the EventType object which simply stores
           short and readable event name like **INFO** or **WARNING**
         * source_host - foreign key to the Host object; this is the host from
           where the event came
-        * monitoring_module - identifier of a monitoring module, which is
-          a module that provides more specific data about the event
-        * monitoring_module_fields - serialized fields for the monitoring
-          module; data provided by monitoring module is based on these fields
+        * fields_class - identifier of the class of additional fields
+        * fields_data - serialized fields that contain more specific data
+          about the event
         * checked - True means that event has been marked by user as known
           (actually this field is important only for alerts, where information
           about event status is really important)
     
-    Note 1: Only last two fields are optional.
-    Note 2: Although event hasn't *user* field specified, we can say that
-            event belongs to the user who ownes the source host.
+    Note: Although event hasn't *user* field specified, we can say that
+          event belongs to the user who ownes the source host.
     """
     message = models.TextField()
     short_message = models.CharField(max_length=200)
+    message_slug = models.SlugField()
     timestamp = models.DateTimeField()
     protocol = models.CharField(max_length=30)
     event_type = models.ForeignKey(EventType)
@@ -93,11 +126,30 @@ class Event(models.Model):
     
     def __unicode__(self):
         return self.message
+    
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.message_slug = slugify(self.short_message)
+        super(Event, self).save(*args, **kwargs)
 
     def get_details(self):
         """Returns event details extracted from monitoring module fields"""
-        fields = json.loads(self.fields_data)
+        try:
+            fields = json.loads(self.fields_data)
+        except ValueError:
+            raise EventFieldsNotValid(_("Cannot decode fields data."))
         return fields
+    fields = property(get_details)
+    
+    def get_field(self, field_name, default=None):
+        try:
+            fields = self.get_details()
+        except EventFieldsNotValid:
+            return default
+        if field_name not in fields:   
+            return default
+            #raise EventFieldNotFound(_("The field '%s' is not defined for this event.") % field_name)
+        return fields[field_name]
     
     def _html_message(self):
         return self.message.replace('\n', '<br />')
@@ -110,22 +162,17 @@ class Event(models.Model):
     def get_html(self):
         """Notifier support: returns event data in HTML"""
         title = '%s %s' % (str(self.timestamp), self.event_type.name)
-        return '<h2>%s</h2>%s' % (title, self.html_message)
+        return '<h2>%s</h2><p>%s</p>' % (title, self.html_message)
+
+class EventNotification(NotifierQueueItem):
+    event = models.ForeignKey(Event)
     
-    def is_alert(self, user):
-        try:
-            alert = Alert.objects.get(user=user, event_type=self.event_type)
-        except Alert.DoesNotExist:
-            return 0
-        return alert.level
-            
-class Alert(models.Model):
-    """
-    Alerts are user-defined priorities assigned to events types.
-    """
-    event_type = models.ForeignKey(EventType)
-    user = models.ForeignKey(User)
-    level = models.IntegerField(choices=ALERT_LEVELS)
+    def __unicode__(self):
+        return "Notification for event '%s'" % self.event.short_message
+    
+    def message(self):
+        return self.event.get_html()
 
 admin.site.register(Event)   
 admin.site.register(EventType)
+admin.site.register(EventNotification)
