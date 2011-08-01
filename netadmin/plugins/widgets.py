@@ -18,26 +18,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from netadmin.plugins.models import WidgetSettings, Dashboard
-
-
-def get_dashboard_order(column, dashboard):
-    """Returns ordinal for a new widget in column on dashboard
-    """
-    widgets = WidgetSettings.objects.filter(dashboard=dashboard,
-                                            column=column).order_by('-order')
-    if not widgets:
-        return 1
-    return widgets[0].order + 1
-
-def insert_widget(widget_class, dashboard_id, column):
-    """Inserts new widget into dashboard
-    """
-    dashboard = Dashboard.objects.get(pk=dashboard_id)
-    order = get_dashboard_order(column, dashboard)
-    widget_settings = WidgetSettings(dashboard=dashboard, column=column,
-                                     order=order, widget_class=widget_class)
-    widget_settings.save()
 
 class Widget(object):
     
