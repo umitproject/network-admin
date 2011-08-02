@@ -22,8 +22,22 @@ from django import forms
 from django.forms.models import modelformset_factory
 
 from netadmin.plugins.core import load_plugins
-from netadmin.plugins.models import PluginSettings
+from netadmin.plugins.models import PluginSettings, WidgetSettings
 
+widgets = sum([plugin().widgets() for plugin in load_plugins(active=True)], [])
+WIDGETS_CHOICES = [(widget.__name__, widget.name) for widget in widgets]
+
+
+class WidgetCreateForm(forms.ModelForm):
+    column = forms.ChoiceField(choices=[(1,1), (2,2)])
+    widget_class = forms.ChoiceField(choices=WIDGETS_CHOICES)
+    
+    class Meta:
+        model = WidgetSettings
+        fields = ('column', 'dashboard', 'widget_class')
+        widgets = {
+            'dashboard': forms.HiddenInput()
+        }
 
 class PluginSettingsForm(forms.ModelForm):
     def get_meta(self):
