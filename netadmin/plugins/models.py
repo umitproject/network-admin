@@ -21,19 +21,27 @@
 from django.contrib.auth.models import User
 from django.db import models
 
+
 class PluginSettings(models.Model):
     plugin_name = models.CharField(max_length=30, editable=False)
     is_active = models.BooleanField(default=False)
     
     def __unicode__(self):
         return "Plugin '%s' settings" % self.plugin_name
+    
+class CustomOption(models.Model):
+    name = models.CharField(max_length=50)
+    value = models.CharField(max_length=300)
+    
+    def __unicode__(self):
+        return "'%s'='%s'" % (self.name, self.value)
 
 class Dashboard(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=50)
     
     def __unicode__(self):
-        return "Dashboard '%s' owned by user %s" % \
+        return "'%s' owned by user %s" % \
             (self.name, self.user.username)
             
     def num_widgets(self, column):
@@ -43,8 +51,23 @@ class Dashboard(models.Model):
         if widgets:
             return widgets.filter(column=column).count()
         return 0
+    
+    def recalculate_order(self):
+        widgets = self.widgetsettings_set.all().order_by('column')
+        column = 1
+        order = 1
+        for widget in widgets:
+            if widget.column != column:
+                column = widget.column
+                order = 1
+            widget.order = order
+            widget.save()
+            order += 1
             
-    def insert_widget(self, widget_class, column):
+    def insert_widget(self, widget, column):
+        """Inserts widget into column
+        """
+        widget_class = widget.__class__.__name__
         order = self.num_widgets(column) + 1
         widget = WidgetSettings(dashboard=self, column=column,
                                 order=order, widget_class=widget_class)
@@ -55,7 +78,22 @@ class WidgetSettings(models.Model):
     dashboard = models.ForeignKey(Dashboard)
     column = models.SmallIntegerField()
     order = models.SmallIntegerField()
-    widget_class = models.CharField(max_length=30, editable=False)
+    widget_class = models.CharField(max_length=30)
     
     def __unicode__(self):
-        return "Widget on dashboard '%s'" % self.dashboard.name
+        return "on dashboard '%s'" % self.dashboard.name
+    
+    def save(self):
+        if not self.pk:
+            self.order = self.dashboard.num_widgets(self.column) + 1
+        super(WidgetSettings, self).save() 
+    
+    def get_widget(self):
+        from netadmin.plugins.core import load_plugins
+        plugins = load_plugins()
+        for plugin in plugins:
+            widgets = plugin().widgets()
+            for widget in widgets:
+                if widget.__name__ == self.widget_class:
+                    return widget
+        return None
