@@ -19,11 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.decorators import login_required
+from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template
 
 from netadmin.plugins.core import load_plugins
-from netadmin.plugins.forms import PluginSettingsFormset
-from netadmin.plugins.models import PluginSettings
+from netadmin.plugins.forms import PluginSettingsFormset, WidgetCreateForm
+from netadmin.plugins.models import PluginSettings, Dashboard, WidgetSettings
 
 
 @login_required
@@ -49,3 +50,32 @@ def plugins_settings(request):
     
     return direct_to_template(request, "plugins/settings.html",
                               extra_context={"settings_formset": formset})
+    
+@login_required
+def dashboard_settings(request, widget_remove=None):
+    if not request.user.is_superuser:
+        raise Exception
+    
+    dashboard, created = Dashboard.objects.get_or_create(user=request.user,
+                                                         name=_("Dashboard"))
+    
+    if request.method == "GET" and widget_remove:
+        widget_settings = WidgetSettings.objects.get(pk=widget_remove)
+        if widget_settings.dashboard != dashboard:
+            raise Exception
+        widget_settings.delete()
+        widget_settings.dashboard.recalculate_order()
+    
+    if request.method == "POST":
+        widget_form = WidgetCreateForm(request.POST)
+        widget_form.save()
+    
+    widgets_settings = dashboard.widgetsettings_set.all().order_by('column','order')
+    context = {
+        'dashboard': dashboard,
+        'widgets_settings': widgets_settings,
+        'widget_form': WidgetCreateForm(initial={'dashboard': dashboard})
+    }
+    return direct_to_template(request, "plugins/dashboard_settings.html",
+                              extra_context=context)
+    

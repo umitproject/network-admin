@@ -19,12 +19,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+class UnknownWidgetName(Exception):
+    pass
+
+
 class Widget(object):
     
     name = ""
     description = ""
     
     template_name = ""
+    
+    def get_name(self):
+        if not self.name:
+            raise UnknownWidgetName
+        return self.name
     
     def context(self):
         return {}

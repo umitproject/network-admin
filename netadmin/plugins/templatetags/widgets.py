@@ -22,6 +22,10 @@ from django import template
 from django.template.loader import get_template
 from django.template import Context
 
+from django.utils.translation import ugettext as _
+
+from netadmin.plugins.models import Dashboard
+
 
 register = template.Library()
 
@@ -29,7 +33,17 @@ register = template.Library()
 @register.simple_tag
 def render_widget(widget):
     template_name = widget.template_name
-    context = widget.context()
+    context = widget().context()
     t =  get_template(template_name)
-    return t.render(Context(**context))
+    return t.render(Context(context))
+
+@register.inclusion_tag("plugins/dashboard.html")
+def render_dashboard(user):
+    dashboard, created = Dashboard.objects.get_or_create(user=user,
+                                                         name=_("Dashboard"))
     
+    widgets_settings = dashboard.widgetsettings_set.all().order_by("column")
+    context = {
+        "widgets_settings": widgets_settings
+    }
+    return context

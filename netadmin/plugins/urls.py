@@ -23,4 +23,6 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('netadmin.plugins.views',
     url(r'^settings/$', 'plugins_settings', name='plugins_settings'),
+    url(r'^dashboard/settings/$', 'dashboard_settings', name='dashboard_settings'),
+    url(r'^dashboard/remove/(?P<widget_remove>\d+)/$', 'dashboard_settings', name='dashboard_remove_widget'),
 )
