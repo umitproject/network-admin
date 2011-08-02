@@ -53,18 +53,6 @@ def load_plugins(active=False):
                         plugins.remove(plugin)
     return plugins
 
-def active_plugins():
-    """Returns list of activated plugins
-    """
-    installed_plugins = load_plugins()
-    active = PluginSettings.objects.filter(is_active=True)
-    active_names = [plugin.name for plugin in active]
-    plugins = []
-    for plugin in installed_plugins:
-        if plugin.__name__ in active_names:
-            plugins.append(plugin)
-    return plugins
-
 class Plugin(object):
     
     _name = ''
