@@ -32,13 +32,13 @@ from django.http import Http404
 from search.core import search
 
 from netadmin.events.models import Event
-from netadmin.networks.models import Host, Network, NetworkHost
-from netadmin.networks.forms import HostCreateForm, HostUpdateForm, \
-    NetworkCreateForm, NetworkUpdateForm
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
 
+from models import Host, Network, NetworkHost
+from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
+    NetworkUpdateForm
 
 @login_required
 def host_list(request, page=None):
@@ -149,9 +149,9 @@ def network_detail(request, object_id):
     queryset = Network.objects.all()
     if network.hosts:
         hosts_ids = [host.pk for host in network.hosts]
-        hosts_other = Host.objects.exclude(pk__in=hosts_ids)
+        hosts_other = Host.objects.exclude(pk__in=hosts_ids).filter(user=request.user)
     else:
-        hosts_other = Host.objects.all()
+        hosts_other = Host.objects.filter(user=request.user)
     extra_context = {
         'hosts_other': hosts_other,
         'can_edit': edit
