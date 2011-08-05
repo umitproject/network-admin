@@ -35,17 +35,20 @@ class CustomOption(models.Model):
     
     def __unicode__(self):
         return "'%s'='%s'" % (self.name, self.value)
-
-class Dashboard(models.Model):
+    
+class WidgetsArea(models.Model):
     user = models.ForeignKey(User)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=30)
+    num_columns = models.SmallIntegerField(choices=[(1,1), (2,2), (3,3)], default=1)
     
     def __unicode__(self):
-        return "'%s' owned by user %s" % \
-            (self.name, self.user.username)
+        return "%s's '%s'" % (self.user.username, self.name)
+    
+    def widgets(self):
+        return self.widgetsettings_set.order_by('column', 'order')
             
     def num_widgets(self, column):
-        """Returns number of widgets in a column on dashboard
+        """Returns number of widgets in a column on widgets area
         """
         widgets = self.widgetsettings_set.all()
         if widgets:
@@ -53,7 +56,7 @@ class Dashboard(models.Model):
         return 0
     
     def recalculate_order(self):
-        widgets = self.widgetsettings_set.all().order_by('column')
+        widgets = self.widgetsettings_set.all().order_by('column', 'order')
         column = 1
         order = 1
         for widget in widgets:
@@ -67,25 +70,58 @@ class Dashboard(models.Model):
     def insert_widget(self, widget, column):
         """Inserts widget into column
         """
+        if column < 1 or column > self.num_columns:
+            raise IndexError(_("Column number out of range"))
         widget_class = widget.__class__.__name__
         order = self.num_widgets(column) + 1
-        widget = WidgetSettings(dashboard=self, column=column,
+        widget = WidgetSettings(widgets_area=self, column=column,
                                 order=order, widget_class=widget_class)
         widget.save()
         return widget
+    
+    def _change_widget_order(self, widget, change):
+        if widget.order + change < 1:
+            return
+        if widget.widgets_area != self:
+            return
+        col_widgets = self.widgetsettings_set.filter(column=widget.column)
+        if widget not in col_widgets:
+            return
+        try:
+            other_widget = col_widgets.get(order=widget.order+change)
+        except WidgetSettings.DoesNotExist:
+            return
+        other_widget.order -= change 
+        other_widget.save()
+        widget.order += change
+        widget.save()
+        return widget
+    
+    def widget_up(self, widget):
+        return self._change_widget_order(widget, -1)
+    
+    def widget_down(self, widget):
+        return self._change_widget_order(widget, 1)
+    
+    def columns(self):
+        cols = []
+        for i in xrange(1, self.num_columns + 1):
+            widgets = self.widgetsettings_set.filter(column=i).order_by('order')
+            cols.append(widgets)
+        return cols
 
 class WidgetSettings(models.Model):
-    dashboard = models.ForeignKey(Dashboard)
+    widgets_area = models.ForeignKey(WidgetsArea)
     column = models.SmallIntegerField()
     order = models.SmallIntegerField()
     widget_class = models.CharField(max_length=30)
     
     def __unicode__(self):
-        return "on dashboard '%s'" % self.dashboard.name
+        return "on widgets area '%s'" % self.widgets_area.name
     
     def save(self):
         if not self.pk:
-            self.order = self.dashboard.num_widgets(self.column) + 1
+            self.order = self.widgets_area.num_widgets(self.column) + 1
         super(WidgetSettings, self).save() 
     
     def get_widget(self):
