@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load widgets %}
 {% block title %}It works!{% endblock %}
 
 {% block content %}
@@ -11,4 +12,9 @@ tool designed to work in cloud. The project is now developed as a part of
 	<li><a href="http://www.umitproject.org/?active=contacts">Umit Project Team</a>,</li>
 	<li>Piotrek Wasilewski &lt;wasilewski.piotrek@gmail.com&gt; - GSoC student working on Network Administrator.</li>
 </ul>
+
+{% if request.user.is_authenticated %}
+	{% widgets_area request.user "Dashboard" 3 %}
+{% endif %}
+
 {% endblock %}
