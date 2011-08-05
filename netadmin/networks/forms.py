@@ -20,7 +20,7 @@
 
 from django import forms
 
-from netadmin.networks.models import Host, Network
+from models import Host, Network
 
 
 class HostCreateForm(forms.ModelForm):

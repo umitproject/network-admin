@@ -23,7 +23,7 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 from django.test.client import Client
 
-from netadmin.networks.models import Host, Network
+from models import Host, Network
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
     grant_access, revoke_access, revoke_edit 
 

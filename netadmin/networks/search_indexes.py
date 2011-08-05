@@ -21,7 +21,7 @@
 import search
 from search.core import startswith
 
-from netadmin.networks.models import Host, Network
+from models import Host, Network
 
 
 search.register(Host, ('name', 'description', 'ipv4', 'ipv6'),

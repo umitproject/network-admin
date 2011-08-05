@@ -29,7 +29,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
 from search.core import search
 
-from netadmin.events.charts import EventTypesChart, EventTypesCountChart
 from netadmin.events.forms import EventSearchForm, EventSearchSimpleForm, \
     EventTypeFormset
 from netadmin.events.models import Event, EventType, EventNotification, \
@@ -49,10 +48,6 @@ def events_list(request, events=None, alerts=None, search_form=None,
         
     if not search_form:
         search_form = EventSearchSimpleForm()
-        
-    eventtypes = EventType.objects.filter(user=request.user)
-    eventtypes_chart = EventTypesChart(7, eventtypes)
-    eventtypescount_chart = EventTypesCountChart(eventtypes)
     
     events = events.order_by('-timestamp')
         
@@ -60,9 +55,7 @@ def events_list(request, events=None, alerts=None, search_form=None,
         'alerts': alerts,
         'events': events,
         'events_header': events_header,
-        'search_form': search_form,
-        'eventtypes_chart': eventtypes_chart,
-        'eventtypescount_chart': eventtypescount_chart
+        'search_form': search_form
     }
     
     if extra_context:
