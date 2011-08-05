@@ -17,18 +17,15 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load widgets %}
-
-<div class="column-1">
-{% for widget_settings in widgets_settings %}
-	{% ifchanged widget_settings.column %}
+{% for column in widgets_area.columns %}
+	<div class="column-{{ forloop.counter }}">
+	{% for widget_settings in column %}
+		<div class="widget">
+			<h3>{{ widget_settings.get_widget.name }}</h3>
+			<div class="widget-content">
+				{% render_widget widget_settings.get_widget %}
+			</div>
 		</div>
-		<div class="column-{{ widget_settings.column }}">
-	{% endifchanged %}
-	<div class="widget">
-		<h3>{{ widget_settings.get_widget.name }}</h3>
-		<div class="widget-content">
-			{% render_widget widget_settings.get_widget %}
-		</div>
+	{% endfor %}
 	</div>
 {% endfor %}
-</div>

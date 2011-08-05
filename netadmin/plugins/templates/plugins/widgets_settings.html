@@ -18,37 +18,52 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
-{% block title %}{% trans "dashboard settings" %}{% endblock %}
+{% block title %}{% trans "widgets settings" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Dashboard settings" %}</h2>
+<h2>{% trans "Widgets settings" %}</h2>
 
 
-<table>
-	<thead>
-		<tr>
-			<th>{% trans "Widget name" %}</th>
-			<th>{% trans "Column" %}</th>
-			<th>{% trans "Order" %}</th>
-			<th></th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for widget in widgets_settings %}
-		<tr>
-			<td>{{ widget.get_widget.name }}</td>
-			<td>{{ widget.column }}</td>
-			<td>{{ widget.order }}</td>
-			<td><a href="{% url dashboard_remove_widget widget.pk %}">{% trans "Remove" %}</a></td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+{% for area in widgets_areas %}
+<h3>{% trans area.name %}</h3>
+{% if area.widgets %}
+	<table>
+		<thead>
+			<tr>
+				<th>{% trans "Widget name" %}</th>
+				<th>{% trans "Column" %}</th>
+				<th>{% trans "Order" %}</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for widget in area.widgets %}
+			<tr>
+				<td>{{ widget.get_widget.name }}</td>
+				<td>{{ widget.column }}</td>
+				<td>{{ widget.order }}</td>
+				<td>
+					<a href="{% url widgets_remove widget.pk %}">{% trans "Remove" %}</a> 
+					<a href="{% url widget_up widget.pk %}">{% trans "Up" %}</a> 
+					<a href="{% url widget_down widget.pk %}">{% trans "Down" %}</a>
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+{% else %}
+	<p>{% trans "No widgets." %}</p>
+{% endif %}
+{% endfor %}
 
+{% if widget_form %}
 <form action="" method="POST">
 	{{ widget_form.as_p }}
 	<input type="submit" value="{% trans 'Add to dashboard' %}" />
 </form>
+{% else %}
+<p>{% trans "There are no widgets available" %}</p>
+{% endif %}
 
 {% endblock %}
 

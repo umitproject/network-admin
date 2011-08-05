@@ -24,7 +24,7 @@ from django.template import Context
 
 from django.utils.translation import ugettext as _
 
-from netadmin.plugins.models import Dashboard
+from netadmin.plugins.models import WidgetsArea
 
 
 register = template.Library()
@@ -34,16 +34,16 @@ register = template.Library()
 def render_widget(widget):
     template_name = widget.template_name
     context = widget().context()
-    t =  get_template(template_name)
+    t =  get_template("widgets/%s" % template_name)
     return t.render(Context(context))
 
-@register.inclusion_tag("plugins/dashboard.html")
-def render_dashboard(user):
-    dashboard, created = Dashboard.objects.get_or_create(user=user,
-                                                         name=_("Dashboard"))
-    
-    widgets_settings = dashboard.widgetsettings_set.all().order_by("column")
+@register.inclusion_tag("plugins/widgets_area.html")
+def widgets_area(user, name, num_columns):
+    area, created = WidgetsArea.objects.get_or_create(name=name, user=user)
+    if created:
+        area.num_columns = num_columns
+        area.save()
     context = {
-        "widgets_settings": widgets_settings
+        "widgets_area": area
     }
     return context

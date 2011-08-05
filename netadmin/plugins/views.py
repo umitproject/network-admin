@@ -22,9 +22,9 @@ from django.contrib.auth.decorators import login_required
 from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template
 
-from netadmin.plugins.core import load_plugins
-from netadmin.plugins.forms import PluginSettingsFormset, WidgetCreateForm
-from netadmin.plugins.models import PluginSettings, Dashboard, WidgetSettings
+from core import load_plugins, widgets_list
+from forms import PluginSettingsFormset, WidgetCreateForm
+from models import PluginSettings, WidgetsArea, WidgetSettings
 
 
 @login_required
@@ -52,30 +52,36 @@ def plugins_settings(request):
                               extra_context={"settings_formset": formset})
     
 @login_required
-def dashboard_settings(request, widget_remove=None):
-    if not request.user.is_superuser:
-        raise Exception
-    
-    dashboard, created = Dashboard.objects.get_or_create(user=request.user,
-                                                         name=_("Dashboard"))
-    
-    if request.method == "GET" and widget_remove:
-        widget_settings = WidgetSettings.objects.get(pk=widget_remove)
-        if widget_settings.dashboard != dashboard:
-            raise Exception
-        widget_settings.delete()
-        widget_settings.dashboard.recalculate_order()
+def widgets_settings(request, widget_remove=None,
+                     widget_up=None, widget_down=None):
+    if request.method == "GET":
+        if widget_remove:
+            widget_settings = WidgetSettings.objects.get(pk=widget_remove)
+            if widget_settings.widgets_area.user == request.user:
+                widget_settings.delete()
+                widget_settings.widgets_area.recalculate_order()
+        if widget_up or widget_down:
+            widget_pk = widget_up or widget_down
+            widget = WidgetSettings.objects.get(pk=widget_pk)
+            area = widget.widgets_area
+            if widget_up:
+                area.widget_up(widget)
+            else:
+                area.widget_down(widget)
     
     if request.method == "POST":
-        widget_form = WidgetCreateForm(request.POST)
+        widget_form = WidgetCreateForm(request.user, request.POST)
         widget_form.save()
+        
+    if widgets_list():
+        widget_form = WidgetCreateForm(user=request.user)
+    else:
+        widget_form = None
     
-    widgets_settings = dashboard.widgetsettings_set.all().order_by('column','order')
     context = {
-        'dashboard': dashboard,
-        'widgets_settings': widgets_settings,
-        'widget_form': WidgetCreateForm(initial={'dashboard': dashboard})
+        'widgets_areas': WidgetsArea.objects.filter(user=request.user),
+        'widget_form': widget_form
     }
-    return direct_to_template(request, "plugins/dashboard_settings.html",
+    return direct_to_template(request, "plugins/widgets_settings.html",
                               extra_context=context)
     
