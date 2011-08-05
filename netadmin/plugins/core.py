@@ -23,8 +23,8 @@ import pkgutil
 
 from django.utils.translation import ugettext as _
 
-import netadmin.plugins.installed as installed_plugins
-from netadmin.plugins.models import PluginSettings
+import installed as installed_plugins
+from models import PluginSettings
 
 
 __plugins__ = []
@@ -52,6 +52,10 @@ def load_plugins(active=False):
                     if plugin().plugin_meta()['name'] == sett.plugin_name:
                         plugins.remove(plugin)
     return plugins
+
+def widgets_list():
+    plugins = load_plugins(active=True)
+    return sum([plugin().widgets() for plugin in plugins], [])
 
 class Plugin(object):
     
