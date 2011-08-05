@@ -42,6 +42,29 @@ indexes:
   - name: user_id
   - name: name
 
+- kind: plugins_widgetsettings
+  properties:
+  - name: column
+  - name: widgets_area_id
+  - name: order
+
+- kind: plugins_widgetsettings
+  properties:
+  - name: dashboard_id
+  - name: column
+
+- kind: plugins_widgetsettings
+  properties:
+  - name: dashboard_id
+  - name: column
+  - name: order
+
+- kind: plugins_widgetsettings
+  properties:
+  - name: widgets_area_id
+  - name: column
+  - name: order
+
 - kind: search_relationindex_events_event_search_index
   properties:
   - name: search_index_search_list_field
