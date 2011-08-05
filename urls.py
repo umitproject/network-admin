@@ -12,6 +12,7 @@ urlpatterns = patterns('',
     (r'^event/', include('netadmin.events.urls')),
     (r'^report/', include('netadmin.reportmeta.urls')),
     (r'^user/', include('netadmin.users.urls')),
+    (r'^plugins/', include('netadmin.plugins.urls')),
     
     ('^$', 'django.views.generic.simple.direct_to_template',
      {'template': 'home.html'}),
