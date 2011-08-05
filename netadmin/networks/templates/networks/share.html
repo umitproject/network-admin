@@ -17,11 +17,11 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n actions %}
 {% block title %}{% trans "sharing" %} {{ object.name }}{% endblock %}
 
 {% block content %}
-<h2>Sharing {{ object.name }}</h2>
+<h2>{% trans "Sharing" %} {{ object.name|action:"share_name" }}</h2>
 
 {% if object.sharing_users %}
 <table>
@@ -35,7 +35,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<tbody>
 	{% for user, edit in object.sharing_users %}
 		<tr>
-			<td>{{ user.username }}</td>
+			<td>{{ user.username|action:"share_list_user" }}</td>
 			<td><a href="{% url share_edit object_type object.pk user.pk %}">{% if edit %}yes{% else %}no{% endif %}</a></td>
 			<td><a href="{% url share_not object_type object.pk user.pk %}">{% trans "remove" %}</a></td>
 		</tr>	

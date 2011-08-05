@@ -17,18 +17,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n actions %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
 {% block content %}
-<h2>{{ object.name }}</h2>
+<h2>{{ object.name|action:"network_name" }}</h2>
 
 {% if object.user != request.user %}
-<p><strong>Owned by {{ object.user.username }}</strong></p>
+<p><strong>{% trans "Owned by" %} {{ object.user.username|action:"network_user" }}</strong></p>
 {% endif %}
 
 <h3>{% trans "Basic info" %}</h3>
-<p>{{ object.description }}</p>
+<p>{{ object.description|action:"network_description" }}</p>
 
 <h3>{% trans "Hosts" %}</h3>
 	
@@ -43,15 +43,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<tr>
 			<td>
 				<input type="checkbox" name="remove_host" value="{{ host.pk }}" /> 
-				<a href="{% url host_detail host.pk %}">{{ host.name }}</a>
+				<a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a>
 			</td>
-			<td>{{ host.ipv4 }}</a></td>
-			<td>{{ host.ipv6 }}</td>
+			<td>{{ host.ipv4|action:"host_list_ipv4" }}</a></td>
+			<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
 </table>
-<input type="submit" value="{% trans "Remove selected host(s)" %}" />
+<input type="submit" value="{% trans 'Remove selected host(s)' %}" />
 </form>
 {% endif %}
 
@@ -61,10 +61,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% trans "Add host to network" %}: 
 	<select name="add_host">
 	{% for host in hosts_other %}
-		<option value="{{ host.pk }}">{{ host.name }}</option>
+		<option value="{{ host.pk }}">{{ host.name|action:"host_select_name" }}</option>
 	{% endfor %}
 	</select>
-	<input type="submit" value="{% trans "Add" %}" />
+	<input type="submit" value="{% trans 'Add' %}" />
 </p>
 </form>
 {% endif %}

@@ -17,20 +17,22 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n actions events_tags %}
 {% block title %}{% trans "report" %}{% endblock %}
 
 {% block content %}
 
-<h2>{{ object.name }}</h2>
+<h2>{{ object.name|action:"reportmeta_name" }}</h2>
 
-<p>{{ object.description }}</p>
-<p>Report for {{ object.object_type.name }}: <a href="{{ object.reported_object.get_absolute_url }}">{{ object.reported_object.name }}</a></p>
+<p>{{ object.description|action:"reportmeta_description" }}</p>
+<p>{% trans "Report for" %} {{ object.object_type.name|action:"reportmeta_object_type_name" }}:
+	<a href="{{ object.reported_object.get_absolute_url }}">{{ object.reported_object.name|action:"reportmeta_object_name" }}</a>
+</p>
 
 {% if object.object_type.name == 'network' %}
-<p>Hosts in the report: 
+<p>{% trans "Hosts in the report" %}: 
 {% for host in object.reported_object.get_hosts|slice:":5" %}
-	{{ host.name }}{% if not forloop.last %}, {% endif %}
+	{{ host.name|action:"reportmeta_host_list_name" }}{% if not forloop.last %}, {% endif %}
 {% endfor %}
 {% if object.reported_object.get_hosts_count > 5 %},...{% endif %}
 </p>
@@ -39,31 +41,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <h2>{% trans "Events" %}</h2>
 
 {% if object.events %}
-<table>
-	<thead>
-		<tr><th>{% trans "Timestamp" %}</th><th>{% trans "Message" %}</th><th>{% trans "Event type" %}</th><th>{% trans "Host" %}</th></tr>
-	</thead>
-	<tbody>
-	{% for event in object.events %}
-		<tr>
-			<td>{{ event.timestamp }}</td>
-			<td>
-				<a href="{% url event_detail event.pk %}">
-				{% if event.short_event %}
-					{{ event.short_message }}
-				{% else %}
-					{{ event.message|slice:":100" }}
-				{% endif %}
-				</a>
-			</td>
-			<td>{{ event.event_type }}</td>
-			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+	{% events_list object.events %}
 {% else %}
-<p>No events have been reported yet.</p>
+	<p>{% trans "No events have been reported yet" %}.</p>
 {% endif %}
 
 {% endblock %}

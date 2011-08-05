@@ -17,25 +17,25 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags %}
+{% load i18n events_tags actions %}
 {% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
 {% block content %}
-<h2>{{ object.name }}</h2>
+<h2>{{ object.name|action:"host_name" }}</h2>
 
 {% if object.user != request.user %}
-<p><strong>Owned by {{ object.user.username }}</strong></p>
+<p><strong>{% trans "Owned by" %} {{ object.user.username|action:"host_user" }}</strong></p>
 {% endif %}
 
 <h3>{% trans "Basic info" %}</h3>
-<p>{{ object.description }}</p>
+<p>{{ object.description|action:"host_description" }}</p>
 
 {% if object.ipv4 %}
-<p>{% trans "IPv4 address" %}: {{ object.ipv4 }}</p>
+<p>{% trans "IPv4 address" %}: {{ object.ipv4|action:"host_ipv4" }}</p>
 {% endif %}
 
 {% if object.ipv6 %}
-<p>{% trans "IPv6 address" %}: {{ object.ipv6 }}</p>
+<p>{% trans "IPv6 address" %}: {{ object.ipv6|action:"host_ipv6" }}</p>
 {% endif %}
 
 {% if object.events %}

@@ -22,10 +22,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 <h2>
-{{ object.timestamp|action:"event_header_timestamp" }}
-{% if object.short_message %}: {{ object.short_message|action:"event_header_message" }}{% endif %}
+{{ object.timestamp|action:"event_timestamp" }}
+{% if object.short_message %}: {{ object.short_message|action:"event_short_message" }}{% endif %}
 </h2>
-<h3>{{ object.event_type|action:"event_header_event_type" }}</h3>
+<h3>{{ object.event_type|action:"event_event_type" }}</h3>
 
 {% if not object.source_host %}
 <p><strong>{% trans "Network-wide event" %}</strong></p>
@@ -38,7 +38,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p class="notification-message">{{ object.html_message|action:"event_html_message"|safe }}</p>
 
 {% if object.fields_data %}
-<h4>{{ object.fields_class|action:"event_detail_field_class" }}</h4>
+<h4>{{ object.fields_class|action:"event_field_class" }}</h4>
 <ul>
 {% for field, value in object.get_details.items %}
 	<li>

@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags charts %}
+{% load i18n events_tags %}
 {% block title %}{% trans "events list" %}{% endblock %}
 
 {% block content %}
@@ -30,20 +30,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<p><input type="submit" value="{% trans 'Search' %}" /> 
 	</p>
 </form>
-
-{% init_charts 'corechart' %}
-
-<div style="position: absolute; margin-left: -20px">
-	{% chart eventtypes_chart 430 200 %}
-</div>
-
-<div style="float: right; margin-right: -50px">
-{% chart eventtypescount_chart 400 200 %}
-</div>
-
-<div style="clear: both"></div>
-
-{% show_charts %}
 
 {% if alerts %}
 	<h3>{% trans "Alerts" %}</h3>

@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n actions %}
 {% block title %}{% trans "reports" %}{% endblock %}
 
 {% block content %}
@@ -36,13 +36,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<tbody>
 	{% for report in object_list %}
 		<tr>
-			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name }}</a></td>
-			<td>{{ report.reported_object.name }}</td>
-			<td>{{ report.description }}</td>
-			<td>{{ report.get_period }}</td>
+			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name|action:"reportmeta_list_name" }}</a></td>
+			<td>{{ report.reported_object.name|action:"reportmeta_list_object_name" }}</td>
+			<td>{{ report.description|action:"reportmeta_list_description" }}</td>
+			<td>{{ report.get_period|action:"reportmeta_list_period" }}</td>
 			<td>
 			{% for event_type in report.get_event_types %}
-				{{ event_type.name }}{% if not forloop.last %}, {% endif %}
+				{{ event_type.name|action:"reportmeta_event_type_list_name" }}{% if not forloop.last %}, {% endif %}
 			{% endfor %}
 			</td>
 		</tr>

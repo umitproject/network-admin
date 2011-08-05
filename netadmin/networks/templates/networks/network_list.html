@@ -17,7 +17,7 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n actions %}
 {% block title %}{% trans "networks list" %}{% endblock %}
 
 {% block content %}
@@ -37,8 +37,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<tbody>
 	{% for network in networks %}
 		<tr>
-			<td><a href="{% url network_detail network.pk %}">{{ network.name }}</a></td>
-			<td>{{ network.hosts.count }}</td>
+			<td>
+				<a href="{% url network_detail network.pk %}">
+					{{ network.name|action:"network_list_name" }}
+				</a>
+			</td>
+			<td>{{ network.hosts.count|action:"network_hosts_count" }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
