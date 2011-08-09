@@ -18,18 +18,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django import template
 from django.utils.translation import ugettext as _
 
-from netadmin.utils.charts import GOOGLE_CHARTS_PACKAGES, InvalidChartsPackage
+from netadmin.utils.charts.chart_tools import CHART_TOOLS_PACKAGES, \
+    InvalidChartsPackage
 
 
 register = template.Library()
 
 
-@register.inclusion_tag('charts/chart.html')
+@register.inclusion_tag('charts/chart_tools/chart.html')
 def chart(chart, width=None, height=None):
     if width:
         chart.width = width
@@ -37,7 +36,7 @@ def chart(chart, width=None, height=None):
         chart.height = height
     return {'chart': chart}
 
-@register.inclusion_tag('charts/chart_annotatedtimeline.html')
+@register.inclusion_tag('charts/chart_tools/annotatedtimeline.html')
 def chart_annotatedtimeline(chart):
     return {'chart': chart}
 
@@ -45,11 +44,8 @@ def chart_annotatedtimeline(chart):
 def chart_hash(chart):
     return hash(chart)
 
-@register.inclusion_tag('charts/charts_init.html')
+@register.inclusion_tag('charts/chart_tools/init.html')
 def init_charts(args):
-    #for package in args:
-    #    if package not in GOOGLE_CHARTS_PACKAGES:
-    #        raise InvalidChartsPackage(_("Unknown package '%s'") % package)
     context = {
         'packages': args
     }
@@ -64,7 +60,7 @@ def init_charts(parser, token):
 class InitChartNode(template.Node):
     def __init__(self, *args, **kwargs):
         for package in args:
-            if package not in GOOGLE_CHARTS_PACKAGES:
+            if package not in CHART_TOOLS_PACKAGES:
                 raise InvalidChartsPackage(_("Unknown package '%s'") % package)
         self.packages = list(args)
 
@@ -76,6 +72,6 @@ class InitChartNode(template.Node):
             </script>
         """ % self.packages
 
-@register.inclusion_tag('charts/charts_show.html')
+@register.inclusion_tag('charts/chart_tools/show.html')
 def show_charts():
     return

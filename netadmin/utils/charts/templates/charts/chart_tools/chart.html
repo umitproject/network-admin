@@ -1,20 +1,24 @@
-{% load charts %}
+{% load chart_tools %}
 <script type="text/javascript">
 	charts.push(function(){
 		var data = new google.visualization.DataTable();
 		
-		data.addRows({{ chart|length }});
+		data.addRows({{ chart.num_rows }});
 		
-		{% for column in chart %}
-			data.addColumn('{{ column.column_type }}', '{{ column.column_label }}');
-			{% for value in column.data %}
-				data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, {{ value|safe }});
+		{% for column in chart.columns %}
+			data.addColumn('{{ column.type }}', '{{ column.name }}');
+		{% endfor %}
+		
+		{% for x, y in chart.formatted_data.items %}
+			data.setValue({{ forloop.counter0 }}, 0, {{ x|safe }});
+			{% for val in y %}
+				data.setValue({{ forloop.parentloop.counter0 }}, {{ forloop.counter }}, {{ val|safe }});
 			{% endfor %}
 		{% endfor %}
 		
 		new google.visualization.{{ chart.chart_type }}(document.getElementById('chart-{{ chart|chart_hash }}')).
 			draw(data, {
-				title: '{{ chart.title }}',
+				title: '{{ chart.name }}',
 				width: {{ chart.width }},
 				height: {{ chart.height }}
 				{% block chart_options %}
