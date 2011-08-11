@@ -18,22 +18,86 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from django.utils.translation import ugettext as _
+
 
 class UnknownWidgetName(Exception):
+    """Raised when widget's author didn't override name field
+    """
     pass
 
 
 class Widget(object):
+    """
+    Base widget class which contains all data and methods essential
+    to render widget and manage its settings.
     
+    To create your own widget you have to write Widget subclass which
+    should override the following fields:
+    
+        * name - "official" name that is shown in dashboard settings
+        * description - short text that should describe widget's purpose and its usage
+        * template_name - name of the template file used to render the widget
+          (the template itself should be placed in templates/widgets/ directory)
+          
+    Although only name and template_name fields are obligatory, we encourage
+    you to provide users with comprehensive description so they can understand
+    better how to use your widget.
+    """
     name = ""
     description = ""
     
     template_name = ""
     
+    def __init__(self, user=None):
+        self._user = user
+    
     def get_name(self):
+        """Returns widget's "official" name
+        """
         if not self.name:
-            raise UnknownWidgetName
+            class_name = self.__class__.__name__
+            raise UnknownWidgetName(_("You have to override 'name' field in "
+                                      "the %s class") % class_name)
         return self.name
     
-    def context(self):
+    def context(self, widget):
+        """
+        Should return context dictionary that will be used to render
+        the widget.
+        """
         return {}
+    
+    def options(self, widget):
+        """
+        Should return options dictionary, where each key indicates option's
+        name and each value is a dictionary with the following keys:
+        
+            * label - string that will be displayed in option's form
+            * type (optional, if 'choices' field is provided) - type of the
+              option's value
+            * choices (optional, if 'type' field is provided) - list of
+              two-elements tuples where the first element is exact value to be
+              stored and the second one is a label shown in the option's form
+            * default - option's default value
+            * return_func - function which gets one argument - value of the
+              option from the database - and should return value that will
+              be returned by get_option method (NOT plugins.options.get_option function!)
+        """
+        return {}
+
+    def get_option(self, name, widget):
+        """
+        Returns value of the option with specified name or returns result
+        of the return_func function declared for widget's option with this name.
+        """
+        from options import get_option
+        option = self.options(widget).get(name)
+        if option:
+            value = get_option(name, option['type'])
+            return_func = option.get('return_func')
+            if return_func:
+                return return_func(value)
+        else:
+            value = get_option(name)
+        return value
