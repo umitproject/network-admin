@@ -21,12 +21,12 @@
 from netadmin.plugins.core import load_plugins
 
 def actions_list(active=False):
-    """Result list of actions as tuples: (action_name, callback)
+    """Returns list of actions as tuples: (action_name, callback)
     """
     plugins = load_plugins(active)
     actions = []
     for plugin in plugins:
-        actions.extend(plugin().actions())
+        actions.extend(plugin.actions())
     return actions
 
 def run_action(action_name, arg, pass_result=False):
