@@ -27,6 +27,10 @@ CUSTOM_OPTION_MAX_LENGTH = 300
 
 class PluginSettings(models.Model):
     """
+    The very simple model to store plugin's activation state.
+    
+    We use this model's save method to call activation/deactivation
+    methods on plugins.
     """
     plugin_name = models.CharField(max_length=30, editable=False)
     is_active = models.BooleanField(default=False)
