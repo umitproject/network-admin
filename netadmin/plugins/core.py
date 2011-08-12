@@ -23,72 +23,87 @@ import pkgutil
 
 from django.utils.translation import ugettext as _
 
-import installed as installed_plugins
+import installed_plugins
 from models import PluginSettings
 
 
-__plugins__ = []
-
-
-def load_plugins(active=False):
-    """Returns list of all installed plugins
+class PluginNameError(Exception):
+    """Raised when plugin's name is not specified
     """
-    global __plugins__
-    if __plugins__:
-        __plugins__ = []
+    pass
+
+class Plugin(object):
+    """Base class for plugins
+    """
+    name = ''
+    description = _("Description not available")
+    author = _("Anonymous")
+    
+    def get_name(self):
+        if not self.name:
+            raise PluginNameError(_("Plugin name not specified"))
+        return self.name
+    
+    def activate(self):
+        """Called when a plugin is activated
+        """
+        pass
+    
+    def deactivate(self):
+        """Called when a plugin is deactivated
+        """
+        pass
+    
+    def actions(self):
+        """
+        Should return list of tuples: (action_name, callback_function)
+        
+        To read more about actions see: netadmin.plugins.actions
+        """
+        return []
+    
+    def widgets(self):
+        """
+        Should return list of widgets
+        
+        To read more about widgets see: netadmin.plugins.widgets
+        """
+        return []
+    
+    def options(self):
+        """
+        Should return options dictionary
+        
+        To read more about options see: netadmin.plugins.options
+        """
+        return {}
+    
+def load_plugins(user=None, active=False):
+    """
+    Returns list of all installed plugins. If 'active' is set to True, then
+    only plugins activated by administrator are listed. 
+    """
+    plugins = []
     plugins_path = os.path.dirname(installed_plugins.__file__)
     iter_modules = pkgutil.iter_modules([plugins_path])
     plugins_modules = [name for loader, name, ispkg in iter_modules]
     for plugin_module in plugins_modules:
-        mod = __import__('netadmin.plugins.installed.%s.main' % plugin_module,
+        mod = __import__('installed_plugins.%s.main' % plugin_module,
                          fromlist=['__plugins__'])
-        __plugins__.extend(mod.__plugins__)
-    plugins = __plugins__
+        if hasattr(mod, '__plugins__'):
+            plugins.extend(mod.__plugins__)
     if active:
         settings = PluginSettings.objects.all()
         for sett in settings:
             if not sett.is_active:
                 for plugin in plugins:
-                    if plugin().plugin_meta()['name'] == sett.plugin_name:
+                    if plugin().name == sett.plugin_name:
                         plugins.remove(plugin)
-    return plugins
+    return [plugin(user) for plugin in plugins]
 
-def widgets_list():
+def widgets_list(user=None):
+    """Returns list of all widgets defined in installed plugins
+    """
     plugins = load_plugins(active=True)
-    return sum([plugin().widgets() for plugin in plugins], [])
-
-class Plugin(object):
-    
-    _name = ''
-    _description = _("Description not available")
-    _author = _("Anonymous")
-    _license = _("Unknown")
-    
-    def plugin_meta(self):
-        meta = {
-            'name': self._name if self._name else self.__class__.__name__,
-            'description': self._description,
-            'author': self._author,
-            'license': self._license
-        }
-        return meta
-    
-    def activate(self):
-        """Called when plugin is activated
-        """
-        pass
-    
-    def deactivate(self):
-        """Called when plugin is deactivated
-        """
-        pass
-    
-    def actions(self):
-        """Should return list of tuples: (action_name, callback_function)
-        """
-        return []
-    
-    def widgets(self):
-        """Should return list of widgets
-        """
-        return []
+    widgets = sum([plugin.widgets() for plugin in plugins], [])
+    return [widget(user) for widget in widgets]
