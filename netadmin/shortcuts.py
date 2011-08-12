@@ -18,17 +18,36 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import timedelta
+
 from events.models import Event, EventType
 from networks.models import Host, Network
 
 
-def get_events(user=None):
+def get_events(time_from=None, time_to=None, source_hosts=[]):
+    """
+    get_events(...) -> QuerySet
+    
+    Returns events, optionally filtering them by timestamp
+    or source hosts.
+    """
     events = Event.objects.all()
-    if user:
-        events = events.filter(source_host__user__pk=user.pk)
+    if source_hosts:
+        pks = [host.pk for host in source_hosts]
+        events = events.filter(source_host__pk__in=pks)
+    if time_from:
+        events = events.filter(timestamp__gte=time_from)
+    if time_to:
+        events = events.filter(timestamp__lt=time_to)
     return events
 
 def get_eventtypes(user=None, alert=0):
+    """
+    get_eventtypes(...) -> QuerySet
+    
+    Returns events' types, filtering them by user and/or alert
+    level if specified.
+    """
     eventtypes = EventType.objects.all()
     if user:
         eventtypes = eventtypes.filter(user=user)
@@ -36,11 +55,18 @@ def get_eventtypes(user=None, alert=0):
         eventtypes = eventtypes.filter(alert_level__gte=alert)
     return eventtypes
 
+def get_alerts(user=None):
+    ets = [et.pk for et in get_eventtypes(user, 1)]
+    return Event.objects.filter(event_type__pk__in=ets)
+
 def _get_network_objects(subclass, user=None):
     objects = subclass.objects.all()
     if user:
         objects = objects.filter(user=user)
     return objects
+
+def get_host(id):
+    return Host.objects.get(pk=id)
 
 def get_hosts(user=None):
     return _get_network_objects(Host, user)
