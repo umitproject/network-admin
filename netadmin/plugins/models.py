@@ -22,21 +22,62 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
+CUSTOM_OPTION_MAX_LENGTH = 300
+
+
 class PluginSettings(models.Model):
+    """
+    """
     plugin_name = models.CharField(max_length=30, editable=False)
     is_active = models.BooleanField(default=False)
     
     def __unicode__(self):
         return "Plugin '%s' settings" % self.plugin_name
     
+    def save(self, *args, **kwargs):
+        """Calls plugin's activate or deactivate method after saving 
+        """
+        active = self.is_active
+        super(PluginSettings, self).save(*args, **kwargs)
+        if active != self.is_active:
+            if self.is_active:
+                self.get_plugin().activate()
+            else:
+                self.get_plugin().deactivate()
+    
 class CustomOption(models.Model):
+    """
+    The base model for custom options that could be used in plugin to
+    save its state and/or user's preferences.
+    
+    The 'name' field must be unique in case of global option.
+    Otherwise, if 'user' field is not blank 'name' have to be unique for the specified user.
+    
+    Regardless the type of saved value, it is converted and stored as a string.
+    This is up to plugin's author to provide __str__ method for saved object
+    and to convert option's value back to required type (if it cannot be string).
+    """
     name = models.CharField(max_length=50)
-    value = models.CharField(max_length=300)
+    value = models.CharField(max_length=CUSTOM_OPTION_MAX_LENGTH)
+    user = models.ForeignKey(User, blank=True)
     
     def __unicode__(self):
         return "'%s'='%s'" % (self.name, self.value)
     
+    def is_global(self):
+        """Returns True if option is global, that is when user field is blank
+        """
+        if self.user:
+            return False
+        return True
+    
 class WidgetsArea(models.Model):
+    """
+    Widgets area is a set of widgets that has unique name. Every user has
+    only one area with given name. Within area widgets should be ordered
+    by columns and rows (respectively 'column' and 'order' fields in
+    WidgetSettings model).
+    """
     user = models.ForeignKey(User)
     name = models.CharField(max_length=30)
     num_columns = models.SmallIntegerField(choices=[(1,1), (2,2), (3,3)], default=1)
@@ -45,6 +86,8 @@ class WidgetsArea(models.Model):
         return "%s's '%s'" % (self.user.username, self.name)
     
     def widgets(self):
+        """Returns WidgetSettings queryset
+        """
         return self.widgetsettings_set.order_by('column', 'order')
             
     def num_widgets(self, column):
@@ -56,6 +99,12 @@ class WidgetsArea(models.Model):
         return 0
     
     def recalculate_order(self):
+        """
+        Updates order for all widgets in the widgets area.
+        
+        Use this method to make sure that each widget has unique
+        pair of column--order fields.
+        """
         widgets = self.widgetsettings_set.all().order_by('column', 'order')
         column = 1
         order = 1
@@ -98,12 +147,20 @@ class WidgetsArea(models.Model):
         return widget
     
     def widget_up(self, widget):
+        """Moves widget up (decrease its order)
+        """
         return self._change_widget_order(widget, -1)
     
     def widget_down(self, widget):
+        """Moves widget down (increase its order)
+        """
         return self._change_widget_order(widget, 1)
     
     def columns(self):
+        """
+        Returns list of WidgetSettings querysets where each queryset
+        contains widgets with a different column index
+        """
         cols = []
         for i in xrange(1, self.num_columns + 1):
             widgets = self.widgetsettings_set.filter(column=i).order_by('order')
@@ -111,6 +168,10 @@ class WidgetsArea(models.Model):
         return cols
 
 class WidgetSettings(models.Model):
+    """
+    Settings that specifies widget's position in selected area.
+    The field 'widget_class' indicates Widget subclass defined in plugin.
+    """
     widgets_area = models.ForeignKey(WidgetsArea)
     column = models.SmallIntegerField()
     order = models.SmallIntegerField()
@@ -120,16 +181,36 @@ class WidgetSettings(models.Model):
         return "on widgets area '%s'" % self.widgets_area.name
     
     def save(self):
+        """Sets widget's order on first save
+        """
         if not self.pk:
             self.order = self.widgets_area.num_widgets(self.column) + 1
         super(WidgetSettings, self).save() 
     
     def get_widget(self):
+        """
+        Returns instance of Widget class which contains methods that give you
+        access to widget's name, description, options, template context etc.
+        """
         from netadmin.plugins.core import load_plugins
         plugins = load_plugins()
         for plugin in plugins:
-            widgets = plugin().widgets()
+            widgets = [widget() for widget in plugin.widgets()]
             for widget in widgets:
-                if widget.__name__ == self.widget_class:
+                if widget.__class__.__name__ == self.widget_class:
                     return widget
         return None
+    
+    def get_user(self):
+        """Returns user--owner of the area to which widget is assigned
+        """
+        return self.widgets_area.user
+    
+    def set_user(self, user):
+        """Sets user--owner of the area to which widget is assigned
+        """
+        area = self.widgets_area
+        area.user = user
+        area.save()
+        
+    user = property(get_user, set_user)
