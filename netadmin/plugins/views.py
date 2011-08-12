@@ -19,26 +19,30 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template
+from django.views.generic.list_detail import object_detail
 
 from core import load_plugins, widgets_list
 from forms import PluginSettingsFormset, WidgetCreateForm
 from models import PluginSettings, WidgetsArea, WidgetSettings
+from options import options_form, set_option, get_options
 
 
 @login_required
 def plugins_settings(request):
+    """Simple admin page for activating and deactivating installed plugins
+    """
     if not request.user.is_superuser:
-        raise Exception
+        raise Http404()
     
     plugins = load_plugins()
     names_list = [sett.plugin_name for sett in PluginSettings.objects.all()]
     
     for plugin in plugins:
-        meta = plugin().plugin_meta()
-        if meta['name'] not in names_list:
-            sett = PluginSettings(plugin_name=meta['name'])
+        if plugin.name not in names_list:
+            sett = PluginSettings(plugin_name=plugin.name)
             sett.save()
             
     if request.method == "POST":
@@ -54,6 +58,8 @@ def plugins_settings(request):
 @login_required
 def widgets_settings(request, widget_remove=None,
                      widget_up=None, widget_down=None):
+    """Widgets areas' settings where user can insert widget and set its order
+    """
     if request.method == "GET":
         if widget_remove:
             widget_settings = WidgetSettings.objects.get(pk=widget_remove)
@@ -64,10 +70,11 @@ def widgets_settings(request, widget_remove=None,
             widget_pk = widget_up or widget_down
             widget = WidgetSettings.objects.get(pk=widget_pk)
             area = widget.widgets_area
-            if widget_up:
-                area.widget_up(widget)
-            else:
-                area.widget_down(widget)
+            if area.user == request.user:
+                if widget_up:
+                    area.widget_up(widget)
+                else:
+                    area.widget_down(widget)
     
     if request.method == "POST":
         widget_form = WidgetCreateForm(request.user, request.POST)
@@ -84,4 +91,32 @@ def widgets_settings(request, widget_remove=None,
     }
     return direct_to_template(request, "plugins/widgets_settings.html",
                               extra_context=context)
+    
+@login_required
+def widget_detail(request, widgetsettings_id):
+    """Widget details page where user can set options defined for the widget
+    """
+    widget = WidgetSettings.objects.get(pk=widgetsettings_id)
+    opts = widget.get_widget().options(widget)
+    
+    if request.method == "POST":
+        form = options_form(opts)(request.POST)
+        if form.is_valid():
+            for field in form.cleaned_data:
+                set_option(field, form.cleaned_data[field])
+    
+    if opts:
+        defaults = [opt.get('default') for opt in opts.values()]
+        initial = get_options(opts.keys(), defaults)
+        form = options_form(opts)(initial=initial)
+    else:
+        form = None
+    
+    extra_context = {
+        'options_form': form 
+    }
+    queryset = WidgetSettings.objects.all()
+    return object_detail(request, queryset, widgetsettings_id,
+                         template_name="plugins/widget_detail.html",
+                         extra_context=extra_context)
     
