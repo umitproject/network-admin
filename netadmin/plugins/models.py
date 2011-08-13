@@ -63,7 +63,7 @@ class CustomOption(models.Model):
     """
     name = models.CharField(max_length=50)
     value = models.CharField(max_length=CUSTOM_OPTION_MAX_LENGTH)
-    user = models.ForeignKey(User, blank=True)
+    user = models.ForeignKey(User, null=True)
     
     def __unicode__(self):
         return "'%s'='%s'" % (self.name, self.value)
