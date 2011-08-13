@@ -125,7 +125,7 @@ class Event(models.Model):
     checked = models.BooleanField(default=False)
     
     def __unicode__(self):
-        return self.message
+        return "'%s' at %s" % (self.message, self.timestamp)
     
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -155,14 +155,32 @@ class Event(models.Model):
         return self.message.replace('\n', '<br />')
     html_message = property(_html_message)
     
-    def _user(self):
+    def user(self):
         return self.source_host.user
-    user = property(_user)
     
     def get_html(self):
         """Notifier support: returns event data in HTML"""
         title = '%s %s' % (str(self.timestamp), self.event_type.name)
         return '<h2>%s</h2><p>%s</p>' % (title, self.html_message)
+    
+    def api_detail(self):
+        return {
+            'event_id': self.pk,
+            'description': self.message,
+            'short_description': self.short_message,
+            'timestamp': str(self.timestamp),
+            'event_type': self.event_type.name,
+            'protocol': self.protocol,
+            'source_host_id': self.source_host.pk,
+            'fields_class': self.fields_class,
+            'fields_data': self.fields_data
+        }
+        
+    def api_list(self):
+        return {
+            'id': self.pk,
+            'short_description': self.short_message
+        }
 
 class EventNotification(NotifierQueueItem):
     event = models.ForeignKey(Event)
