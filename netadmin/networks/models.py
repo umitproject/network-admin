@@ -40,7 +40,7 @@ class NetworkObject(models.Model):
     def __unicode__(self):
         return self.name
     
-    def get_short_description(self, word_limit=15, char_limit=150):
+    def short_description(self, word_limit=15, char_limit=150):
         words = self.description.split()
         if len(words) > word_limit:
             return '%s...' % ' '.join(words[:word_limit])
@@ -48,14 +48,19 @@ class NetworkObject(models.Model):
             return '%s...' % self.description[:char_limit]
         else:
             return self.description
-    short_description = property(get_short_description)
     
-    def _sharing_users(self):
+    def sharing_users(self):
         ct = ContentType.objects.get_for_model(self.__class__)
         perms = ObjectPermission.objects.filter(content_type=ct,
                                                 object_id=self.pk)
         return [(perm.user, perm.edit) for perm in perms]
-    sharing_users = property(_sharing_users)
+    
+    def events(self):
+        return self.event_set.all().order_by('-timestamp')
+    
+    def latest_event(self):
+        events = self.events().order_by('-timestamp')
+        return events[0] if events else None
     
     class Meta:
         abstract = True
@@ -75,34 +80,24 @@ class Host(NetworkObject):
     
     def delete(self, *args, **kwargs):
         # delete all events related to this host
-        events = self.events
+        events = self.events()
         events.delete()
         
         # delete network-host relations
-        related = NetworkHost.objects.filter(host=self)
+        related = self.networkhost_set.all()
         related.delete()
         
         super(Host, self).delete(*args, **kwargs)
-        
-    def _events(self):
-        return self.event_set.all().order_by('-timestamp')
-    events = property(_events)
     
-    def _latest_event(self):
-        events = self.events.order_by('-timestamp')
-        return events[0] if events else None
-    latest_event = property(_latest_event)
-    
-    def _networks(self):
+    def networks(self):
         nethost = self.networkhost_set.all().only('id')
         nets = [nh.network.pk for nh in nethost]
         return Network.objects.filter(pk__in=nets)
-    network = property(_networks)
     
-    def _fields(self):
+    def fields(self):
         from netadmin.events.models import EventFieldsNotValid
         fields_list = []
-        for event in self.events:
+        for event in self.events():
             try:
                 for field in event.fields.keys():
                     if field not in fields_list:
@@ -110,7 +105,6 @@ class Host(NetworkObject):
             except EventFieldsNotValid:
                 pass
         return fields_list
-    fields = property(_fields)
     
     def in_network(self, network):
         try:
@@ -133,30 +127,20 @@ class Network(NetworkObject):
         related.delete()
         super(Network, self).delete(*args, **kwargs)
     
-    def _hosts(self):
+    def hosts(self):
         """Returns all hosts in the network"""
-        rels = NetworkHost.objects.filter(network=self)
-        hosts_ids = [rel.host.pk for rel in rels]
+        related = self.networkhost_set.all()
+        hosts_ids = [rel.host.pk for rel in related]
         return Host.objects.filter(pk__in=hosts_ids)
-    hosts = property(_hosts)
-    
-    def _hosts_count(self):
-        return self.hosts.count()
-    hosts_count = property(_hosts_count)
     
     def has_host(self, host):
-        return True if host in self.hosts else False
+        return True if host in self.hosts() else False
     
-    def _events(self):
+    def events(self):
         from netadmin.events.models import Event
-        events = Event.objects.filter(source_host__in=list(self.hosts))
-        return events.order_by('-timestamp') 
-    events = property(_events)
-    
-    def _latest_event(self):
-        events = self.events.order_by('-timestamp')
-        return events[0] if events else None
-    latest_event = property(_latest_event)
+        hosts = self.hosts()
+        events = Event.objects.filter(source_host__in=list(hosts))
+        return events.order_by('-timestamp')
     
 class NetworkHost(models.Model):
     """
@@ -169,14 +153,14 @@ class NetworkHost(models.Model):
     Host and Network classes. Those methods should look like that:
     
     def delete(self, *args, **kwargs):
-        related = NetworkHost.objects.filter(network=self)
+        related = Nself.networkhost_set.all()
         related.delete()
         super(Network, self).delete(*args, **kwargs)
         
     for Network class, and:
     
     def delete(self, *args, **kwargs):
-        related = NetworkHost.objects.filter(host=self)
+        related = self.networkhost_set.all()
         related.delete()
         super(Host, self).delete(*args, **kwargs)
         
