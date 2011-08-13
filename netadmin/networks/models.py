@@ -62,6 +62,12 @@ class NetworkObject(models.Model):
         events = self.events().order_by('-timestamp')
         return events[0] if events else None
     
+    def api_list(self):
+        return {
+            'id': self.pk,
+            'name': self.name
+        }
+    
     class Meta:
         abstract = True
 
@@ -112,6 +118,15 @@ class Host(NetworkObject):
         except NetworkHost.DoesNotExist:
             return False
         return True
+    
+    def api_detail(self):
+        return {
+            'host_id': self.pk,
+            'host_name': self.name,
+            'host_description': self.description,
+            'ipv4': self.ipv4,
+            'ipv6': self.ipv6
+        }
 
 class Network(NetworkObject):
     
@@ -141,6 +156,13 @@ class Network(NetworkObject):
         hosts = self.hosts()
         events = Event.objects.filter(source_host__in=list(hosts))
         return events.order_by('-timestamp')
+    
+    def api_detail(self):
+        return {
+            'network_id': self.pk,
+            'network_name': self.name,
+            'network_description': self.description
+        }
     
 class NetworkHost(models.Model):
     """
