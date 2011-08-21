@@ -24,8 +24,10 @@ from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template
 from django.views.generic.list_detail import object_detail
 
+from netadmin.webapi.views import api_ok, api_error
+
 from core import load_plugins, widgets_list
-from forms import PluginSettingsFormset, WidgetCreateForm
+from forms import PluginSettingsFormset, WidgetCreateForm, DashboardWidgetForm
 from models import PluginSettings, WidgetsArea, WidgetSettings
 from options import options_form, set_option, get_options
 
@@ -119,4 +121,36 @@ def widget_detail(request, widgetsettings_id):
     return object_detail(request, queryset, widgetsettings_id,
                          template_name="plugins/widget_detail.html",
                          extra_context=extra_context)
+
+@login_required
+def widgets_ajax(request):
+    widget_id = request.GET.get('widget_id')
+    if widget_id:
+        if request.GET.get('column') and request.GET.get('order'):
+            column, order = request.GET.get('column'), request.GET.get('order')
+            widget = WidgetSettings.objects.get(pk=widget_id)
+            changed = widget.move(order, column)
+            if changed:
+                widget.save()
+                area  = widget.widgets_area
+                area.recalculate_order()
+                return api_ok(_("Widgets order changed"))
+            return api_ok(_("Widgets stay in the same order"))
+        
+    if request.GET.get('delete'):
+        widget_id = request.GET.get('delete')
+        try:
+            widget = WidgetSettings.objects.get(pk=widget_id)
+        except WidgetSettings.DoesNotExist:
+            return api_error(_("Widget does not exist"))
+        widget.delete()
+        return api_ok(_("Widget removed successfully"))
     
+    if request.method == 'POST':
+        dashboard_form = DashboardWidgetForm(request.POST)
+        if dashboard_form.is_valid():
+            dashboard_form.save()
+            return api_ok(_("Widget added successfully"))
+        return api_error(_("The form is invalid: %s") % dashboard_form.errors)
+    
+    return api_error(_("Unknown action"))
