@@ -20,13 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "edit report" %}{% endblock %}
 
-{% block content %}
+{% block content_classes %}report{% endblock %}
 
+{% block content %}
 {% if object_name and object_type_name %}
 <h2>{% blocktrans %}Edit report {{ object_name }}{% endblocktrans %}</h2>
 {% else %}
 <h2>{% trans "Edit report" %}</h2>
 {% endif %}
+
+<p class="breadcrumbs">
+	<a href="{% url reportmeta_list object.object_type.name %}">{% trans "reports" %}</a> > 
+	<a href="{% url reportmeta_detail object.pk %}">{{ object.name }}</a> > 
+	{% trans "settings" %}
+</p>
 
 <form action="" method="POST">
 	{{ form.errors }}
@@ -55,16 +62,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</ul>
 	<input type="submit" value="{% trans "Update report" %}" />
 </form>
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url reportmeta_detail object.pk %}">{% trans "Back to report" %}</a></li>
-	<li><a href="{% url reportmeta_list object.object_type.name %}">{% blocktrans with object.object_type.name as name %}Back to {{ name }} reports{% endblocktrans %}</a></li>
-	{% if object.object_type.name == 'host' %}
-	<li><a href="{% url reportmeta_list 'network' %}">{% trans "Go to network reports" %}</a></li>
-	{% else %}
-	<li><a href="{% url reportmeta_list 'host' %}">{% trans "Go to host reports" %}</a></li>
-	{% endif %}
-</ul>
 {% endblock %}

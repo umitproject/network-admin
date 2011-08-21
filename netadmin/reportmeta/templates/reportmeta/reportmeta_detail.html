@@ -20,9 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions events_tags %}
 {% block title %}{% trans "report" %}{% endblock %}
 
-{% block content %}
+{% block content_classes %}report{% endblock %}
 
+{% block content %}
 <h2>{{ object.name|action:"reportmeta_name" }}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url reportmeta_list object.object_type.name %}">{% trans "reports" %}</a> > 
+	{% trans "report details" %}
+</p>
 
 <p>{{ object.description|action:"reportmeta_description" }}</p>
 <p>{% trans "Report for" %} {{ object.object_type.name|action:"reportmeta_object_type_name" }}:
@@ -38,26 +44,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </p>
 {% endif %}
 
-<h2>{% trans "Events" %}</h2>
+<h3>{% trans "Events" %}</h3>
 
 {% if object.events %}
-	{% events_list object.events %}
+	{% events_list request object.events %}
 {% else %}
 	<p>{% trans "No events have been reported yet" %}.</p>
 {% endif %}
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url reportmeta_get_report object.pk %}">{% trans "Get report in PDF" %}</a></li>
-	<li><a href="{% url reportmeta_update object.pk %}">{% trans "Edit report" %}</a></li>
-	<li><a href="{% url reportmeta_delete object.pk %}">{% trans "Delete report" %}</a></li>
-	<li><a href="{% url reportmeta_list object.object_type.name %}">{% blocktrans with object.object_type.name as name %}Back to {{ name }} reports{% endblocktrans %}</a></li>
-	{% if object.object_type.name == 'host' %}
-	<li><a href="{% url reportmeta_list 'network' %}">{% trans "Go to network reports" %}</a></li>
-	{% else %}
-	<li><a href="{% url reportmeta_list 'host' %}">{% trans "Go to host reports" %}</a></li>
-	{% endif %}
+	<li class="report-pdf"><a href="{% url reportmeta_get_report object.pk %}">{% trans "Get report in PDF" %}</a></li>
+	<li class="delete"><a href="{% url reportmeta_delete object.pk %}">{% trans "Delete report" %}</a></li>
+	<li class="settings"><a href="{% url reportmeta_update object.pk %}">{% trans "Settings" %}</a></li>
 </ul>
 {% endblock %}

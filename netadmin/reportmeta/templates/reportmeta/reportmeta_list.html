@@ -20,8 +20,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "reports" %}{% endblock %}
 
+{% block content_classes %}report{% endblock %}
+
 {% block content %}
 <h2>{% blocktrans with object_type|capfirst as object_type %}{{ object_type }}s reports{% endblocktrans %}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url reports %}">{% trans "reports" %}</a> > 
+	{{ object_type }}s reports
+</p>
 
 <table>
 	<thead>
@@ -52,13 +59,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url reportmeta_new object_type %}">{% trans "Add new report" %}</a></li>
-	{% if object_type == 'host' %}
-	<li><a href="{% url reportmeta_list 'network' %}">{% trans "Go to network reports" %}</a></li>
-	{% else %}
-	<li><a href="{% url reportmeta_list 'host' %}">{% trans "Go to host reports" %}</a></li>
-	{% endif %}
+	<li class="add"><a href="{% url reportmeta_new object_type %}">{% trans "Add new report" %}</a></li>
 </ul>
 {% endblock %}

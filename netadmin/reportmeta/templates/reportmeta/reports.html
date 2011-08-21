@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "host reports" %}{% endblock %}
 
+{% block content_classes %}report{% endblock %}
+
 {% block content %}
 <h2>{% trans "Reports" %}</h2>
 
@@ -83,9 +85,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url reportmeta_new 'network' %}">{% trans "Add network report" %}</a></li>
-	<li><a href="{% url reportmeta_new 'host' %}">{% trans "Add host report" %}</a></li>
+	<li class="add"><a href="{% url reportmeta_new 'network' %}">{% trans "Add network report" %}</a></li>
+	<li class="add"><a href="{% url reportmeta_new 'host' %}">{% trans "Add host report" %}</a></li>
 </ul>
 {% endblock %}
