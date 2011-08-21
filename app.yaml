@@ -11,6 +11,10 @@ inbound_services:
 - warmup
 
 handlers:
+- url: /_ah/queue/deferred
+  script: djangoappengine/deferred/handler.py
+  login: admin
+  
 - url: /media/admin
   static_dir: django/contrib/admin/media
   expiration: '0'
