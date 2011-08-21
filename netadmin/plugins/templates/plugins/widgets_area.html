@@ -16,16 +16,67 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load widgets %}
+{% load i18n widgets %}
+<div id="dashboard_form">
+	<form action="" method="POST" id="area-{{ widgets_area.pk }}-form">
+		<p>New widget: 
+			{% for field in dashboard_form %}
+				{{ field }}
+			{% endfor %}
+			<a href="{% url widget_ajax %}" id="area-{{ widgets_area.pk }}-submit">{% trans "Add" %}</a>
+		</p>
+	</form>
+</div>
 {% for column in widgets_area.columns %}
-	<div class="column-{{ forloop.counter }}">
+	<ul id="area-{{ widgets_area.pk }}-column-{{ forloop.counter }}" class="area-column">
 	{% for widget_settings in column %}
-		<div class="widget">
-			<h3>{{ widget_settings.get_widget.name }}</h3>
-			<div class="widget-content">
-				{% render_widget widget_settings.get_widget %}
+		<li id="widget-{{ widget_settings.pk }}" class="widget">
+			<h3>{{ widget_settings.widget_title }}</h3>
+			<div class="widget-meta">
+				<a href="{% url widget_detail widget_settings.pk %}" class="settings"><span>{% trans "Edit widget" %}</span></a>
+				<a href="{% url widget_ajax %}?delete={{ widget_settings.pk }}" class="delete ajax"><span>{% trans "Delete widget" %}</span></a>
 			</div>
-		</div>
+			<div class="widget-content">
+				{% render_widget widget_settings %}
+			</div>
+		</li>
 	{% endfor %}
-	</div>
+	</ul>
 {% endfor %}
+<script type="text/javascript">
+$(function() {
+	$('a#area-{{ widgets_area.pk }}-submit').click(function(){
+		var data = $('form#area-{{ widgets_area.pk }}-form').serialize();
+		var url = $(this).attr('href');
+		$.post(url, data);
+		location.reload();
+		return false;
+	});
+	$("{% for col in widgets_area.columns %}#area-{{ widgets_area.pk }}-column-{{ forloop.counter }},{% endfor %}").sortable({
+		connectWith: ".area-column",
+		update: function(event, ui) {
+			var id = $(ui.item).attr("id")
+			var widget_id = id.split('-')[1];
+			var column = $(this).attr("id").split('-')[3]
+			var items = $(this).sortable('toArray');
+			var order = -1;
+			for(var i in items) if (items[i] == id) order = parseInt(i) + 1;
+			if (order > -1) {
+				var url = '{% url widget_ajax %}';
+				$.get(url,
+					{widget_id: widget_id, column: column, order: order}
+				);
+			}
+		},
+		stop: function(event, ui) {
+			if (typeof charts !== "undefined") {
+				for(var i in charts) charts[i]();
+			}
+		}
+	}).disableSelection();
+	$('li.widget div.widget-meta a.delete').click(function(){
+		$(this).closest('li').remove();
+		return false;
+	});
+});
+</script>
