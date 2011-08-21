@@ -1,21 +1,8 @@
-# Initialize App Engine and import the default settings (DB backend, etc.).
-# If you want to use a different backend you have to remove all occurences
-# of "djangoappengine" from this file.
-from djangoappengine.settings_base import *
-
 import os
 
+from djangoappengine.settings_base import *
+
 DEBUG = True
-
-GAE_MAIL_ACCOUNT = 'wasilewski.piotrek@gmail.com'
-
-# Uncomment this if you're using the high-replication datastore.
-# TODO: Once App Engine fixes the "s~" prefix mess we can remove this.
-#DATABASES['default']['HIGH_REPLICATION'] = True
-
-# Activate django-dbindexer for the default database
-DATABASES['native'] = DATABASES['default']
-DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
 
 MEDIA_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'media')
 MEDIA_URL = '/media/'
@@ -27,13 +14,9 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'django.contrib.sessions',
-    'djangotoolbox',
-    'dbindexer',
-    'permission_backend_nonrel',
-    'autoload',
     'piston',
-    'search',
     
+    'netadmin',
     'netadmin.reportmeta',
     'netadmin.webapi',
     'netadmin.networks',
@@ -43,27 +26,12 @@ INSTALLED_APPS = (
     'netadmin.notifier',
     'netadmin.utils.charts',
     'netadmin.plugins',
-    
-    #'django_nose',
-
-    # djangoappengine should come last, so it can override a few manage.py commands
-    'djangoappengine',
 )
-
-AUTHENTICATION_BACKENDS = (
-    'permission_backend_nonrel.backends.NonrelPermissionBackend',
-)
-
-AUTOLOAD_SITECONF = 'search_indexes'
-#SEARCH_BACKEND = 'search.backends.gae_background_tasks'
 
 MIDDLEWARE_CLASSES = (
-    # This loads the index definitions, so it has to come firsts
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    
-    'autoload.middleware.AutoloadMiddleware'
 )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
@@ -72,16 +40,37 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
 )
 
+SITE_DOMAIN = "ns-dev.appspot.com"
 AUTH_PROFILE_MODULE = 'users.UserProfile'
-
-# This test runner captures stdout and associates tracebacks with their
-# corresponding output. Helps a lot with print-debugging.
-TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-
 ADMIN_MEDIA_PREFIX = '/media/admin/'
 TEMPLATE_DIRS = (os.path.join(os.path.dirname(__file__), 'templates'),)
-
 ROOT_URLCONF = 'urls'
-
 LOGIN_URL = '/login/'
+OAUTH_AUTH_VIEW = 'netadmin.webapi.views.oauth_callback'
+
+#
+# Google AppEngine settings based on Django-nonrel documentation
+#
+DATABASES['native'] = DATABASES['default']
+DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
+
+INSTALLED_APPS += (
+    'djangotoolbox',
+    'dbindexer',
+    'permission_backend_nonrel',
+    'autoload',
+    'search',
+    'djangoappengine',
+)
+
+AUTHENTICATION_BACKENDS = (
+    'permission_backend_nonrel.backends.NonrelPermissionBackend',
+)
+
+MIDDLEWARE_CLASSES += (
+    'autoload.middleware.AutoloadMiddleware',
+)
+
+TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
+GAE_MAIL_ACCOUNT = 'wasilewski.piotrek@gmail.com'
+AUTOLOAD_SITECONF = 'search_indexes'
