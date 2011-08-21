@@ -72,7 +72,8 @@ class NetworkObject(models.Model):
         abstract = True
 
 class Host(NetworkObject):
-    """The single host in the network"""
+    """The single host in the network
+    """
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
                             blank=True)
@@ -143,7 +144,8 @@ class Network(NetworkObject):
         super(Network, self).delete(*args, **kwargs)
     
     def hosts(self):
-        """Returns all hosts in the network"""
+        """Returns all hosts in the network
+        """
         related = self.networkhost_set.all()
         hosts_ids = [rel.host.pk for rel in related]
         return Host.objects.filter(pk__in=hosts_ids)
