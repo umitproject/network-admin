@@ -211,15 +211,19 @@ class EventHandler(BaseHandler):
         ---------------------------------------------
         
         Request parameters:
-            * description - short message identifying the event
+            * description - message describing the event
+            * short_description - shorter message, e.g. to use in list
             * timestamp - when the event occurred
             * event_type - type of the event which should also describe
               its importance
+            * protocol - network protocol related to the event
+            * hostname - name of the source host
             * source_host_ipv4, source_host_ipv6 - IPv4 and IPv6
               addresses of the source host
-            * monitoring_module (optional) - monitoring module identifier
-            * monitoring_module_fields (optional) - serialized monitoring
-              module parameters
+            * fields_class - monitoring module identifier
+        
+        Any additional data provided with the event will be serialized and
+        saved together with fields described above.
               
         Response:
             * status - **ok** or **error**
