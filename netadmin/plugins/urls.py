@@ -28,4 +28,5 @@ urlpatterns = patterns('netadmin.plugins.views',
     url(r'^widget/(?P<widgetsettings_id>\d+)/$', 'widget_detail', name='widget_detail'),
     url(r'^widget/up/(?P<widget_up>\d+)/$', 'widgets_settings', name='widget_up'),
     url(r'^widget/down/(?P<widget_down>\d+)/$', 'widgets_settings', name='widget_down'),
+    url(r'^widget/ajax/$', 'widgets_ajax', name='widget_ajax'),
 )
