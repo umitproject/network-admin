@@ -76,18 +76,16 @@ class EventType(models.Model):
         from netadmin.reports.models import ReportMetaEventType
         
         # delete relations between event type and reports
-        related = ReportMetaEventType.objects.filter(event_type=self)
+        related = self.reportmetaeventtype_set.all()
         related.delete()
         
         super(EventType, self).delete(*args, **kwargs)
         
-    def _events(self):
-        return Event.objects.filter(event_type=self)
-    events = property(_events)
+    def events(self):
+        return self.event_set.all()
     
-    def _pending_events(self):
-        return self.events.filter(checked=False)
-    pending_events = property(_pending_events)
+    def pending_events(self):
+        return self.events().filter(checked=False)
 
 
 class Event(models.Model):
