@@ -61,6 +61,9 @@ class Widget(object):
                                       "the %s class") % class_name)
         return self.name
     
+    def get_title(self):
+        return self.get_name()
+    
     def context(self, widget):
         """
         Should return context dictionary that will be used to render
@@ -94,7 +97,7 @@ class Widget(object):
         from options import get_option
         option = self.options(widget).get(name)
         if option:
-            value = get_option(name, option['type'])
+            value = get_option(name, option.get('default', ''))
             return_func = option.get('return_func')
             if return_func:
                 return return_func(value)
