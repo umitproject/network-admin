@@ -42,6 +42,8 @@ urlpatterns = patterns('netadmin.events.views',
     url(r'^type/edit/$', 'eventtype_edit', name='eventtype_edit'),
     url(r'^type/(?P<event_type_id>\d+)/$', 'eventtype_detail', name='eventtype_detail'),
     url(r'^type/(?P<event_type_slug>[-\w]+)/$', 'eventtype_detail', name='eventtype_detail'),
+    
+    url(r'^ajax/$', 'events_ajax', name='event_ajax'),
    
     url(r'^search/$', 'events_search', name='event_search'),
     
