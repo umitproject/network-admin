@@ -20,12 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "confirm your registration" %}{% endblock %}
 
+{% block content_classes %}user{% endblock %}
+
 {% block content %}
 <h2>{% trans "Confirm your registration" %}</h2>
-{% if activation %}
-<p>{% trans "To finish registration just click the activation link below." %}</p>
-<a href="{% url user_activation activation.code %}">{% url user_activation activation.code %}</a>
-{% else %}
 <p>{% trans "To finish registration just click the activation link that we sent you in email." %}</p>
-{% endif %}
 {% endblock %}

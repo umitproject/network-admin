@@ -20,8 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "user" %} {{ object.username }}{% endblock %}
 
+{% block content_classes %}user{% endblock %}
+
 {% block content %}
-<h2>Your profile</h2>
+<h2>{% trans "Your profile" %}</h2>
 
 <form action="" method="POST">{% csrf_token %}
 	{{ user_form.as_p }}
@@ -29,11 +31,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<input type="submit" value="{% trans 'Update my profile' %}" />
 </form>
 
+<h3>{% trans "API settings" %}</h3>
+
+<p>{% trans "Consumer key" %}: <span class="monospace">{{ api_consumer.key }}</span></p>
+<p>{% trans "Consumer secret" %}: <span class="monospace">{{ api_consumer.secret }}</span></p>
+
+<p>{% trans "Access token key" %}: <span class="monospace">{{ api_access_token.key }}</span></p>
+<p>{% trans "Access token secret" %}: <span class="monospace">{{ api_access_token.secret }}</span></p>
+<p><a href="{% url refresh_access_token %}">{% trans "Refresh access token" %}</a></p>
+
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url user_profile_public object.username %}">{% trans "Show my public profile" %}</a></li>
-	<li><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
+	<li class="user"><a href="{% url user_profile_public object.username %}">{% trans "Show my public profile" %}</a></li>
+	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
 </ul>
 {% endblock %}

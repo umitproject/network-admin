@@ -20,17 +20,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "user" %} {{ object.username }}{% endblock %}
 
+{% block content_classes %}user{% endblock %}
+
 {% block content %}
 <h2>{% if object.get_full_name %}{{ object.get_full_name }} ({{ object.username }}){% else %}{{ object.username }}{% endif %}</h2>
+
+{% if request.GET.s %}
+	<p class="breadcrumbs">
+		<a href="{% url user_search %}">{% trans "search" %}</a> > 
+		"{{ request.GET.s }}"
+	</p>
+{% endif %}
+
 <p>{% trans "E-mail" %}: {{ object.email }}</p>
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	{% if request.GET.s %}
-	<li><a href="{% url user_search %}?s={{ request.GET.s }}">{% trans "Back to search results" %}</a></li>
-	{% else %}
-	<li><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-	{% endif %}
+	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
 </ul>
 {% endblock %}

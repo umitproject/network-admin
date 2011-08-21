@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% if active %}{% trans "account activated" %}{% else %}{% trans "activation failed" %}{% endif %}{% endblock %}
 
+{% block content_classes %}user{% endblock %}
+
 {% block content %}
 {% if active %}
 	<h2>{% trans "Account activated" %}</h2>
