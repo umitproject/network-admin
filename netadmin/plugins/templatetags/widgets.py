@@ -22,28 +22,33 @@ from django import template
 from django.template.loader import get_template
 from django.template import Context
 
-from django.utils.translation import ugettext as _
-
 from netadmin.plugins.models import WidgetsArea
+from netadmin.plugins.forms import DashboardWidgetForm
 
 
 register = template.Library()
 
 
 @register.simple_tag
-def render_widget(widget):
+def render_widget(widget_settings):
+    """Renders widget's template with context returned by context() method
+    """
+    widget = widget_settings.get_widget()
     template_name = widget.template_name
-    context = widget().context()
+    context = widget.context(widget=widget_settings)
     t =  get_template("widgets/%s" % template_name)
     return t.render(Context(context))
 
 @register.inclusion_tag("plugins/widgets_area.html")
 def widgets_area(user, name, num_columns):
+    """Renders area with all widgets assigned to it 
+    """
     area, created = WidgetsArea.objects.get_or_create(name=name, user=user)
     if created:
         area.num_columns = num_columns
         area.save()
     context = {
-        "widgets_area": area
+        "widgets_area": area,
+        "dashboard_form": DashboardWidgetForm(initial={'widgets_area': area, 'order': 1, 'column': 1})
     }
     return context
