@@ -20,10 +20,20 @@
 
 from django import template
 
-from netadmin.plugins.actions import run_action
+from netadmin.plugins.actions import run_action, actions_list
 
 register = template.Library()
 
 @register.filter(name='action')
 def action_filter(action_object, action_name):
     return run_action(action_name, action_object, pass_result=True)
+
+@register.simple_tag
+def action_extend(action_name, tag_name, action_object=None):
+    actions = actions_list(active=True)
+    result_content = ''
+    for name, callback in actions:
+        if name == action_name:
+            result_content += '<%s>%s</%s>' % \
+                (tag_name, callback(action_object), tag_name)
+    return result_content    
