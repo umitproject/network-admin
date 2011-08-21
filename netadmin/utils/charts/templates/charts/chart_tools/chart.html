@@ -1,3 +1,21 @@
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
 {% load chart_tools %}
 <script type="text/javascript">
 	charts.push(function(){
@@ -6,21 +24,21 @@
 		data.addRows({{ chart.num_rows }});
 		
 		{% for column in chart.columns %}
-			data.addColumn('{{ column.type }}', '{{ column.name }}');
-		{% endfor %}
-		
-		{% for x, y in chart.formatted_data.items %}
-			data.setValue({{ forloop.counter0 }}, 0, {{ x|safe }});
-			{% for val in y %}
-				data.setValue({{ forloop.parentloop.counter0 }}, {{ forloop.counter }}, {{ val|safe }});
+			data.addColumn('{{ column.type_name }}', '{{ column.name }}');
+			{% if not column.data %}
+				// No data for this column!
+			{% endif %}
+			{% for value in column.data %}
+				data.setValue({{ forloop.counter0 }}, {{ forloop.parentloop.counter0 }}, {{ value|safe }});
 			{% endfor %}
 		{% endfor %}
 		
 		new google.visualization.{{ chart.chart_type }}(document.getElementById('chart-{{ chart|chart_hash }}')).
 			draw(data, {
-				title: '{{ chart.name }}',
+				title: '{{ chart.title }}',
 				width: {{ chart.width }},
-				height: {{ chart.height }}
+				height: {{ chart.height }},
+				backgroundColor: '#eee',
 				{% block chart_options %}
 				{% endblock %} 
 			}

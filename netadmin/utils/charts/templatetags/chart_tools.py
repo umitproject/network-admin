@@ -21,7 +21,7 @@
 from django import template
 from django.utils.translation import ugettext as _
 
-from netadmin.utils.charts.chart_tools import CHART_TOOLS_PACKAGES, \
+from netadmin.utils.charts.charttools import CHART_TOOLS_PACKAGES, \
     InvalidChartsPackage
 
 
