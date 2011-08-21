@@ -19,10 +19,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.conf.urls.defaults import *
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django.contrib.auth.models import User, Permission
-from django.views.generic.create_update import *
-from django.views.generic.list_detail import object_list, object_detail
 
 
 urlpatterns = patterns('netadmin.users.views',
@@ -30,6 +26,6 @@ urlpatterns = patterns('netadmin.users.views',
     url(r'^profile/$', 'user_private', name='user_profile_private'),
     url(r'^public/(?P<slug>\w+)/$', 'user_public', name='user_profile_public'),
     url(r'^register/$', 'user_register', name='user_register'),
-    url(r'^confirm/$', 'user_register_confirm', name='user_register_confirm'),
     url(r'^activate/(?P<code>\w+)/$', 'user_activation', name='user_activation'),
+    url(r'^refresh_access_token/$', 'refresh_access_token', name='refresh_access_token'),
 )
