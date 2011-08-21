@@ -200,7 +200,7 @@ def reportmeta_update(request, object_id):
 
 @login_required
 def reportmeta_delete(request, object_id):
-    report_meta = ReportMeta.object.get(pk=object_id)
+    report_meta = ReportMeta.objects.get(pk=object_id)
     
     redirect_url = reverse('reports')
     
