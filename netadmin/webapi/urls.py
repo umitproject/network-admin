@@ -20,13 +20,14 @@
 
 from django.conf.urls.defaults import *
 from piston.resource import Resource
-from piston.authentication import HttpBasicAuthentication
+from piston.authentication import HttpBasicAuthentication, OAuthAuthentication
 
 from netadmin.webapi.handlers import *
 
 
 # set up basic authentication
-auth = HttpBasicAuthentication()
+#auth = HttpBasicAuthentication()
+auth = OAuthAuthentication()
 ad = { 'authentication': auth }
 
 # apply authentication to all resources
