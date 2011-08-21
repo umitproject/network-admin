@@ -76,7 +76,7 @@ class Host(NetworkObject):
     """
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
-                            blank=True)
+                            blank=True, null=True)
     
     def __unicode__(self):
         return "Host '%s'" % self.name
