@@ -16,58 +16,101 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags widgets %}
+{% load i18n events_tags widgets chart_tools %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="en" lang="en">	
 	<head>
 		<title>Network Administrator &#8211; {% block title %}{% endblock %}</title>
 		<link rel="stylesheet" type="text/css" href="{{ MEDIA_URL }}css/style.css" />
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
 	</head>
 	<body>
 		<div id="container">
 			<div id="header">
+				<div id="toolbar">
+					<ul>
+					{% if request.user.is_authenticated %}
+						<li>
+							{% trans "Welcome" %}, <a href="{% url user_profile_private %}">{{ request.user.username }}</a>! 
+							<a href="{% url logout %}">{% trans "Log out" %}</a>
+						</li>
+					{% endif %}
+					</ul>
+				</div>
+				<div id="alerts">
+				{% if request.user.is_authenticated %}
+					{% alerts_counter request.user.pk %}
+				{% endif %}
+				</div>
 				<h1><span><a href="/">Network Administrator</a></span></h1>
 				<div id="navigation">
 					<ul>
 					{% if request.user.is_authenticated %}
+						<li><a href="/">{% trans "Dashboard" %}</a></li>
 						<li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
 						<li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
 						<li><a href="{% url host_list %}">{% trans "Hosts" %}</a></li>
 						<li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
-						<li><a href="{% url user_profile_private %}">{% trans "My profile" %}</a></li>
 						{% if request.user.is_superuser %}
 							<li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
 						{% endif %}
-						<li><a href="{% url logout %}">{% trans "Log out" %}</a></li>
 					{% else %}
 						<li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
 						<li><a href="{% url user_register %}">{% trans "Register" %}</a></li>
 					{% endif %}
 					</ul>
+					{% if request.user.is_authenticated %}
+					<form action="{% url global_search %}" method="GET" class="search-form" id="global-search">
+						<p><input type="text" name="s" value="Search for events, hosts..." /><input type="submit" value="Search" /></p>
+					</form>
+					{% endif %}
 				</div>
+			</div>
+			<div id="content-wrapper">
+				{% init_charts 'corechart' %}
+				<div id="meta">
+				{% block meta %}{% endblock %}
+				</div>
+				<div id="content" class="{% block content_classes %}{% endblock %}">
+					{% block content %}{% endblock %}
+				</div>
+				<div id="sidebar">
+				{% block sidebar %}
 				{% if request.user.is_authenticated %}
-				<p>{% trans "Alerts" %}: {% alerts_counter request.user.pk %}</p>
+					{% widgets_area request.user "Sidebar" 1 %}
 				{% endif %}
-			</div>
-			<div id="sidebar">
-			{% block sidebar %}
-				<ul>
-				{% if request.user.is_authenticated %}
-					<li><a href="{% url widgets_settings %}">{% trans "Edit dashboard" %}</a></li>
-				{% endif %}
-				</ul>
-			{% endblock %}
-			{% if request.user.is_authenticated %}
-				{% widgets_area request.user "Sidebar" 1 %}
-			{% endif %}
-			</div>
-			<div id="content">
-				{% block content %}{% endblock %}
-			</div>
-			<div id="footer">
-				<p>&copy; Copyright 2011, Adriano Monteiro Marques</p>
+				{% endblock %}
+				</div>
+				{% show_charts %}
+				<div id="footer">
+					<p>&copy; Copyright 2011, Adriano Monteiro Marques</p>
+					<p><a href="http://www.umitproject.org/">www.umitproject.org</a></p>
+				</div>
 			</div>
 		</div>
+		<script type="text/javascript">
+			$(function(){
+				var global_search_initial = $('form#global-search input[name=s]').val();
+				$('a.ajax').click(function(){
+					var url = $(this).attr('href'); 
+					$.get(url, {}, function(data){}, 'json');
+					return false;
+				});
+				$('form#global-search input[name=s]').focus(function(){
+					if ($(this).val() === global_search_initial) {
+						$(this).val('');
+						$(this).css('color','#000');
+					}
+				});
+				$('form#global-search input[name=s]').blur(function(){
+					if ($(this).val() === '') {
+						$(this).css('color','#ccc');
+						$(this).val(global_search_initial);
+					}
+				});
+			});
+		</script>
 	</body>
 </html>
