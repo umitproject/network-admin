@@ -38,6 +38,7 @@ try:
     import simplejson as json
 except ImportError:
     import json
+import datetime
 
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
@@ -47,7 +48,8 @@ from netadmin.networks.models import Host, Network
 from netadmin.notifier.utils import NotifierQueue
 from netadmin.events.models import Event, EventType, EventNotification
 from netadmin.events.utils import get_event_data, EventParseError
-from netadmin.webapi.views import api_error, api_ok, api_response
+
+from views import api_error, api_ok, api_response
 
 
 class HostHandler(BaseHandler):
@@ -59,18 +61,17 @@ class HostHandler(BaseHandler):
     def read(self, request, host_id=None):
         """
         Returns host details if host_id is specified, otherwise returns
-        hosts list.
+        list of hosts.
         
         Method: GET
         
         Request parameters:
             * host_id (optional) - if specified, host details are returned
-            * get_events (optional) - if 'true' then return list of events
-              for the host specified by host_id
             * order_by (optional) - if host_id is not specified, order
-              hosts list according to this parameter; allowe values are:
+              hosts list according to this parameter; allowed values are:
                 ** name - order by name
                 ** last_event - order by occurance of last event
+            * limit - maximum number of hosts on a list
                 
         Host details response:
             * host_id
@@ -96,11 +97,15 @@ class HostHandler(BaseHandler):
             order_by = request.GET.get('order_by', 'name')
             if order_by == 'name':
                 hosts = hosts.order_by('name')
-            elif order_by == 'last_event':
-                hosts = sorted(hosts, key=lambda host: host.last_event)
+            elif order_by == 'latest_event':
+                hosts = sorted(hosts, key=lambda host: host.latest_event())
+                
+            limit = request.GET.get('limit')
+            if limit:
+                hosts = hosts[:limit]
             
             response = {
-                'hosts': [{'id': host.pk, 'name': host.name} for host in hosts]
+                'hosts': [host.api_list() for host in hosts]
             }
             return api_response(response)
         
@@ -109,19 +114,7 @@ class HostHandler(BaseHandler):
         except Host.DoesNotExist:
             return api_error(_('Host does not exist'))
         
-        response = {
-            'host_id': host_id,
-            'host_name': host.name,
-            'host_description': host.description,
-            'ipv4': host.ipv4,
-            'ipv6': host.ipv6
-        }
-        
-        get_hosts = request.GET.get('get_events', 'true')
-        if get_hosts.lower() == 'true':
-            response['events'] = [{'id': e.pk, 'message': e.message} for e in host.events]
-        
-        return api_response(response)
+        return api_response(host.api_detail())
     
 class NetworkHandler(BaseHandler):
     """
@@ -170,25 +163,24 @@ class NetworkHandler(BaseHandler):
             order_by = request.GET.get('order_by', 'name')
             if order_by == 'name':
                 networks = networks.order_by('name')
-            elif order_by == 'last_event':
-                networks = sorted(networks, key=lambda net: net.last_event)
+            elif order_by == 'latest_event':
+                networks = sorted(networks, key=lambda net: net.latest_event())
             
             response = {
-                'networks': [{'id': net.pk, 'name': net.name} for net in networks]
+                'networks': [net.api_list() for net in networks]
             }
             return api_response(response)
         
-        network = Network.objects.get(pk=network_id, user=request.user)
+        try:
+            network = Network.objects.get(pk=network_id, user=request.user)
+        except Network.DoesNotExist:
+            return api_error(_('Network does not exist'))
         
-        response = {
-            'network_id': network.pk,
-            'network_name': network.name,
-            'network_descrption': network.description
-        }
+        response = network.api_detail()
         
         get_hosts = request.GET.get('get_hosts', 'true')
         if get_hosts.lower() == 'true':
-            response['hosts'] = [{'id': h.pk, 'name': h.name} for h in network.hosts]
+            response['hosts'] = [host.api_list() for host in network.hosts()]
             
         return api_response(response)
     
@@ -282,10 +274,20 @@ class EventHandler(BaseHandler):
     
     def read(self, request, event_id=None):
         """
-        If the event_id parameter is specified, returns event details,
-        otherwise returns events list. This falls under the public API.
+        The part of the public API. If the event_id parameter is specified,
+        returns event details, otherwise returns events list ordered by timestamp.
+        In the second case, events may be filtered by source host or
+        timestamp and their number may be limited. 
         
         Method: GET
+        
+        Request parameters:
+            * source_host - identifier of a source host
+            * time_from - include only those events which timestamp is greater
+              or equal than this value
+            * time_to - include only those events which timestamp if less than
+              this value
+            * limit - maximal number of events on a list
         
         Response for events list:
             * events - list of events
@@ -304,14 +306,32 @@ class EventHandler(BaseHandler):
         """
         
         if not event_id:
-            events = Event.objects.all()
+            events = Event.objects.all().order_by('-timestamp')
             if not events:
                 return api_error(_('The events list is empty'))
             
+            source_host = request.GET.get('source_host')
+            if source_host:
+                events = events.filter(source_host__pk=source_host)
+                
+            time_from = request.GET.get('time_from')
+            time_to = request.GET.get('time_to')
+            if time_from:
+                time_from = datetime.datetime.fromtimestamp(float(time_from))
+                events = events.filter(timestamp__gte=time_from)
+            if time_to:
+                time_to = datetime.datetime.fromtimestamp(float(time_to))
+                events = events.filter(timestamp__lt=time_to)
+                
+            # because of limited JOINs, we cannot use events.filter(source_host__user=request.user)
             events = filter(lambda event: event.user == request.user, events)
             
+            limit = request.GET.get('limit')
+            if limit and limit > 0:
+                events = events[:limit]
+            
             response = {
-                'events': [{'id': event.pk, 'description': event.message} for event in events]
+                'events': [event.api_list() for event in events]
             }
             return api_response(response)
         
@@ -323,16 +343,4 @@ class EventHandler(BaseHandler):
         if event.user != request.user:
             return api_error(_('Event does not exist'))
         
-        response = {
-            'event_id': event_id,
-            'description': event.message,
-            'short_description': event.short_message,
-            'timestamp': str(event.timestamp),
-            'event_type': event.event_type.name,
-            'protocol': event.protocol,
-            'source_host_id': event.source_host.pk,
-            'fields_class': event.fields_class,
-            'fields_data': event.fields_data
-        }
-        
-        return api_response(response)
+        return api_response(event.api_detail())
