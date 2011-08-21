@@ -26,7 +26,7 @@ from django.forms.widgets import RadioSelect, Select
 from django.forms.extras.widgets import SelectDateWidget
 from django.utils.translation import ugettext as _
 
-from netadmin.events.models import EventType
+from models import EventType, Event
 
 
 YEARS_RANGE = range(2000, datetime.datetime.now().year + 1)
@@ -59,4 +59,9 @@ class EventTypeForm(forms.ModelForm):
             'name': forms.HiddenInput()
         }
 
-EventTypeFormset = modelformset_factory(EventType, form=EventTypeForm)
+EventTypeFormset = modelformset_factory(EventType, form=EventTypeForm, extra=0)
+
+class EventCheckForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ('checked', )
