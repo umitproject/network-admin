@@ -21,6 +21,7 @@
 import datetime
 
 from django import template
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils.translation import ugettext as _
 
 from netadmin.events.models import Event, EventType, ALERT_LEVELS
@@ -38,10 +39,11 @@ def alerts_counter(user_id):
     alert_levels = {}
     for alert in user_alerts:
         level = alert.alert_level
+        events_count = alert.pending_events().count()
         if level in alert_levels:
-            alert_levels[level] += alert.events.count()
+            alert_levels[level] += events_count
         else:
-            alert_levels[level] = alert.events.count()
+            alert_levels[level] = events_count
     
     alert_levels_list = []
     for id, name in ALERT_LEVELS:
@@ -51,16 +53,27 @@ def alerts_counter(user_id):
     return {'alert_levels': alert_levels_list}
 
 @register.inclusion_tag('events/events_list_tag.html')
-def events_list(events, title=None):
+def events_list(request, events, title=None, page=None):
+    paginator = Paginator(list(events), 20)
+    
+    page = page or request.GET.get('page', 1)
+    try:
+        events = paginator.page(page)
+    except PageNotAnInteger:
+        events = paginator.page(1)
+    except EmptyPage:
+        events = paginator.page(paginator.num_pages)
+    
     context = {
         'events': events,
-        'title': title
+        'title': title,
+        'request': request
     }
     return context
 
 @register.inclusion_tag('events/events_list_tag.html')
-def similar_events(event):
+def similar_events(request, event):
     event_type = event.event_type
     events = filter_user_events(event.user).filter(event_type=event_type)
     events = events.exclude(pk=event.pk)
-    return events_list(events[:10], "Similar events")
+    return events_list(request, events[:10], "Similar events")
