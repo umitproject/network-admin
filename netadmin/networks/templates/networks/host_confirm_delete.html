@@ -20,19 +20,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
+{% block content_classes %}host{% endblock %}
+
 {% block content %}
 <h2>{% trans "Removing host" %}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url host_list %}">{% trans "hosts" %}</a> > 
+	<a href="{% url host_detail object.pk %}">{{ object.name }}</a> > 
+	{% trans "delete" %}
+</p>
+
 <p>{% blocktrans with object.name as name %}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
 <p><strong>{% trans "Remember, that ALL events related to this host will be REMOVED." %}</strong></p>
 <form action="" method="POST">
 	<input type="submit" value="{% trans "Remove host" %}" />
 	<p><a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a></p>
 </form>
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url host_list %}">{% trans "Hosts list" %}</a></li>
-	<li><a href="{% url host_new %}">{% trans "Add new host" %}</a></li>
-</ul>
 {% endblock %}

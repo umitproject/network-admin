@@ -20,8 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "sharing" %} {{ object.name }}{% endblock %}
 
+{% block content_classes %}share{% endblock %}
+
 {% block content %}
 <h2>{% trans "Sharing" %} {{ object.name|action:"share_name" }}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% if object_type == 'network' %}{% url network_list %}{% else %}{% url host_list %}{% endif %}">{{ object_type }}</a> > 
+	<a href="{% url network_detail object.pk %}">{{ object.name }}</a> > {% trans "share" %}</p>
 
 {% if object.sharing_users %}
 <table>
@@ -57,16 +63,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </form>
 {% endif %}
 
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	{% if object_type == 'host' %}
-	<li><a href="{% url host_detail object.pk %}">{% trans "Back to host" %}</a></li>
-	{% else %}
-	<li><a href="{% url network_detail object.pk %}">{% trans "Back to network" %}</a></li>
-	{% endif %}
-	
-	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
-</ul>
 {% endblock %}

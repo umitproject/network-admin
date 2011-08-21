@@ -20,8 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n events_tags actions %}
 {% block title %}{% trans "host" %} {{ object.name }}{% endblock %}
 
+{% block content_classes %}host{% endblock %}
+
 {% block content %}
 <h2>{{ object.name|action:"host_name" }}</h2>
+
+<p class="breadcrumbs"><a href="{% url host_list %}">{% trans "hosts" %}</a> > {% trans "host details" %}</p>
 
 {% if object.user != request.user %}
 <p><strong>{% trans "Owned by" %} {{ object.user.username|action:"host_user" }}</strong></p>
@@ -38,35 +42,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p>{% trans "IPv6 address" %}: {{ object.ipv6|action:"host_ipv6" }}</p>
 {% endif %}
 
+{% if object.sharing_users and object.user == request.user %}
+<h3>{% trans "Sharing" %}</h3>
+<p>{% trans "You are sharing this host with" %}: 
+{% for user, edit in object.sharing_users %}
+{% if not forloop.first %}, {% endif %}<a href="{% url user_profile_public user.username %}">{{ user.username }}</a>
+{% endfor %}
+</p>
+{% endif %}
+
 {% if object.events %}
-	{% events_list object.events "Events" %}
+	{% events_list request object.events "Events" %}
 {% endif %}
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url reportmeta_new 'host' object.pk %}">{% trans "Create report" %}</a></li>
-	
-	{% if can_edit %}
-	<li><a href="{% url host_update object.pk %}">{% trans "Edit host" %}</a></li>
-	{% endif %}
+	<li class="report"><a href="{% url reportmeta_new 'host' object.pk %}">{% trans "Create report" %}</a></li>
 	
 	{% if object.user == request.user %}
-	<li><a href="{% url host_delete object.pk %}">{% trans "Delete host" %}</a></li>
-	<li><a href="{% url share_list 'host' object.pk %}">{% trans "Share" %}</a></li>
+	<li class="share"><a href="{% url share_list 'host' object.pk %}">{% trans "Share" %}</a></li>
+	<li class="delete"><a href="{% url host_delete object.pk %}">{% trans "Delete host" %}</a></li>
 	{% endif %}
 	
-	<li><a href="{% url host_list %}">{% trans "Back to hosts" %}</a></li>
+	{% if can_edit %}
+	<li class="settings"><a href="{% url host_update object.pk %}">{% trans "Settings" %}</a></li>
+	{% endif %}
 </ul>
-
-{% if object.sharing_users and object.user == request.user %}
-<p>
-<strong>{% trans "Shared with" %}: </strong>
-{% for user, edit in object.sharing_users %}
-{% if not forloop.first %}, {% endif %}{{ user.username }}
-{% endfor %}
-</p>
-{% endif %}
 
 {% endblock %}

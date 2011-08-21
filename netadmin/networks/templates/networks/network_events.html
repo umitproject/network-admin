@@ -17,52 +17,39 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
+{% load i18n events_tags %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
+
+{% block content_classes %}network{% endblock %}
 
 {% block content %}
 <h2>{{ object.name }}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url network_list %}">{% trans "networks" %}</a> > 
+	<a href="{% url network_detail object.pk %}">{{ object.name }}</a> > 
+	{% trans "events" %}
+</p>
+
 <h3>{% trans "Basic info" %}</h3>
 <p>{{ object.description }}</p>
 
 <h3>{% trans "Events" %}</h3>
 	
 {% if events %}
-<table>
-	<thead>
-		<tr>
-			<th>{% trans "Timestamp" %}</th>
-			<th>{% trans "Message" %}</th>
-			<th>{% trans "Event type" %}</th>
-			<th>{% trans "Host" %}</th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for event in events %}
-		<tr>
-			<td>{{ event.timestamp }}</td>
-			<td>{{ event.message }}</td>
-			<td>{{ event.event_type }}</td>
-			<td><a href="{% url host_detail event.source_host.pk %}">{{ event.source_host.name }}</a></td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
+	{% events_list request events %}
 {% endif %}
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	{% if can_edit %}
-	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
-	{% endif %}
-	
 	{% if object.user == request.user %}
-	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li class="delete"><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li class="share"><a href="{% url share_list 'network' object.pk %}">{% trans "Share" %}</a></li>
 	{% endif %}
-	
-	<li><a href="{% url network_detail object.pk %}">{% trans "Network settings" %}</a></li>
-	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
+	{% if can_edit %}
+	<li class="settings"><a href="{% url network_update object.pk %}"><span>{% trans "Settings" %}</span></a></li>
+	{% endif %}
 </ul>
 {% endblock %}

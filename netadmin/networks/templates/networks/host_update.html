@@ -20,16 +20,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "edit host" %}{% endblock %}
 
+{% block content_classes %}host-settings{% endblock %}
+
 {% block content %}
-<h2>{% blocktrans with object.name as name %}Edit host "{{ name }}"{% endblocktrans %}</h2>
+<h2>{{ object.name }} {% trans "settings" %}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url host_list %}">{% trans "hosts" %}</a> > 
+	<a href="{% url host_detail object.pk %}">{{ object.name }}</a> > 
+	{% trans "settings" %}
+</p>
+
 <form action="" method="POST">
 	{{ form.as_p }}
-	<input type="submit" value="{% trans "Update host" %}" />
+	<input type="submit" value="{% trans "Update host" %}" /> <a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a>
 </form>
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url host_list %}">{% trans "Hosts list" %}</a></li>
-</ul>
 {% endblock %}

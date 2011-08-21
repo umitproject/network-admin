@@ -20,11 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "networks list" %}{% endblock %}
 
+{% block content_classes %}network{% endblock %}
+
 {% block content %}
 <h2>{% trans "Networks list" %}</h2>
 
-<form action="" method="GET" class="search_form">
-	<p>{% trans "Search for hosts" %}: 
+<form action="" method="GET" class="search">
+	<p>{% trans "Search for networks" %}: 
 		<input type="text" name="s" value="{{ request.GET.s }}"/>
 		<input type="submit" value="{% trans "Search" %}" />
 	</p>
@@ -32,28 +34,41 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <table>
 	<thead>
-		<tr><th>{% trans "Name" %}</th><th>{% trans "Number of hosts" %}</th></tr>
+		<tr>
+			<th>{% trans "Name" %}</th>
+			{% action_extend "network_list_table_head" "th" %}
+		</tr>
 	</thead>
 	<tbody>
-	{% for network in networks %}
+	{% for network in networks.object_list %}
 		<tr>
 			<td>
 				<a href="{% url network_detail network.pk %}">
 					{{ network.name|action:"network_list_name" }}
 				</a>
 			</td>
-			<td>{{ network.hosts.count|action:"network_hosts_count" }}</td>
+			{% action_extend "network_list_table_cell" "td" network %}
 		</tr>
 	{% endfor %}
 	</tbody>
 </table>
 
-{% include "paginator.html" %}
+{% if networks.paginator.num_pages > 1 %}
+	<div class="pagination">
+	{% if networks.has_previous %}
+		<span class="prev"><a href="{% url network_list_page networks.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
+	{% endif %}
+		<span>{% trans "Page" %} {{ networks.number }} {% trans "of" %} {{ networks.paginator.num_pages }}</span>
+	{% if networks.has_next %}
+		<span class="next"><a href="{% url network_list_page networks.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
+	{% endif %}
+	</div>
+{% endif %}
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url network_new %}">{% trans "Add new network" %}</a></li>
+	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
 </ul>
 {% endblock %}

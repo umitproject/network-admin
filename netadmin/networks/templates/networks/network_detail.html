@@ -20,15 +20,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
+{% block content_classes %}network{% endblock %}
+
 {% block content %}
 <h2>{{ object.name|action:"network_name" }}</h2>
+
+<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "networks" %}</a> > {% trans "network details" %}</p>
 
 {% if object.user != request.user %}
 <p><strong>{% trans "Owned by" %} {{ object.user.username|action:"network_user" }}</strong></p>
 {% endif %}
 
-<h3>{% trans "Basic info" %}</h3>
+<h3>{% trans "About this network" %}</h3>
 <p>{{ object.description|action:"network_description" }}</p>
+
+{% if object.sharing_users and object.user == request.user %}
+<h3>{% trans "Sharing" %}</h3>
+<p>You are sharing this network with:
+{% for user, edit in object.sharing_users %}
+	{% if not forloop.first %}, {% endif %}<a href="{% url user_profile_public user.username %}">{{ user.username }}</a>
+{% endfor %}
+</p>
+
+{% endif %}
 
 <h3>{% trans "Hosts" %}</h3>
 	
@@ -40,7 +54,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</thead>
 	<tbody>
 	{% for host in object.hosts %}
-		<tr>
+		<tr class="{% cycle 'odd' 'even' %}">
 			<td>
 				<input type="checkbox" name="remove_host" value="{{ host.pk }}" /> 
 				<a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a>
@@ -71,28 +85,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	{% if can_edit %}
-	<li><a href="{% url network_update object.pk %}">{% trans "Edit network" %}</a></li>
-	{% endif %}
-	
 	{% if object.user == request.user %}
-	<li><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
-	<li><a href="{% url share_list 'network' object.pk %}">{% trans "Share" %}</a></li>
+	<li class="delete"><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
+	<li class="share"><a href="{% url share_list 'network' object.pk %}">{% trans "Share" %}</a></li>
 	{% endif %}
-	
-	<li><a href="{% url network_events object.pk %}">{% trans "Network events" %}</a></li>
-	<li><a href="{% url network_list %}">{% trans "Back to networks list" %}</a></li>
+	<li class="event"><a href="{% url network_events object.pk %}">{% trans "Network events" %}</a></li>
+	{% if can_edit %}
+	<li class="settings"><a href="{% url network_update object.pk %}"><span>{% trans "Settings" %}</span></a></li>
+	{% endif %}
 </ul>
-
-{% if object.sharing_users and object.user == request.user %}
-<p>
-<strong>{% trans "Shared with" %}: </strong>
-{% for user, edit in object.sharing_users %}
-{% if not forloop.first %}, {% endif %}{{ user.username }}
-{% endfor %}
-</p>
-{% endif %}
-
 {% endblock %}

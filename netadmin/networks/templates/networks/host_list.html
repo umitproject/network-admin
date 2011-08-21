@@ -20,10 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "hosts list" %}{% endblock %}
 
+{% block content_classes %}host{% endblock %}
+
 {% block content %}
 <h2>{% trans "Hosts list" %}</h2>
 
-<form action="" method="GET" class="search_form">
+<form action="" method="GET" class="search">
 	<p>{% trans "Search for hosts" %}: 
 		<input type="text" name="s" value="{{ request.GET.s }}"/>
 		<input type="submit" value="{% trans 'Search' %}" />
@@ -40,10 +42,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		</tr>
 	</thead>
 	<tbody>
-	{% for host in hosts %} 
-		<tr>
+	{% for host in hosts.object_list %} 
+		<tr class="{% cycle 'odd' 'even' %}">
 			<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
-			<td>{{ host.get_short_description|action:"host_list_short_description" }}</td>
+			<td>{{ host.short_description|action:"host_list_short_description" }}</td>
 			<td>{{ host.ipv4|action:"host_list_ipv4" }}</td>
 			<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
 		</tr>
@@ -51,12 +53,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</tbody>
 </table>
 
-{% include "paginator.html" %}
-
+{% if hosts.paginator.num_pages > 1 %}
+	<div class="pagination">
+	{% if hosts.has_previous %}
+		<span class="prev"><a href="{% url host_list_page hosts.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
+	{% endif %}
+		<span>{% trans "Page" %} {{ hosts.number }} {% trans "of" %} {{ hosts.paginator.num_pages }}</span>
+	{% if hosts.has_next %}
+		<span class="next"><a href="{% url host_list_page hosts.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
+	{% endif %}
+	</div>
+{% endif %}
+	
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url host_new %}">{% trans "Add new host" %}</a></li>
+	<li class="add"><a href="{% url host_new %}"><span>{% trans "Add new host" %}</span></a></li>
 </ul>
 {% endblock %}
+
+{% block sidebar %}{% endblock %}

@@ -20,18 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
+{% block content_classes %}network{% endblock %}
+
 {% block content %}
 <h2>{% trans "Removing network" %}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url network_list %}">{% trans "networks" %}</a> > 
+	<a href="{% url network_detail object.pk %}">{{ object.name }}</a> > 
+	{% trans "delete network" %}
+</p>
+
 <p>{% blocktrans with object.name as name %}Do you really want to remove network {{ name }}?{% endblocktrans %}</p>
 <form action="" method="POST">
 	<input type="submit" value="{% trans "Remove network" %}" />
 	<p><a href="{% url network_detail object.pk %}">{% trans "Cancel" %}</a></p>
 </form>
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url network_list %}">{% trans "Networks list" %}</a></li>
-	<li><a href="{% url network_new %}">{% trans "Add new network" %}</a></li>
-</ul>
 {% endblock %}
