@@ -78,7 +78,23 @@ class Plugin(object):
         """
         return {}
     
-def load_plugins(user=None, active=False):
+    def get_option(self, name):
+        """
+        Returns value of the option with specified name or returns result
+        of the return_func function declared for plugin's option with this name.
+        """
+        from options import get_option
+        option = self.options().get(name)
+        if option:
+            value = get_option(name, option.get('default', ''))
+            return_func = option.get('return_func')
+            if return_func:
+                return return_func(value)
+        else:
+            value = get_option(name)
+        return value
+    
+def load_plugins(active=False):
     """
     Returns list of all installed plugins. If 'active' is set to True, then
     only plugins activated by administrator are listed. 
@@ -99,11 +115,11 @@ def load_plugins(user=None, active=False):
                 for plugin in plugins:
                     if plugin().name == sett.plugin_name:
                         plugins.remove(plugin)
-    return [plugin(user) for plugin in plugins]
+    return [plugin() for plugin in plugins]
 
-def widgets_list(user=None):
+def widgets_list(user=None, plugins=[]):
     """Returns list of all widgets defined in installed plugins
     """
-    plugins = load_plugins(active=True)
+    plugins = plugins or load_plugins(active=True)
     widgets = sum([plugin.widgets() for plugin in plugins], [])
     return [widget(user) for widget in widgets]
