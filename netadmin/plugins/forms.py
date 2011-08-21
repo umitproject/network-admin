@@ -20,6 +20,7 @@
 
 from django import forms
 from django.forms.models import modelformset_factory
+from django.utils.translation import ugettext as _
 
 from core import widgets_list
 from models import PluginSettings, WidgetSettings, WidgetsArea
@@ -31,7 +32,7 @@ COLUMN_CHOICES = [(1,1), (2,2), (3,3)]
 
 
 class WidgetCreateForm(forms.ModelForm):
-    column = forms.ChoiceField(choices=COLUMN_CHOICES)
+    column = forms.ChoiceField(choices=COLUMN_CHOICES, initial=1)
     widget_class = forms.ChoiceField(choices=WIDGETS_CHOICES)
     widgets_area = forms.ModelChoiceField(WidgetsArea.objects.none())
     
@@ -42,6 +43,17 @@ class WidgetCreateForm(forms.ModelForm):
     class Meta:
         model = WidgetSettings
         fields = ('column', 'widgets_area', 'widget_class')
+
+class DashboardWidgetForm(forms.ModelForm):
+    widget_class = forms.ChoiceField(choices=WIDGETS_CHOICES)
+    
+    class Meta:
+        model = WidgetSettings
+        widgets = {
+            'widgets_area': forms.HiddenInput(),
+            'column': forms.HiddenInput(),
+            'order': forms.HiddenInput()
+        }
 
 class PluginSettingsForm(forms.ModelForm):
     class Meta:
