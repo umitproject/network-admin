@@ -19,20 +19,39 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import random
+import time
 
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template
 from django.utils.translation import ugettext as _
+from django.core.mail import send_mail
+from django.core.urlresolvers import reverse
+
 from search.core import search
+from piston.models import Consumer, Token
 
-from netadmin.users.forms import UserForm, UserProfileForm, \
-    UserRegistrationForm
-from netadmin.users.models import UserActivationCode
+from settings import GAE_MAIL_ACCOUNT, SITE_DOMAIN
+from forms import UserForm, UserProfileForm, UserRegistrationForm
+from models import UserActivationCode
 
 
+ACTIVATION_MAIL_SUBJECT = _("Activate your account in Network Administrator")
+ACTIVATION_MAIL_CONTENT = _("""
+    To finish registration just click the activation link below:
+    
+    %s
+    
+    --
+    Network Administrator Team
+    www.umitproject.org
+""")
+
+
+@login_required
 def user_public(request, slug):
     user = get_object_or_404(User, username=slug)
     if not user.get_profile().is_public:
@@ -42,6 +61,7 @@ def user_public(request, slug):
                          slug_field='username',
                          template_name='users/user_public.html')
 
+@login_required
 def user_private(request):
     if request.method == 'POST':
         user_form = UserForm(request.POST, instance=request.user)
@@ -59,10 +79,16 @@ def user_private(request):
     user_profile = request.user.get_profile()
     profile_form = UserProfileForm(instance=user_profile)
     user_form = UserForm(instance=request.user)
+    
+    api_consumer = Consumer.objects.get(user=request.user)
+    api_access_token = api_consumer.token_set.get(token_type=Token.ACCESS,
+                                                     user=request.user)
         
     extra_context = {
         'profile_form': profile_form,
-        'user_form': user_form
+        'user_form': user_form,
+        'api_consumer': api_consumer,
+        'api_access_token': api_access_token
     }
     
     return object_detail(request, object_id=request.user.pk,
@@ -70,6 +96,7 @@ def user_private(request):
                          template_name='users/user_private.html',
                          extra_context=extra_context)
     
+@login_required
 def user_search(request):
     users = None
     search_phrase = request.GET.get('s')
@@ -84,6 +111,7 @@ def user_search(request):
                               extra_context=extra_context)
     
 def user_register(request, template_name="users/user_registration.html"):
+    registration_form = UserRegistrationForm()
     if request.method == 'POST':
         registration_form = UserRegistrationForm(request.POST)
         if registration_form.is_valid():
@@ -93,22 +121,17 @@ def user_register(request, template_name="users/user_registration.html"):
             code = random.getrandbits(128)
             activation = UserActivationCode(user=user, code=code)
             activation.save()
-            return user_register_confirm(request, activation.code)
-    registration_form = UserRegistrationForm()
+            
+            code_url = reverse('user_activation', args=[code])
+            activation_url = "http://%s%s" % (SITE_DOMAIN, code_url)
+            send_mail(ACTIVATION_MAIL_SUBJECT,
+                      ACTIVATION_MAIL_CONTENT % (activation_url, activation_url),
+                      GAE_MAIL_ACCOUNT, [user.email])
+            
+            return direct_to_template(request,
+                        "users/user_registration_confirm.html")
     extra_context = {
         'registration_form': registration_form
-    }
-    return direct_to_template(request, template_name,
-                              extra_context=extra_context)
-    
-def user_register_confirm(request, code=None,
-                          template_name="users/user_registration_confirm.html"):
-    if code:
-        activation = UserActivationCode.objects.get(code=code)
-    else:
-        activation = None
-    extra_context = {
-        'activation': activation
     }
     return direct_to_template(request, template_name,
                               extra_context=extra_context)
@@ -121,9 +144,34 @@ def user_activation(request, code,
         user = activation.user
         user.is_active = True
         user.save()
+        
+        try:
+            consumer = Consumer.objects.get(user=user)
+        except Consumer.DoesNotExist:
+            consumer = Consumer(name=user.username, user=user,
+                                status='accepted')
+            consumer.generate_random_codes()
+            consumer.save()
+        
+        try:
+            token = Token.objects.get(user=user, consumer=consumer)
+        except Token.DoesNotExist:
+            token = Token(user=user, consumer=consumer, is_approved=True,
+                          timestamp=time.time(),
+                          token_type=Token.ACCESS)
+            token.generate_random_codes()
+            token.save()
+        
     extra_context = {
         'active': active,
         'activation': activation
     }
     return direct_to_template(request, template_name,
                               extra_context=extra_context)
+
+@login_required
+def refresh_access_token(request):
+    token = Token.objects.get(user=request.user, token_type=Token.ACCESS)
+    token.generate_random_codes()
+    token.save()
+    return user_private(request)
