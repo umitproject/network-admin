@@ -23,7 +23,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <h2>{% trans "Widgets settings" %}</h2>
 
-
 {% for area in widgets_areas %}
 <h3>{% trans area.name %}</h3>
 {% if area.widgets %}
@@ -39,7 +38,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<tbody>
 		{% for widget in area.widgets %}
 			<tr>
-				<td>{{ widget.get_widget.name }}</td>
+				<td>
+					<a href="{% url widget_detail widget.pk %}">{{ widget.get_widget.name }}</a>
+				</td>
 				<td>{{ widget.column }}</td>
 				<td>{{ widget.order }}</td>
 				<td>
@@ -62,7 +63,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<input type="submit" value="{% trans 'Add to dashboard' %}" />
 </form>
 {% else %}
-<p>{% trans "There are no widgets available" %}</p>
+	<p>{% trans "There are no widgets available" %}</p>
 {% endif %}
 
 {% endblock %}
