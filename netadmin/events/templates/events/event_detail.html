@@ -40,23 +40,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p><strong>{% trans "Network-wide event" %}</strong></p>
 {% endif %}
 
-{% comment %}
-<p>{% trans "Checked" %}: {% if object.checked %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</p>
-{% endcomment %}
-
 <p class="notification-message">{{ object.html_message|action:"event_html_message"|safe }}</p>
 
 {% if object.fields_data %}
 <h4>{{ object.fields_class|action:"event_field_class" }}</h4>
-<ul>
-{% for field, value in object.get_details.items %}
-	<li>
-	{% filter action:"event_field_list_item" %}
-		{{ field|action:"event_field_list_name" }}: {{ value|action:"event_field_list_value" }}
-	{% endfilter %}
-	</li>
-{% endfor %}
-</ul>
+	{% if object.get_details.items %}
+	<ul>
+	{% for field, value in object.get_details.items %}
+		<li>
+		{% filter action:"event_field_list_item" %}
+			{{ field|action:"event_field_list_name" }}: {{ value|action:"event_field_list_value" }}
+		{% endfilter %}
+		</li>
+	{% endfor %}
+	</ul>
+	{% else %}
+	<p>{% trans "No additional data has been provided." %}</p>
+	{% endif %}
 {% endif %}
 
 {% similar_events request object %}
