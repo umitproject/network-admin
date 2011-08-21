@@ -1,8 +1,31 @@
 {% extends 'base.html' %}
-{% load widgets %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n widgets %}
 {% block title %}It works!{% endblock %}
 
+{% block content_classes %}dashboard{% endblock %}
+
 {% block content %}
+{% if request.user.is_authenticated %}
+	{% widgets_area request.user "Dashboard" 3 %}
+{% else %}
 <h2>Welcome to the Network Administrator!</h2>
 
 <p>Network Administrator is a part of <a href="http://www.umitproject.org/">the Umit Project</a> and it's the web monitoring
@@ -12,9 +35,7 @@ tool designed to work in cloud. The project is now developed as a part of
 	<li><a href="http://www.umitproject.org/?active=contacts">Umit Project Team</a>,</li>
 	<li>Piotrek Wasilewski &lt;wasilewski.piotrek@gmail.com&gt; - GSoC student working on Network Administrator.</li>
 </ul>
-
-{% if request.user.is_authenticated %}
-	{% widgets_area request.user "Dashboard" 3 %}
 {% endif %}
-
 {% endblock %}
+
+{% block sidebar %}{% endblock %}
