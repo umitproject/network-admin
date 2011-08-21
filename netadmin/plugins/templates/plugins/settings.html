@@ -20,6 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "plugins" %}{% endblock %}
 
+{% block content_classes %}plugin{% endblock %}
+
 {% block content %}
 <h2>{% trans "Plugins" %}</h2>
 
@@ -30,7 +32,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<tr>
 				<th>{% trans "Plugin name" %}</th>
 				<th>{% trans "Description" %}</th>
-				<th>{% trans "Author" %}</th>
 				<th>{% trans "Is active" %}</th>
 			</tr>
 		</thead>
@@ -38,9 +39,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		{% for form in settings_formset %}
 			{% if form.instance.pk %}
 				<tr>
-					<td>{{ form.get_meta.name }}</td>
-					<td>{{ form.get_meta.description }}</td>
-					<td>{{ form.get_meta.author }}</td>
+					<td>{{ form.instance.get_plugin.name }}</td>
+					<td>{{ form.instance.get_plugin.description }}</td>
 					{% for field in form %}
 					<td>{{ field }}</td>
 					{% endfor %}
