@@ -12,6 +12,13 @@ indexes:
 
 - kind: events_event
   properties:
+  - name: checked
+  - name: event_type_id
+  - name: timestamp
+    direction: desc
+
+- kind: events_event
+  properties:
   - name: event_type_id
   - name: timestamp
 
@@ -42,6 +49,11 @@ indexes:
   - name: user_id
   - name: name
 
+- kind: networks_host
+  properties:
+  - name: user_id
+  - name: name
+
 - kind: plugins_widgetsettings
   properties:
   - name: column
@@ -64,6 +76,27 @@ indexes:
   - name: widgets_area_id
   - name: column
   - name: order
+
+- kind: search_relationindex_events_event_search_index
+  properties:
+  - name: event_type_id
+  - name: search_index_search_list_field
+  - name: search_index_search_list_field
+  - name: timestamp
+    direction: desc
+
+- kind: search_relationindex_events_event_search_index
+  properties:
+  - name: event_type_id
+  - name: search_index_search_list_field
+  - name: timestamp
+
+- kind: search_relationindex_events_event_search_index
+  properties:
+  - name: event_type_id
+  - name: search_index_search_list_field
+  - name: timestamp
+    direction: desc
 
 - kind: search_relationindex_events_event_search_index
   properties:
