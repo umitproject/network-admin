@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n events_tags actions %}
+{% block title %}{% trans "Search" %}{% endblock %}
+
+{% block content_classes %}search{% endblock %}
+
+{% block content %}
+<h2>{% trans "Search" %}</h2>
+
+<form action="{% url global_search %}" method="GET" class="search">
+	<p>{% trans "Search for phrase" %}: <input type="text" name="s" value="{{ request.GET.s }}" /><input type="submit" value="{% trans 'Search' %}" /></p>
+</form>
+
+{% if events %}
+	<h3>{% trans "Events" %}</h3>
+	{% events_list request events %}
+	<p><a href="{% url event_search %}?message={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
+{% endif %}
+
+{% if hosts %}
+	<h3>{% trans "Hosts" %}</h3>
+	<table>
+		<thead>
+			<tr>
+				<th>{% trans "Name" %}</th>
+				<th>{% trans "Description" %}</th>
+				<th>{% trans "IPv4 address" %}</th>
+				<th>{% trans "IPv6 address" %}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for host in hosts %} 
+			<tr class="{% cycle 'odd' 'even' %}">
+				<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
+				<td>{{ host.short_description|action:"host_list_short_description" }}</td>
+				<td>{{ host.ipv4|action:"host_list_ipv4" }}</td>
+				<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	<p><a href="{% url host_list %}?s={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
+{% endif %}
+
+{% if networks %}
+	<h3>{% trans "Networks" %}</h3>
+	<table>
+		<thead>
+			<tr>
+				<th>{% trans "Name" %}</th>
+				{% action_extend "network_list_table_head" "th" %}
+			</tr>
+		</thead>
+		<tbody>
+		{% for network in networks %}
+			<tr>
+				<td>
+					<a href="{% url network_detail network.pk %}">
+						{{ network.name|action:"network_list_name" }}
+					</a>
+				</td>
+				{% action_extend "network_list_table_cell" "td" network %}
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+	<p><a href="{% url network_list %}?s={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
+{% endif %}
+
+{% if not events and not hosts and not networks %}
+	<p>{% trans "No results" %}.</p>
+{% endif %}
+
+{% endblock %}

@@ -7,16 +7,15 @@ admin.autodiscover()
 handler500 = 'djangotoolbox.errorviews.server_error'
 
 urlpatterns = patterns('',
+    ('^$', 'django.views.generic.simple.direct_to_template', {'template': 'home.html'}),
     (r'^api/', include('netadmin.webapi.urls')),
     (r'^network/', include('netadmin.networks.urls')),
     (r'^event/', include('netadmin.events.urls')),
     (r'^report/', include('netadmin.reportmeta.urls')),
     (r'^user/', include('netadmin.users.urls')),
     (r'^plugins/', include('netadmin.plugins.urls')),
-    
-    ('^$', 'django.views.generic.simple.direct_to_template',
-     {'template': 'home.html'}),
     (r'^admin/', include(admin.site.urls)),
+    url(r'^search/', 'netadmin.views.global_search', name='global_search'),
     
     url(r'login/', 'django.contrib.auth.views.login',
         {'template_name': 'login.html'}, name='login_page'),
