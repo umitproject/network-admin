@@ -57,7 +57,7 @@ def get_eventtypes(user=None, alert=0):
 
 def get_alerts(user=None):
     ets = [et.pk for et in get_eventtypes(user, 1)]
-    return Event.objects.filter(event_type__pk__in=ets)
+    return Event.objects.filter(event_type__pk__in=ets, checked=False)
 
 def _get_network_objects(subclass, user=None):
     objects = subclass.objects.all()
