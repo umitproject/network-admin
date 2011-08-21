@@ -24,6 +24,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.create_update import create_object, update_object, \
     delete_object
 from django.views.generic.list_detail import object_list, object_detail
@@ -47,6 +48,16 @@ def host_list(request, page=None):
         hosts = search(Host, search_phrase)
     else:
         hosts = filter_user_objects(request.user, Host)
+        
+    paginator = Paginator(list(hosts), 10)
+    
+    page = page or request.GET.get('page', 1)
+    try:
+        hosts = paginator.page(page)
+    except PageNotAnInteger:
+        hosts = paginator.page(1)
+    except EmptyPage:
+        hosts = paginator.page(paginator.num_pages)
 
     extra_context = {
         'hosts': hosts,
@@ -105,13 +116,22 @@ def host_delete(request, object_id):
                          post_delete_redirect=reverse('host_list'))
 
 @login_required
-def network_list(request):
-    
+def network_list(request, page=None):
     search_phrase = request.GET.get('s')
     if search_phrase:
         nets = search(Network, search_phrase)
     else:
         nets = filter_user_objects(request.user, Network)
+        
+    paginator = Paginator(list(nets), 10)
+    
+    page = page or request.GET.get('page', 1)
+    try:
+        nets = paginator.page(page)
+    except PageNotAnInteger:
+        nets = paginator.page(1)
+    except EmptyPage:
+        nets = paginator.page(paginator.num_pages)
     
     extra_context = {
         'networks': nets,
@@ -146,9 +166,9 @@ def network_detail(request, object_id):
             network_host = NetworkHost(network=network, host=host)
             network_host.save()
     
-    queryset = Network.objects.all()
-    if network.hosts:
-        hosts_ids = [host.pk for host in network.hosts]
+    queryset = Network.objects.filter(user=request.user)
+    if network.hosts():
+        hosts_ids = [host.pk for host in network.hosts()]
         hosts_other = Host.objects.exclude(pk__in=hosts_ids).filter(user=request.user)
     else:
         hosts_other = Host.objects.filter(user=request.user)
