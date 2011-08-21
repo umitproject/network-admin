@@ -21,35 +21,37 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.db.models.query import QuerySet
 from django.http import Http404, HttpResponse
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
+
 from search.core import search
 
-from netadmin.events.forms import EventSearchForm, EventSearchSimpleForm, \
-    EventTypeFormset
-from netadmin.events.models import Event, EventType, EventNotification, \
-    ALERT_LEVELS
-from netadmin.events.utils import filter_user_events
+from forms import EventSearchForm, EventSearchSimpleForm, \
+    EventTypeFormset, EventCheckForm
+from models import Event, EventType, EventNotification, ALERT_LEVELS
+from utils import filter_user_events
+
 from netadmin.notifier.utils import NotifierQueue, NotifierEmptyQueue
 from netadmin.permissions.utils import user_has_access, \
     get_object_or_forbidden
+from netadmin.webapi.views import api_ok, api_error
 
 
 @login_required
 def events_list(request, events=None, alerts=None, search_form=None,
                 events_header=_("All events"), 
                 template_name='events/event_list.html', extra_context=None):
-    if not events and not isinstance(events, QuerySet):
+    try:
+        events = events[:]
+    except TypeError:
         events = filter_user_events(request.user)
+        events = events.order_by('-timestamp')
         
     if not search_form:
         search_form = EventSearchSimpleForm()
-    
-    events = events.order_by('-timestamp')
         
     context = {
         'alerts': alerts,
@@ -88,7 +90,8 @@ def events_alerts(request, alert_level_id=None, alert_level_slug=None):
         types = EventType.objects.filter(user=request.user, alert_level=lvl_id)
         if types:
             types_pks = [t.pk for t in types]
-            events = Event.objects.filter(event_type__pk__in=types_pks)
+            events = Event.objects.filter(event_type__pk__in=types_pks,
+                                          checked=False)
             events = events.order_by('-timestamp')
             alert = (events, lvl_name)
             alerts.append(alert)
@@ -141,9 +144,10 @@ def events_search(request):
             
         events = events.order_by('-timestamp')
         # filter events by user access
-        events = [e for e in events if user_has_access(e, request.user)]
+        events = filter(lambda e: user_has_access(e.source_host, request.user), events)
     else:
-        search_form = EventSearchForm(request.user)
+        if not request.GET.get('message'):
+            search_form = EventSearchForm(request.user)
     
     extra_context = {
         'adv_search': True,
@@ -178,8 +182,17 @@ def event_detail(request, object_id=None, message_slug=None):
         return events_list(request)
     if not user_has_access(event.source_host, request.user):
         raise Http404()
-    return object_detail(request, Event.objects.all(),
-                         slug=message_slug, slug_field='message_slug')
+    if request.method == 'POST':
+        check_form = EventCheckForm(request.POST, instance=event)
+        if check_form.is_valid():
+            check_form.save()
+    check_form = EventCheckForm(instance=event)
+    extra_context = {
+        'check_form': check_form
+    }
+    return object_detail(request, Event.objects.all(), object_id,
+                         slug=message_slug, slug_field='message_slug',
+                         extra_context=extra_context)
 
 @login_required
 def event_check(request, object_id):
@@ -230,3 +243,21 @@ def events_notify(request):
     else:
         response = "<p>No emails to send</p>"
     return HttpResponse(response)
+
+@login_required
+def events_ajax(request):
+    if request.GET.get('check'):
+        event_id = request.GET.get('check')
+        try:
+            event = Event.objects.get(pk=event_id)
+        except Event.DoesNotExist:
+            return api_error(_("Event does not exist"))
+        if event.source_host.user != request.user:
+            return api_error(_("Permission denied"))
+        if event.checked:
+            return api_ok(_("Event already checked"))
+        event.checked = True
+        event.save()
+        return api_ok(_("Event checked"))
+    
+    return api_error(_("No action defined"))
