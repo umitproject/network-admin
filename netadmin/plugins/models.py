@@ -48,6 +48,16 @@ class PluginSettings(models.Model):
                 self.get_plugin().activate()
             else:
                 self.get_plugin().deactivate()
+                
+    def get_plugin(self):
+        """Returns instance of Plugin class
+        """
+        from netadmin.plugins.core import load_plugins
+        plugins = load_plugins()
+        for plugin in plugins:
+            if plugin.get_name() == self.plugin_name:
+                return plugin
+        return None
     
 class CustomOption(models.Model):
     """
@@ -62,7 +72,7 @@ class CustomOption(models.Model):
     and to convert option's value back to required type (if it cannot be string).
     """
     name = models.CharField(max_length=50)
-    value = models.CharField(max_length=CUSTOM_OPTION_MAX_LENGTH)
+    value = models.CharField(max_length=CUSTOM_OPTION_MAX_LENGTH, null=True)
     user = models.ForeignKey(User, null=True)
     
     def __unicode__(self):
@@ -218,3 +228,16 @@ class WidgetSettings(models.Model):
         area.save()
         
     user = property(get_user, set_user)
+    
+    def widget_title(self):
+        return self.get_widget().get_title(self)
+    
+    def move(self, new_order, new_column=None):
+        changed = False
+        if new_order != self.order:
+            self.order = new_order
+            changed = True
+        if new_column and new_column != self.column:
+            self.column = new_column
+            changed = True
+        return changed
