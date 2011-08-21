@@ -29,10 +29,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				<th>{% trans "Type" %}</th>
 				<th>{% trans "Protocol" %}</th>
 				<th>{% trans "Host" %}</th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
-		{% for event in events %}
+		{% for event in events.object_list %}
 			<tr>
 				<td>
 					<a href="{% url events_date event.timestamp.year event.timestamp.month event.timestamp.day %}">
@@ -60,8 +61,42 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 						{{ event.source_host.name|action:"event_list_source_host_name" }}
 					</a>
 				</td>
+				<td>
+				{% if event.checked %}
+					<span class="icon-25 ok"></span>
+				{% else %}
+					<a href="{% url event_ajax %}" id="pending-{{ event.pk }}" class="icon-25 pending"><span>{% trans "Mark as checked" %}</span></a>
+				{% endif %}
+				</td>
 			</tr>
 		{% endfor %}
 		</tbody>
 	</table>
+	
+	{% if events.paginator.num_pages > 1 %}
+	<div class="pagination">
+	{% if events.has_previous %}
+		<span class="prev"><a href="{{ request.get_full_path }}{% if request.GET.message %}&{% else %}?{% endif %}page={{ events.previous_page_number }}">{% trans "Previous" %}</a></span>
+	{% endif %}
+		<span>{% trans "Page" %} {{ events.number }} {% trans "of" %} {{ events.paginator.num_pages }}</span>
+	{% if events.has_next %}
+		<span class="next"><a href="{{ request.get_full_path }}{% if request.GET.message %}&{% else %}?{% endif %}page={{ events.next_page_number }}">{% trans "Next" %}</a></span>
+	{% endif %}
+	</div>
+	{% endif %}
+	
+	<script type="text/javascript">
+		$("a.pending").click(function(){
+			var that = this;
+			var url = $(this).attr("href");
+			var event_id = $(this).attr("id").split("-")[1]
+			$.get(url, {check: event_id}, function(data){
+				if (data.status === "ok") {
+					$(that).removeClass("pending");
+					$(that).addClass("ok");
+				}
+			}, "json");
+			return false;
+		});
+	</script>
 {% endif %}

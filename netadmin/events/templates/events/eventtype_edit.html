@@ -20,8 +20,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "manage events types" %}{% endblock %}
 
+{% block content_classes %}event{% endblock %}
+
 {% block content %}
-<h2>{% trans "Manage events types" %}</h2>
+<h2>{% trans "Events' settings" %}</h2>
+
+<p class="breadcrumbs"><a href="{% url events_list %}">{% trans "events" %}</a> > {% trans "settings" %}</p>
 
 <form action="" method="POST">
 	<table>
@@ -31,23 +35,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<tbody>
 		{{ eventtype_formset.management_form }}
 		{% for form in eventtype_formset %}
-			{% if form.name.value %}
 			<tr>
 			{% for field in form %}
 				<td>{% if field.name == 'name' %}{{ field.value }}{% endif %}{{ field }}</td>
 			{% endfor %}
 			</tr>
-			{% endif %}
 		{% endfor %}
 		</tbody>
 	</table>
 	<input type="submit" value="Update" />
 </form>
 
-{% endblock %}
-
-{% block sidebar %}
-<ul>
-	<li><a href="{% url events_list %}">{% trans "Back to events list" %}</a></li>
-</ul>
 {% endblock %}

@@ -20,11 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n events_tags actions %}
 {% block title %}{% trans "event" %} "{{ object.short_message }}"{% endblock %}
 
+{% block content_classes %}event{% endblock %}
+
 {% block content %}
 <h2>
 {{ object.timestamp|action:"event_timestamp" }}
 {% if object.short_message %}: {{ object.short_message|action:"event_short_message" }}{% endif %}
 </h2>
+
+<p class="breadcrumbs"><a href="{% url events_list %}">{% trans "events" %}</a> > {% trans "event details" %}</p>
+
+<form action="" method="POST">
+	<p>{{ check_form.checked.label }}: {{ check_form.checked }}<input type="submit" value="{% trans 'Update' %}" /></p>
+</form>
+
 <h3>{{ object.event_type|action:"event_event_type" }}</h3>
 
 {% if not object.source_host %}
@@ -50,15 +59,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </ul>
 {% endif %}
 
-{% similar_events object %}
+{% similar_events request object %}
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url events_list %}">{% trans "Back to events list" %}</a></li>
 	{% if object.source_host %}
-	<li><a href="{% url host_detail object.source_host.pk %}">{% trans "Go to source host" %}</a></li>
+	<li class="host"><a href="{% url host_detail object.source_host.pk %}">{% trans "Source host" %}</a></li>
 	{% endif %}
 </ul>
 {% endblock %}

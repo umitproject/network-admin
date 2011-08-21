@@ -20,8 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n events_tags %}
 {% block title %}{% trans "search for events" %}{% endblock %}
 
-{% block content %}
+{% block content_classes %}event{% endblock %}
 
+{% block content %}
 <h2>
 {% if request.GET.message %}
 	{% blocktrans with request.GET.message as message %}Search for events with message '{{ message }}'{% endblocktrans %}
@@ -38,7 +39,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 </form>
 
 {% if events %}
-	{% events_list events %}
+	{% events_list request events %}
 {% else %}
 	{% if request.GET.message %}
 		<p>{% trans "No results" %}.</p>
@@ -49,10 +50,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% endblock %}
 
-{% block sidebar %}
+{% block meta %}
 <ul>
-	<li><a href="{% url eventtype_edit %}">{% trans "Manage events types" %}</a></li>
-	<li><a href="{% url events_list %}">{% trans "Browse all events" %}</a></li>
-	<li><a href="{% url events_alerts %}">{% trans "Alerts" %}</a></li>
+	<li class="alert"><a href="{% url events_alerts %}">{% trans "Alerts" %}</a></li>
+	<li class="event"><a href="{% url events_list %}">{% trans "All events" %}</a></li>	
+	<li class="settings"><a href="{% url eventtype_edit %}">{% trans "Settings" %}</a></li>
 </ul>
 {% endblock %}

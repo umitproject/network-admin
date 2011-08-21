@@ -1,7 +1,11 @@
 {% spaceless %}
+<ul>
 {% for level_id, level_name, events_count in alert_levels %}
 	{% if events_count %}
-	<a href="{% url event_alert_level level_name|lower %}">{{ level_name }}</a> ({{ events_count }})
+	<li class="alert-{{ level_name|lower }}">
+		<a href="{% url event_alert_level level_name|lower %}">{{ level_name }} ({{ events_count }})</a>
+	</li>
 	{% endif %}
 {% endfor %}
+</ul>
 {% endspaceless %}
