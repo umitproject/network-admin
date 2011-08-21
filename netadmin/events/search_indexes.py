@@ -24,4 +24,4 @@ from search.core import startswith
 from netadmin.events.models import Event
 
 
-search.register(Event, ('message', ), indexer=startswith)
+search.register(Event, ('short_message', 'message'), indexer=startswith)
