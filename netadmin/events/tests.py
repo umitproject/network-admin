@@ -43,11 +43,12 @@ class EventTest(TestCase):
         self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user)
         self.source_host.save()
         
-        event_type = EventType(name='INFO')
+        event_type = EventType(name='INFO', user=self.user)
         event_type.save()
         
         event_data = {
             'message': 'Message',
+            'short_message': 'short message',
             'event_type': event_type,
             'timestamp': '%s' % str(datetime.datetime.now()),
             'source_host': self.source_host
@@ -58,14 +59,14 @@ class EventTest(TestCase):
     def test_event_detail(self):
         """Get event's details
         """
-        url = reverse('event_detail', args=[self.event.pk])
+        url = '/event/%i/' % self.event.pk
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
     def test_event_list(self):
         """Get events list
         """
-        url = reverse('event_list')
+        url = '/event/list/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         
@@ -84,13 +85,13 @@ class EventTest(TestCase):
         self.source_host.user = other_user
         self.source_host.save()
         
-        url = reverse('event_detail', args=[self.event.pk])
+        url = '/event/%i/' % self.event.pk
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
         
         grant_access(self.source_host, self.user)
         
-        url = reverse('event_detail', args=[self.event.pk])
+        url = '/event/%i/' % self.event.pk
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         
