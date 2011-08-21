@@ -20,66 +20,41 @@
 
 from django.utils.translation import ugettext as _
 
+
 WIDTH_DEFAULT = 700
 HEIGHT_DEFAULT = 400
 
 
-class ChartAxisError(Exception):
-    pass
-
-class ChartData(dict):
-    def x(self):
-        return self.keys()
-    
-    def y(self):
-        return self.values()
+class ChartColumn(object):
+    """
+    """
+    def __init__(self, name, data):
+        self.name = name
+        self.data = data
+        
+    def __len__(self):
+        return len(self.data)
 
 class Chart(object):
-    raw_data = {'x': [], 'y': []}
+    """
+    """
+    def __init__(self, title, width=WIDTH_DEFAULT, height=HEIGHT_DEFAULT):
+        self.title = title
+        self.width, self.height = width, height
+        self.columns = []
+        
+    def add_column(self, name, data):
+        col = ChartColumn(name, data)
+        self.columns.append(col)
+        return col
     
-    # metadata for X and Y axes
-    x = {'label': 'x'}
-    y = {'label': 'y'}
+    def get_column(self, name):
+        for col in self.columns:
+            if col.name == name:
+                return col
+        return None
     
-    def __init__(self, data_x, data_y, name='',
-                 width=WIDTH_DEFAULT, height=WIDTH_DEFAULT):
-        self.name = name
-        self.width = width
-        self.height = height
-        
-        try:
-            iter(data_x)
-        except TypeError:
-            raise ChartAxisError(_("'data_x' must be iterable"))
-        self.raw_data['x'] = self.map_x(data_x)
-        
-        try:
-            y = [self.map_y(dataset, data_x) for dataset in data_y]
-        except TypeError:
-            raise ChartAxisError(_("'data_y' must be iterable"))
-        self.raw_data['y'] = y
-        
-    def get_data(self):
-        x = self.raw_data['x']
-        y = zip(*self.raw_data['y'])
-        return dict(zip(x, y))
-    
-    def map_x(self, data_x):
-        """
-        Should return list of values for the X axis.
-        
-        While overriding this method you can base your result on
-        original values passed to the chart object as x_data argument.
-        """
-        return data_x
-        
-    def map_y(self, dataset, data_x):
-        """
-        Should return list of values for the Y axis.
-        
-        While overriding this method you can base your result on
-        the following arguments:
-            * iterable - element of the y_data list passed to the chart object
-            * x_data - list of values for the X axis (after mapping!)
-        """
-        return dataset
+    def data_iter(self):
+        cols_data = [col.data for col in self.columns]
+        for row in zip(*cols_data):
+            yield row
