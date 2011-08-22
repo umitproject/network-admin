@@ -21,10 +21,12 @@ handlers:
   
 - url: /event/notify/
   script: djangoappengine/main/main.py
+  secure: always
   login: admin
   
 - url: /report/notify/
   script: djangoappengine/main/main.py
+  secure: always
   login: admin
 
 - url: /.*
