@@ -61,16 +61,13 @@ def reset_option(name, value, user=None):
     option.save()
     return option
 
-def get_option(name, default=None, user=None):
+def get_option(name, default, user=None):
     """Returns value of an option
     """
     try:
         option = CustomOption.objects.get(name=name, user=user)
     except CustomOption.DoesNotExist:
-        if default:
-            option = set_option(name, default, user)
-        else:
-            raise UnknownOption(_("Requested option '%s' does not exist") % name)
+        option = set_option(name, default, user)
     except CustomOption.MultipleObjectsReturned:
         raise OptionDuplicated(_("There are more than one option objects. "
                                  "You can fix this problem by using "
