@@ -61,6 +61,13 @@ def reset_option(name, value, user=None):
     option.save()
     return option
 
+def unset_option(name, user=None):
+    try:
+        option = CustomOption(name=name, user=user)
+    except CustomOption.DoesNotExist:
+        return
+    option.delete()
+
 def get_option(name, default, user=None):
     """Returns value of an option
     """
