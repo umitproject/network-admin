@@ -24,9 +24,8 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from models import CustomOption
-from options import set_option, reset_option, get_option, get_options, \
-    set_user_option, set_global_option, get_user_option, get_global_option, \
-    unset_option
+from options import set_option, reset_option, get_option, unset_option, \
+    set_user_option, set_global_option, get_user_option, get_global_option
 
 class OptionsTest(TestCase):
     """Tests for options
