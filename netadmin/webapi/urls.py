@@ -33,7 +33,7 @@ else:
 ad = { 'authentication': auth }
 
 #apply authentication to all resources
-host_handler = Resource(HostHandler)
+host_handler = Resource(HostHandler, **ad)
 event_handler = Resource(EventHandler, **ad)
 net_handler = Resource(NetworkHandler, **ad)
 
