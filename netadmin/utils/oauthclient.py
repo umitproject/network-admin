@@ -18,12 +18,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import cgi
 try:
     import json
 except ImportError:
     import simplejson as json
 import oauth2 as oauth
+
+import cgi
+import urllib
+import time
 
 
 API_URL = ""
@@ -32,6 +35,9 @@ REQUEST_TOKEN_URL = '%s/oauth/request_token/' % API_URL
 ACCESS_TOKEN_URL = '%s/oauth/access_token/' % API_URL
 AUTHORIZE_URL = '%s/oauth/authorize/' % API_URL
 
+
+class NetadminClientError(Exception):
+    pass
 
 class OAuthError(Exception):
     pass
@@ -69,33 +75,62 @@ class NetadminOAuthClient(object):
         self.access_token = dict(cgi.parse_qsl(content))
         return self.access_token
     
-    def fetch_resource(self, resource_url, method='GET', access_token=None):
+    def fetch_resource(self, resource_url, method='GET', access_token=None,
+                       body=''):
         if access_token:
             self.access_token = access_token
         token = oauth.Token(self.access_token['oauth_token'],
                             self.access_token['oauth_token_secret'])
         token.set_verifier(self.verifier)
         client = oauth.Client(self.consumer, token)
-        response, content = client.request(resource_url, method)
+        
+        body = urllib.urlencode(body)
+        
+        response, content = client.request(resource_url, method, body)
         return response, content
     
-    def fetch_json_resource(self, resource_url, method='GET'):
-        content = self.fetch_resource(resource_url, method)[1]
+    def request(self, resource_url, method='GET', body=''):
+        content = self.fetch_resource(resource_url, method, body=body)[1]
         return json.loads(content)
     
-    def get_hosts_list(self):
-        return self.fetch_json_resource('%s/api/host/list/' % API_URL, 'GET')
+    def get(self, resource_url, body=''):
+        return self.request(resource_url, 'GET', body)
+    
+    def post(self, resource_url, body=''):
+        return self.request(resource_url, 'POST', body)
+    
+    def get_host_list(self):
+        return self.get('%s/api/host/list/' % API_URL)
     
     def get_host(self, host_id):
-        return self.fetch_json_resource('%s/api/host/%s/' % (API_URL, str(host_id)), 'GET')
+        return self.get('%s/api/host/%s/' % (API_URL, str(host_id)))
+    
+    def get_network_list(self):
+        return self.get('%s/api/network/list/' % API_URL)
+    
+    def get_network(self, net_id):
+        return self.get('%s/api/network/%s/' % (API_URL, str(net_id)))
+    
+    def report_event(self, description, short_description, timestamp, protocol,
+                     event_type, fields_class,
+                     hostname='', host_ipv4='', host_ipv6='', *args, **kwargs):
+        """
+        Reports event
         
-if __name__=='__main__':
-    access_token = {'oauth_token_secret': 'j9XRFjGJVe6PebWe3uqHMR9s8XQpW9G5',
-                    'oauth_token': 'a7zQ4QNbamqDVdPGdZ'}
-    client = NetadminOAuthClient('1234', 'abcd', access_token=access_token)
-    import pprint
-    hosts = client.get_hosts_list()
-    for host in hosts['hosts']:
-        id = host['id']
-        data = client.get_host(id)
-        print data['host_name'], data['ipv4'], data['ipv6']
+        Note: To send additional fields just pass them as named parameters
+        """
+        if not (hostname or host_ipv4 or host_ipv6):
+            raise NetadminClientError(_("No host specified"))
+        data = {
+            'description': description,
+            'short_description': short_description,
+            'timestamp': timestamp,
+            'protocol': protocol,
+            'event_type': event_type,
+            'fields_class': fields_class,
+            'hostname': hostname,
+            'source_host_ipv4': host_ipv4,
+            'source_host_ipv6': host_ipv6
+        }
+        data.update(kwargs)
+        return self.post('%s/api/event/report/' % API_URL, data)
