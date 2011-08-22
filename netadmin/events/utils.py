@@ -76,8 +76,6 @@ def get_event_data(request, event_dict):
     hostname = event_dict.get('hostname')
     
     try:
-        # TODO
-        # filter by user=request.user!!!
         if hostname:
             source_host = Host.objects.get(name=hostname, user=request.user)
         else:
