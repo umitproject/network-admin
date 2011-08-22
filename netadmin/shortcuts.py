@@ -24,7 +24,7 @@ from events.models import Event, EventType
 from networks.models import Host, Network
 
 
-def get_events(time_from=None, time_to=None, source_hosts=[]):
+def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
     """
     get_events(...) -> QuerySet
     
@@ -35,6 +35,9 @@ def get_events(time_from=None, time_to=None, source_hosts=[]):
     if source_hosts:
         pks = [host.pk for host in source_hosts]
         events = events.filter(source_host__pk__in=pks)
+    if event_types:
+        pks = [et.pk for et in event_types]
+        events = events.filter(event_type__pk__in=pks)
     if time_from:
         events = events.filter(timestamp__gte=time_from)
     if time_to:
@@ -55,6 +58,12 @@ def get_eventtypes(user=None, alert=0):
         eventtypes = eventtypes.filter(alert_level__gte=alert)
     return eventtypes
 
+def get_user_events(user):
+    """Returns events reported to the specified user
+    """
+    event_types = get_eventtypes(user)
+    return get_events(event_types=event_types)
+    
 def get_alerts(user=None):
     ets = [et.pk for et in get_eventtypes(user, 1)]
     return Event.objects.filter(event_type__pk__in=ets, checked=False)
@@ -70,6 +79,9 @@ def get_host(id):
 
 def get_hosts(user=None):
     return _get_network_objects(Host, user)
+
+def get_network(id):
+    return Network.objects.get(pk=id)
 
 def get_networks(user=None):
     return _get_network_objects(Network, user)
