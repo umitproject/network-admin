@@ -42,7 +42,7 @@ class HostReport(Report):
                     top=0*cm, left=0, width=BAND_WIDTH,
                     style={'fontName': 'Helvetica-Bold',
                            'fontSize': 14, 'alignment': TA_CENTER}),
-                SystemField(expression=u"Generated on %(now:%Y, %b %d)s at %(now:%H:%M)s",
+                SystemField(expression="Generated on %(now:%Y, %b %d)s at %(now:%H:%M)s",
                     top=0.1*cm, left=0*cm),
                 ]
         borders = {'bottom': True}
@@ -85,7 +85,7 @@ class NetworkReport(Report):
                     top=0*cm, left=0, width=BAND_WIDTH,
                     style={'fontName': 'Helvetica-Bold',
                            'fontSize': 14, 'alignment': TA_CENTER}),
-                SystemField(expression=u"Generated on %(now:%Y, %b %d)s at %(now:%H:%M)s",
+                SystemField(expression="Generated on %(now:%Y, %b %d)s at %(now:%H:%M)s",
                     top=0.1*cm, left=0*cm),
                 ]
         borders = {'bottom': True}
