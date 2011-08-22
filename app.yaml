@@ -18,6 +18,14 @@ handlers:
 - url: /media/admin
   static_dir: django/contrib/admin/media
   expiration: '0'
+  
+- url: /event/notify/
+  script: djangoappengine/main/main.py
+  login: admin
+  
+- url: /report/notify/
+  script: djangoappengine/main/main.py
+  login: admin
 
 - url: /.*
   script: djangoappengine/main/main.py
