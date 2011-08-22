@@ -20,7 +20,7 @@
 
 from django.conf.urls.defaults import *
 from piston.resource import Resource
-from piston.authentication import NoAuthentication, OAuthAuthentication
+from piston.authentication import NoAuthentication, HttpBasicAuthentication
 
 from settings import DEBUG
 from handlers import HostHandler, NetworkHandler, EventHandler
@@ -29,7 +29,7 @@ from handlers import HostHandler, NetworkHandler, EventHandler
 if DEBUG:
     auth = NoAuthentication()
 else:
-    auth = OAuthAuthentication()
+    auth = HttpBasicAuthentication()
 ad = { 'authentication': auth }
 
 #apply authentication to all resources
