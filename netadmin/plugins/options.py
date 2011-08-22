@@ -63,7 +63,7 @@ def reset_option(name, value, user=None):
 
 def unset_option(name, user=None):
     try:
-        option = CustomOption(name=name, user=user)
+        option = CustomOption.objects.get(name=name, user=user)
     except CustomOption.DoesNotExist:
         return
     option.delete()
