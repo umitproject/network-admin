@@ -33,5 +33,5 @@ urlpatterns = patterns('netadmin.reportmeta.views',
     url(r'^new/(?P<object_type>host|network)/(?P<object_id>\d+)/$', 'reportmeta_new_from_object', name="reportmeta_new"),
     url(r'^edit/(?P<object_id>\d+)/$', 'reportmeta_update', name="reportmeta_update"),
     url(r'^delete/(?P<object_id>\d+)/$', 'reportmeta_delete', name="reportmeta_delete"),
-    url(r'^send/emails/$', 'reportmeta_send_emails', name="reportmeta_send_emails"),
+    url(r'^notify/$', 'reportmeta_send_emails', name="reportmeta_send_emails"),
 )
