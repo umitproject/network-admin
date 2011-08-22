@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import datetime
 import StringIO
 
 from django.contrib import admin
@@ -84,10 +85,22 @@ class ReportMeta(models.Model):
     
     def get_events(self):
         """Returns events from host/network included in the report"""
-        events = self.reported_object.events
+        events = self.reported_object.events()
         pks = [et.pk for et in self.event_types]
-        return events.filter(event_type__pk__in=pks)
-    events = property(get_events)
+        events = events.filter(event_type__pk__in=pks)
+        
+        now = datetime.datetime.now()
+        date_from = None
+        if self.report_period == 0:
+            date_from = now.replace(day=now.day-1)
+        elif self.report_period == 1:
+            date_from = now.replace(day=now.day-7)
+        elif self.report_period == 2:
+            date_from = now.replace(month=now.month-1)
+        if date_from:
+            events = events.filter(timestamp__gte=date_from)
+        
+        return events
     
     def get_period_name(self):
         for number, name in REPORT_PERIOD:
@@ -96,12 +109,11 @@ class ReportMeta(models.Model):
     
     def get_report(self):
         if self.model.__name__ == 'Host':
-            return HostReport(queryset=[self.reported_object])
+            return HostReport(self.name, queryset=self.get_events())
         elif self.model.__name__ == 'Network':
-            return NetworkReport(queryset=[self.reported_object])
+            return NetworkReport(self.name, queryset=self.get_events())
         else:
             return None
-    report = property(get_report)
     
     def get_notification_form_class(self):
         from netadmin.reportmeta.forms import ReportDailyForm, \
@@ -134,7 +146,7 @@ class ReportNotification(NotifierScheduleJob):
             
     def attachment(self):
         report_file = HttpResponse(mimetype='application/pdf')
-        report = self.report_meta.report
+        report = self.report_meta.get_report()
         report.generate_by(PDFGenerator, filename=report_file)
         att = {
             'name': 'report.pdf',
