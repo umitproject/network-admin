@@ -228,14 +228,13 @@ def eventtype_edit(request):
     }
     return direct_to_template(request, 'events/eventtype_edit.html',
                               extra_context=extra_context)
-    
-@login_required
+
 def events_notify(request):
     notifier = NotifierQueue(EventNotification)
     try:
         log = notifier.send_emails(_("You have new alert(s) "
                                      "in Network Administrator"),
-                                   clear_queue=False)
+                                   clear_queue=True)
     except NotifierEmptyQueue:
         log = []
     if log:
