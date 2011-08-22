@@ -212,7 +212,8 @@ def reportmeta_delete(request, object_id):
 @login_required    
 def reportmeta_get_report(request, object_id):
     from geraldo.generators import PDFGenerator
-    report = ReportMeta.objects.get(pk=object_id, user=request.user).report
+    report_meta = ReportMeta.objects.get(pk=object_id, user=request.user)
+    report = report_meta.get_report()
     response = HttpResponse(mimetype='application/pdf')
     report.generate_by(PDFGenerator, filename=response)
     return response
@@ -220,7 +221,7 @@ def reportmeta_get_report(request, object_id):
 def reportmeta_send_emails(request):
     notifier = NotifierSchedule(ReportNotification)
     response = '<p><strong>%s</strong></p>' % datetime.datetime.now()
-    log = notifier.send_emails(_("New report from in Network Administrator"))
+    log = notifier.send_emails(_("New report from the Network Administrator"))
     if log:
         response += "<p>Emails sent:</p>%s" % '<br />'.join(log)
     else:
