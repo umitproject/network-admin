@@ -344,7 +344,7 @@ class EventHandler(BaseHandler):
         except Event.DoesNotExist:
             return api_error(_('Event does not exist'))
         
-        if event.user != request.user:
+        if event.source_host.user != request.user:
             return api_error(_('Event does not exist'))
         
         return api_response(event.api_detail())
