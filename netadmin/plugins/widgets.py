@@ -26,6 +26,9 @@ class UnknownWidgetName(Exception):
     """
     pass
 
+class DefaultValueNotFound(Exception):
+    pass
+
 
 class Widget(object):
     """
@@ -97,10 +100,13 @@ class Widget(object):
         from options import get_option
         option = self.options(widget).get(name)
         if option:
-            value = get_option(name, option.get('default', ''))
+            if not option.has_key('default'):
+                raise DefaultValueNotFound(_("Default value for option '%s' "
+                                             "has not been provided") % name)
+            value = get_option(name, option.get('default'))
             return_func = option.get('return_func')
             if return_func:
                 return return_func(value)
         else:
-            value = get_option(name)
+            value = get_option(name, '')
         return value
