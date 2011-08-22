@@ -29,18 +29,14 @@ from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
-from piston.oauth import *
-from piston.models import *
 
 from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
+from netadmin.utils.oauthclient import NetadminOAuthClient
 
 
 class WebAPITest(TestCase):
     def setUp(self):
-        #set up Django testing client
-        self.client = Client()
-        
         self.username = 'user'
         self.password = 'pass'
         
@@ -49,8 +45,12 @@ class WebAPITest(TestCase):
         self.user.set_password(self.password)
         self.user.save()
         
+        #set up Django testing client
+        self.client = Client()
+        self.client.login(username=self.username, password=self.password)
+        
         #set up events types
-        for name in ['INFO', 'WARNING', 'CRITICAL']:
+        for name in ['INFO', 'WARNING', 'CRITICAL', 'ERROR']:
             event_type = EventType(name=name, user=self.user,
                                    alert_level=1)
             event_type.save()
@@ -77,31 +77,20 @@ class WebAPITest(TestCase):
                 fields_data=''
             )
             e.save()
-            
-    def get_auth_string(self):
-        """Helper function - returns basic authentication string"""
-        auth = '%s:%s' % (self.username, self.password)
-        auth_string = 'Basic %s' % base64.encodestring(auth)
-        auth_string = auth_string.strip()
-        return auth_string
     
     def test_hosts(self):
-        """Get all hosts details"""
+        """Get all hosts details
+        """
         hosts = Host.objects.all()
-        auth_string = self.get_auth_string()
         for host in hosts:
-            response = self.client.get(reverse('api_host_detail', args=[host.pk]),
-                                   HTTP_AUTHORIZATION=auth_string)
+            response = self.client.get('/api/host/%i/' % host.pk)
             host_json = json.loads(response.content)
             self.assertIn('host_id', host_json.keys())
     
     def test_hosts_list(self):
-        """Get hosts list"""
-        auth_string = self.get_auth_string()
-        
-        response = self.client.get(reverse('api_host_list'),
-                                   HTTP_AUTHORIZATION=auth_string)
-        
+        """Get hosts list
+        """
+        response = self.client.get('/api/host/list/')
         j = json.loads(response.content)
         
         self.assertIn('hosts', j.keys())
@@ -111,23 +100,10 @@ class WebAPITest(TestCase):
             self.assertIn('id', host.keys())
             self.assertIn('name', host.keys())
             
-            url = reverse('api_host_detail', args=[host['id']])
-            response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
-            
+            response = self.client.get('/api/host/%i/' % host['id'])
             j = json.loads(response.content)
             
             self.assertIn('host_id', j.keys())
-        
-    def test_basic_auth(self):
-        """Test basic authentication""" 
-        host = Host.objects.all()[0]
-        url = reverse('api_host_detail', args=[host.pk])
-        
-        auth_string = self.get_auth_string()
-        
-        response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
-        
-        self.assertEqual(response.status_code, 200)
         
     def test_report_event(self):
         """
@@ -147,11 +123,7 @@ class WebAPITest(TestCase):
             'fields_data': '',
         }
         
-        auth_string = self.get_auth_string()
-        
-        response = self.client.post(reverse('api_report_event'),
-                                    data=event,
-                                    HTTP_AUTHORIZATION=auth_string)
+        response = self.client.post('/api/event/report/', data=event)
         r_json = json.loads(response.content)
         self.assertEqual(r_json['status'], 'ok')
         
@@ -182,29 +154,25 @@ class WebAPITest(TestCase):
         events = [gen_event(i) for i in xrange(10)]
         
         events_json = json.dumps(events)
-        auth_string = self.get_auth_string()
         
-        response = self.client.post(reverse('api_report_event'),
-                                    data={'events': events_json},
-                                    HTTP_AUTHORIZATION=auth_string)
-        print response.content
+        response = self.client.post('/api/event/report/',
+                                    data={'events': events_json})
         r_json = json.loads(response.content)
         self.assertEqual(r_json['status'], 'ok')
             
     def test_event_details(self):
         """Get all events details"""
+        if not Event.objects.all():
+            raise Exception
         for event in Event.objects.all():
-            url = reverse('api_event_detail', args=[event.pk])
-            auth_string = self.get_auth_string()
-            response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
-            print response.content
+            response = self.client.get('/api/event/%s/' % event.pk)
+            print response
             j = json.loads(response.content)
             self.assertIn('event_id', j.keys())
             
     def test_events_list(self):
         """Get events list"""
         url = reverse('api_event_list')
-        auth_string = self.get_auth_string()
-        response = self.client.get(url, HTTP_AUTHORIZATION=auth_string)
+        response = self.client.get('/api/event/list/')
         j = json.loads(response.content)
         self.assertIn('events', j.keys())
