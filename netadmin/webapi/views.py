@@ -23,8 +23,14 @@ try:
 except ImportError:
     import json
     
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from django.http import HttpResponse
+from django.utils.translation import ugettext as _
 
+from piston.authentication import oauth_access_token
+from piston.models import Consumer, Token
+from piston import oauth
 
 def api_response(response):
     """Returns JSON generated from Python data structure""" 
@@ -45,3 +51,34 @@ def api_error(message):
 def api_ok(message):
     """Returns message with status OK"""
     return api_msg('ok', message)
+
+def xauth_callback(request):
+    x_auth_mode = request.POST.get('x_auth_mode')
+    
+    if x_auth_mode and x_auth_mode == 'client_auth':
+        username = request.POST.get('x_auth_username')
+        password = request.POST.get('x_auth_password')
+        
+        user = authenticate(username=username, password=password)
+        
+        if not user:
+            return api_error(_("Authentication error"))
+        
+        try:        
+            consumer = Consumer.objects.get(user=user)
+        except Consumer.DoesNotExist:
+            return api_error(_("Authentication error"))
+        
+        try:
+            token = Token.objects.get(user=user, consumer=consumer,
+                token_type=Token.ACCESS)
+        except Token.DoesNotExist:
+            return api_error(_("Authentication error"))
+        
+        token_dict = {
+            'oauth_token': token.key,
+            'oauth_token_secret': token.secret
+        }
+        return api_ok(token_dict)
+    
+    return oauth_access_token(request)

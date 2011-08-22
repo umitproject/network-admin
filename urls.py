@@ -24,7 +24,7 @@ urlpatterns = patterns('',
 
     url(r'^oauth/request_token/$','piston.authentication.oauth_request_token'),
     url(r'^oauth/authorize/$','piston.authentication.oauth_user_auth'),
-    url(r'^oauth/access_token/$','piston.authentication.oauth_access_token'),
+    url(r'^oauth/access_token/$','netadmin.webapi.views.xauth_callback'),
     
     (r'^media/(?P<path>.*)$', 'django.views.static.serve',
      {'document_root': settings.MEDIA_ROOT}),
