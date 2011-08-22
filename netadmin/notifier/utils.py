@@ -20,6 +20,7 @@
 
 import datetime
 
+from django.core.mail import EmailMultiAlternatives
 from django.core.mail.message import EmailMessage
 from django.utils.translation import ugettext as _
 from settings import GAE_MAIL_ACCOUNT
@@ -125,9 +126,11 @@ class NotifierQueue(Notifier):
                     attachments.append(att)
             
             # separate messages with horizontal line
+            text_message = '\n'.join(messages)
             html_message = '<br /><hr /><br />'.join(messages)
-            email = EmailMessage(subject, html_message,
+            email = EmailMultiAlternatives(subject, text_message,
                                  GAE_MAIL_ACCOUNT, [user.email])
+            email.attach_alternative(html_message, "text/html")
             for att in attachments:
                 email.attach(att['name'], att['data'], att['mimetype'])   
             email.send()
