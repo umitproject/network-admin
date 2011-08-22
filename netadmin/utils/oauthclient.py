@@ -29,13 +29,6 @@ import urllib
 import time
 
 
-API_URL = ""
-
-REQUEST_TOKEN_URL = '%s/oauth/request_token/' % API_URL
-ACCESS_TOKEN_URL = '%s/oauth/access_token/' % API_URL
-AUTHORIZE_URL = '%s/oauth/authorize/' % API_URL
-
-
 class NetadminClientError(Exception):
     pass
 
@@ -46,14 +39,12 @@ class NetadminOAuthClient(object):
     
     verifier = '1'
     
-    def __init__(self, consumer_key, consumer_secret,
-                 request_token_url=REQUEST_TOKEN_URL,
-                 access_token_url=ACCESS_TOKEN_URL,
-                 authorize_url=AUTHORIZE_URL,
+    def __init__(self, consumer_key, consumer_secret, api_url,
                  access_token=None):
-        self.request_token_url = request_token_url
-        self.access_token_url = access_token_url
-        self.authorize_url = authorize_url
+        self.api_url = api_url
+        self.request_token_url = '%s/oauth/request_token/' % api_url
+        self.access_token_url = '%s/oauth/access_token/' % api_url
+        self.authorize_url = '%s/oauth/authorize/' % api_url
         self.consumer = oauth.Consumer(consumer_key, consumer_secret)
         self.access_token = access_token
     
@@ -100,16 +91,16 @@ class NetadminOAuthClient(object):
         return self.request(resource_url, 'POST', body)
     
     def get_host_list(self):
-        return self.get('%s/api/host/list/' % API_URL)
+        return self.get('%s/api/host/list/' % self.api_url)
     
     def get_host(self, host_id):
-        return self.get('%s/api/host/%s/' % (API_URL, str(host_id)))
+        return self.get('%s/api/host/%s/' % (self.api_url, str(host_id)))
     
     def get_network_list(self):
-        return self.get('%s/api/network/list/' % API_URL)
+        return self.get('%s/api/network/list/' % self.api_url)
     
     def get_network(self, net_id):
-        return self.get('%s/api/network/%s/' % (API_URL, str(net_id)))
+        return self.get('%s/api/network/%s/' % (self.api_url, str(net_id)))
     
     def report_event(self, description, short_description, timestamp, protocol,
                      event_type, fields_class,
@@ -133,4 +124,4 @@ class NetadminOAuthClient(object):
             'source_host_ipv6': host_ipv6
         }
         data.update(kwargs)
-        return self.post('%s/api/event/report/' % API_URL, data)
+        return self.post('%s/api/event/report/' % self.api_url, data)
