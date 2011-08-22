@@ -28,4 +28,5 @@ urlpatterns = patterns('netadmin.users.views',
     url(r'^register/$', 'user_register', name='user_register'),
     url(r'^activate/(?P<code>\w+)/$', 'user_activation', name='user_activation'),
     url(r'^refresh_access_token/$', 'refresh_access_token', name='refresh_access_token'),
+    url(r'^remove_inactive_users/$', 'remove_inactive_users', name='remove_inactive_users'),
 )

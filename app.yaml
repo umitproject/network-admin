@@ -28,6 +28,11 @@ handlers:
   script: djangoappengine/main/main.py
   secure: always
   login: admin
+  
+- url: /user/remove_inactive_users/
+  script: djangoappengine/main/main.py
+  secure: always
+  login: admin
 
 - url: /.*
   script: djangoappengine/main/main.py

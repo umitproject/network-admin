@@ -23,7 +23,7 @@ import time
 
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template
@@ -125,7 +125,7 @@ def user_register(request, template_name="users/user_registration.html"):
             code_url = reverse('user_activation', args=[code])
             activation_url = "http://%s%s" % (SITE_DOMAIN, code_url)
             send_mail(ACTIVATION_MAIL_SUBJECT,
-                      ACTIVATION_MAIL_CONTENT % (activation_url, activation_url),
+                      ACTIVATION_MAIL_CONTENT % activation_url,
                       GAE_MAIL_ACCOUNT, [user.email])
             
             return direct_to_template(request,
@@ -138,8 +138,11 @@ def user_register(request, template_name="users/user_registration.html"):
     
 def user_activation(request, code,
                     template_name="users/user_activation.html"):
-    activation = UserActivationCode.objects.get(code=code)
-    active = activation.is_active()
+    try:
+        activation = UserActivationCode.objects.get(code=code)
+        active = activation.is_active()
+    except UserActivationCode.DoesNotExist:
+        activation = active = False
     if active:
         user = activation.user
         user.is_active = True
@@ -175,3 +178,14 @@ def refresh_access_token(request):
     token.generate_random_codes()
     token.save()
     return user_private(request)
+
+def remove_inactive_users(request):
+    codes = UserActivationCode.objects.all()
+    counter = 0
+    for code in codes:
+        if not code.is_active():
+            user = code.user
+            user.delete()
+            code.delete()
+            counter += 1
+    return HttpResponse('Removed %i accounts' % counter)
