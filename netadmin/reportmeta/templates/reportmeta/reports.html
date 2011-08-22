@@ -43,7 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name }}</a></td>
 			<td>{{ report.reported_object.name }}</td>
 			<td>{{ report.description }}</td>
-			<td>{{ report.get_period }}</td>
+			<td>{{ report.get_period_name }}</td>
 			<td>
 			{% for event_type in report.get_event_types %}
 				{{ event_type.name }}{% if not forloop.last %}, {% endif %}
@@ -72,7 +72,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<td><a href="{% url reportmeta_detail report.pk %}">{{ report.name }}</a></td>
 			<td>{{ report.reported_object.name }}</td>
 			<td>{{ report.description }}</td>
-			<td>{{ report.get_period }}</td>
+			<td>{{ report.get_period_name }}</td>
 			<td>
 			{% for event_type in report.get_event_types %}
 				{{ event_type.name }}{% if not forloop.last %}, {% endif %}

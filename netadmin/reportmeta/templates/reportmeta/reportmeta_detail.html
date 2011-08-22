@@ -37,8 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% if object.object_type.name == 'network' %}
 <p>{% trans "Hosts in the report" %}: 
-{% for host in object.reported_object.get_hosts|slice:":5" %}
-	{{ host.name|action:"reportmeta_host_list_name" }}{% if not forloop.last %}, {% endif %}
+{% for host in object.reported_object.hosts %}
+	<a href="{% url host_detail host.pk %}">{{ host.name|action:"reportmeta_host_list_name" }}</a>{% if not forloop.last %}, {% endif %}
 {% endfor %}
 {% if object.reported_object.get_hosts_count > 5 %},...{% endif %}
 </p>
@@ -46,8 +46,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <h3>{% trans "Events" %}</h3>
 
-{% if object.events %}
-	{% events_list request object.events %}
+{% if object.get_events %}
+	{% events_list request object.get_events %}
 {% else %}
 	<p>{% trans "No events have been reported yet" %}.</p>
 {% endif %}
