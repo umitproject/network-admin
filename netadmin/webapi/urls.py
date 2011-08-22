@@ -20,20 +20,23 @@
 
 from django.conf.urls.defaults import *
 from piston.resource import Resource
-from piston.authentication import HttpBasicAuthentication, OAuthAuthentication
+from piston.authentication import NoAuthentication, OAuthAuthentication
 
-from netadmin.webapi.handlers import *
+from settings import DEBUG
+from handlers import HostHandler, NetworkHandler, EventHandler
 
 
-# set up basic authentication
-#auth = HttpBasicAuthentication()
-auth = OAuthAuthentication()
+if DEBUG:
+    auth = NoAuthentication()
+else:
+    auth = OAuthAuthentication()
 ad = { 'authentication': auth }
 
-# apply authentication to all resources
-host_handler = Resource(HostHandler, **ad)
+#apply authentication to all resources
+host_handler = Resource(HostHandler)
 event_handler = Resource(EventHandler, **ad)
 net_handler = Resource(NetworkHandler, **ad)
+
 
 urlpatterns = patterns('netadmin.webapi.views',
     # Host handler
