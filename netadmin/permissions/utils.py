@@ -78,8 +78,11 @@ def grant_access(obj, user):
 
 def revoke_access(obj, user):
     ct = ContentType.objects.get_for_model(obj.__class__)
-    perm = ObjectPermission.objects.get(user=user, content_type=ct,
-        object_id=obj.pk)
+    try:
+        perm = ObjectPermission.objects.get(user=user, content_type=ct,
+            object_id=obj.pk)
+    except ObjectPermission.DoesNotExist:
+        return
     perm.delete()
     
 def _set_edit(obj, user, edit):
