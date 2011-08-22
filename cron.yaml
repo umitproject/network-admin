@@ -2,4 +2,12 @@ cron:
 - description: keep alive
   url: /
   schedule: every 2 minutes
+  
+- description: send events notifications
+  url: /event/notify/
+  schedule: every 1 minutes
+  
+- description: send reports
+  url: /report/notify/
+  schedule: every 1 minutes
 
