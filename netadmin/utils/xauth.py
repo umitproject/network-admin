@@ -34,23 +34,22 @@ class NetadminClientError(Exception):
     pass
 
 class NetadminXAuthClient(object):
-    def __init__(self, consumer_key, consumer_secret,
-                 username, password, api_url):
+    access_token = None
+    
+    def __init__(self, consumer_key, consumer_secret, api_url):
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
-        self.username = username
-        self.password = password
         self.api_url = api_url
 
-    def _get_token(self):
+    def fetch_access_token(self, username, password):
         consumer = oauth.Consumer(self.consumer_key, self.consumer_secret)
         client = oauth.Client(consumer)
-        client.add_credentials(self.username, self.password)
+        client.add_credentials(username, password)
         client.set_signature_method = oauth.SignatureMethod_HMAC_SHA1()
     
         x_auth_params = {
-            'x_auth_username': self.username,
-            'x_auth_password': self.password,
+            'x_auth_username': username,
+            'x_auth_password': password,
             'x_auth_mode': 'client_auth'
         }
     
@@ -67,8 +66,13 @@ class NetadminXAuthClient(object):
     
         return token
     
-    def _get_resource(self, resource_url, method='GET', body=''):
-        token = self._get_token()
+    def set_access_token(self, token):
+        self.access_token = token
+    
+    def _get_resource(self, resource_url, method='GET', body='', as_json=True):
+        if not self.access_token:
+            raise XAuthError(_("Invalid access token"))
+        token = self.access_token
         
         consumer = oauth.Consumer(self.consumer_key, self.consumer_secret)
     
@@ -79,7 +83,10 @@ class NetadminXAuthClient(object):
         
         response, content = client.request(url, method, body=body)
         
-        return response, content
+        if as_json:
+            return json.loads(content)
+        
+        return content
     
     def get(self, resource_url, body=''):
         return self._get_resource(resource_url, 'GET', body)
