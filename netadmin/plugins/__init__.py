@@ -335,8 +335,8 @@ Summary
 -------
 
 If you're looking for more information about how Network Administrator works
-or how good plugin should be written, see NA's documentation. You may also
-contact with the author or Umit Project team.
+or how good plugin should be written, see NA's source and documentation.
+You may also contact with the author or Umit Project team.
 """
 
 from core import Plugin
