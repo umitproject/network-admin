@@ -18,7 +18,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -195,12 +194,3 @@ class NetworkHost(models.Model):
     network = models.ForeignKey(Network)
     host = models.ForeignKey(Host)
 
-#class HostAdmin(admin.ModelAdmin):
-#    list_display = ('name', 'ipv4', 'ipv6', 'user')
-#admin.site.register(Host)
-#
-#class NetworkAdmin(admin.ModelAdmin):
-#    list_display = ('name', 'user')
-#admin.site.register(Network, NetworkAdmin)
-#
-#admin.site.register(NetworkHost)
