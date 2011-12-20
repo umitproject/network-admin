@@ -21,7 +21,6 @@
 import datetime
 import StringIO
 
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
@@ -155,6 +154,3 @@ class ReportNotification(NotifierScheduleJob):
         }
         return att
 
-admin.site.register(ReportMeta) 
-admin.site.register(ReportMetaEventType)
-admin.site.register(ReportNotification)
