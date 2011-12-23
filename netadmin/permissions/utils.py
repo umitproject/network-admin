@@ -29,7 +29,7 @@ class CannotRevoke(Exception):
     pass
 
 class SharedObject(object):
-    """Subclass for every object you want to be shared by users
+    """Subclass for every model you want to be shared by users
     """
     def has_access(self, user):
         """Returns True if user has permission to access the object
