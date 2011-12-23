@@ -34,3 +34,7 @@ class ObjectPermission(models.Model):
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     edit = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return "for %s on %s" % \
+            (self.user.username, self.content_object.__unicode__())
