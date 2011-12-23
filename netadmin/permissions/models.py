@@ -27,7 +27,7 @@ from django.db import models
 class ObjectPermission(models.Model):
     """
     Simple relation between a user and object, describing
-    permission for access to this object by user
+    user permission for access to this object
     """
     user = models.ForeignKey(User)
     content_type = models.ForeignKey(ContentType)
