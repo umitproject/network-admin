@@ -108,6 +108,16 @@ class ShareTest(TestCase):
         self.host.share(self.friend)
         self.assertIn(self.host, Host.shared_objects(self.friend))
 
+    def test_sharing_users(self):
+        """
+        The sharing_users() method should return list of users who
+        share the object
+        """
+        self.assertNotIn(self.friend, self.host.sharing_users())
+
+        self.host.share(self.friend)
+        self.assertIn(self.friend, self.host.sharing_users())
+
 class PermissionsTest(TestCase):
     """Tests for permissions system
     """
