@@ -99,6 +99,14 @@ class SharedObject(object):
             return
         perm.delete()
 
+    def sharing_users(self):
+        """Returns list of users who share the object
+        """
+        ct = ContentType.objects.get_for_model(self.__class__)
+        perms = ObjectPermission.objects.filter(content_type=ct,
+                                                object_id=self.pk)
+        return [perm.user for perm in perms]
+
     @classmethod
     def shared_objects(cls, user):
         """Returns list of objects owned or shared by the user
