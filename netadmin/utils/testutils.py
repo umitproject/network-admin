@@ -30,7 +30,7 @@ from django.test import TestCase
 from django.test.client import Client
 
 from netadmin.events.models import Event, EventType
-from netadmin.networks.models import Host
+from netadmin.networks.models import Host, Network
 
 
 class BaseTest(TestCase):
@@ -78,3 +78,11 @@ class HostBaseTest(BaseTest):
         host = Host.objects.create(name=name, description=description,
                                    ipv4=ipv4, ipv6=ipv6, user=user)
         return host
+
+class NetworkBaseTest(BaseTest):
+    """Base class for test cases that use Network model
+    """
+    def create_network(self, user, name, description=''):
+        net = Network.objects.create(name=name, description=description,
+                                     user=user)
+        return net
