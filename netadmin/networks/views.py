@@ -18,15 +18,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views.generic.create_update import create_object, update_object, \
-    delete_object
-from django.views.generic.list_detail import object_list, object_detail
+from django.views.generic.create_update import update_object, delete_object
+from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.http import Http404
 from search.core import search
