@@ -25,7 +25,8 @@ from django.test import TestCase
 from models import Host, Network
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
     grant_access, revoke_access, revoke_edit
-from netadmin.utils.testutils import EventBaseTest, HostBaseTest
+from netadmin.utils.testutils import EventBaseTest, HostBaseTest, \
+    NetworkBaseTest
 
 class HostTest(HostBaseTest, EventBaseTest):
     def setUp(self):
@@ -251,24 +252,14 @@ class NetworkTest(TestCase):
         response = self.client.post(reverse('network_update', args=[network.pk]), network_data)
         self.assertEqual(response.status_code, 302)
         
-class UserAccessTest(TestCase):
+class UserAccessTest(HostBaseTest, NetworkBaseTest):
     """Tests for user access and sharing objects"""
     
     def setUp(self):
-        self.client = Client()
-        
-        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
-        self.client.login(username='user', password='userpassword')
-        
-        self.other_user = User.objects.create_user('other', 'other@something.com', 'otherpassword')
-        
-        self.host = Host(name="Host", description="Description",
-                         ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:c22:384e',
-                         user=self.user)
-        self.host.save()
-        
-        self.net = Network(name="Net", description="Description", user=self.user)
-        self.net.save()
+        super(UserAccessTest, self).setUp()
+        self.other_user = self.create_user('other', 'otherpassword')
+        self.host = self.create_host(self.user, "Host", '1.2.3.4')
+        self.net = self.create_network(self.user, "Net")
         
     def test_user_host_access(self):
         access = user_has_access(self.host, self.user)
