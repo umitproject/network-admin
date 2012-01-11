@@ -19,15 +19,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import permalink
 from django.utils.translation import ugettext as _
 
-from netadmin.permissions.models import ObjectPermission
+from netadmin.permissions.utils import SharedObject
 
-
-class NetworkObject(models.Model):
+class NetworkObject(models.Model, SharedObject):
     """
     Abstract model class for objects like host or network.
     Every object belongs to specified user
@@ -39,20 +37,12 @@ class NetworkObject(models.Model):
     def __unicode__(self):
         return self.name
     
-    def short_description(self, word_limit=15, char_limit=150):
+    def short_description(self, word_limit=15):
         words = self.description.split()
         if len(words) > word_limit:
             return '%s...' % ' '.join(words[:word_limit])
-        elif len(self.description) > char_limit:
-            return '%s...' % self.description[:char_limit]
         else:
             return self.description
-    
-    def sharing_users(self):
-        ct = ContentType.objects.get_for_model(self.__class__)
-        perms = ObjectPermission.objects.filter(content_type=ct,
-                                                object_id=self.pk)
-        return [(perm.user, perm.edit) for perm in perms]
     
     def events(self):
         return self.event_set.all().order_by('-timestamp')
@@ -78,7 +68,7 @@ class Host(NetworkObject):
                             blank=True, null=True)
     
     def __unicode__(self):
-        return "Host '%s'" % self.name
+        return self.name
                             
     @permalink
     def get_absolute_url(self):
