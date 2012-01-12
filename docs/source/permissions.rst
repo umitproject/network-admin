@@ -12,13 +12,14 @@ Permissions system is based on ObjectPermission model, which is used to store
 information about connections between users and objects.
 
 .. Note::
-    This model is the lowest level of the system, and it should be used only
-    by NA's core modules.
+    This model is the lowest level of the system, and only NA's core modules
+    should use it directly. As long as you are developing plugins, you don't
+    have to work with it.
 
 .. class:: ObjectPermission()
 
-    Simple relation between a user and object, describing
-    permission for access to this object by user
+    Simple relation between a user and object, representing permission
+    for access to an object that was granted to a single user
 
     .. attribute:: user
 
