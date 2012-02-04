@@ -48,8 +48,7 @@ class NetworkObject(models.Model, SharedObject):
         return self.event_set.all().order_by('-timestamp')
     
     def latest_event(self):
-        events = self.events().order_by('-timestamp')
-        return events[0] if events else None
+        return self.event_set.latest('timestamp')
     
     def api_list(self):
         return {
