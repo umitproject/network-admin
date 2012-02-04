@@ -66,16 +66,16 @@ class Host(NetworkObject):
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
                             blank=True, null=True)
-    
-    def __unicode__(self):
-        return self.name
-                            
+
     @permalink
     def get_absolute_url(self):
         return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
         # delete all events related to this host
+        # TODO
+        # user should be asked if events should be deleted
+        # or assigned to "dummy host"
         events = self.events()
         events.delete()
         
@@ -119,9 +119,6 @@ class Host(NetworkObject):
         }
 
 class Network(NetworkObject):
-    
-    def __unicode__(self):
-        return "Network '%s'" % self.name
     
     @permalink
     def get_absolute_url(self):
