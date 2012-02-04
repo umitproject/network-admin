@@ -22,7 +22,7 @@ from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from models import Host, Network
+from models import Host, Network, NetworkHost
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
     grant_access, revoke_access, revoke_edit
 from netadmin.utils.testutils import EventBaseTest, HostBaseTest, \
@@ -68,10 +68,10 @@ class HostTest(HostBaseTest, EventBaseTest):
         """
         The events() method should return list of events related to the host
         """
-        h = self.create_host(self.user, "Host", '4.3.2.1')
-        et = self.create_eventtype('INFO')
-        event_a = self.create_event(self.host, et)
-        event_b = self.create_event(h, et)
+        host = self.create_host(self.user, "Host", '4.3.2.1')
+        eventtype = self.create_eventtype('INFO')
+        event_a = self.create_event(self.host, eventtype)
+        event_b = self.create_event(host, eventtype)
 
         self.assertIn(event_a, self.host.events())
         self.assertNotIn(event_b, self.host.events())
@@ -166,7 +166,7 @@ class HostTest(HostBaseTest, EventBaseTest):
         self.assertEqual(host.description, host_data['description'])
         self.assertEqual(host.ipv4, host_data['ipv4'])
         self.assertEqual(host.ipv6, host_data['ipv6'])
-        self.assertEqual(host.user.pk, host_data['user'])
+        self.assertEqual(host.user, self.user)
 
     def test_object_delete(self):
         """After deleting a host, a user should be redirected with 302
@@ -194,14 +194,145 @@ class HostTest(HostBaseTest, EventBaseTest):
         self.assertEqual(host.name, host_data['name'])
         self.assertEqual(host.description, host_data['description'])
 
-class NetworkTest(TestCase):
-    """Tests for networks"""
-    
+class NetworkTest(NetworkBaseTest, HostBaseTest):
+    """Tests for Network and NetworkHost models
+    """
     def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
-        self.client.login(username='user', password='userpassword')
-        
+        super(NetworkBaseTest, self).setUp()
+        self.network = self.create_network(self.user, "Network", "Description")
+        self.host_a = self.create_host(self.user, "Host A", "1.0.0.1")
+        self.host_b = self.create_host(self.user, "Host A", "1.0.0.2")
+
+    def test_unicode(self):
+        """The __unicode__() method should return network name
+        """
+        self.assertEqual(self.network.__unicode__(), "Network")
+
+    def test_get_absolute_url(self):
+        """The absolute URL should be created using object's ID
+        """
+        url = reverse('network_detail', args=[self.network.pk])
+        self.assertEqual(self.network.get_absolute_url(), url)
+
+    def test_has_host(self):
+        """
+        The has_host() method should return True if a host in parameter
+        is related to the network
+        """
+        self.assertEqual(self.network.has_host(self.host_a), False)
+
+        NetworkHost.objects.create(network=self.network, host=self.host_a)
+        self.assertEqual(self.network.has_host(self.host_a), True)
+
+    def test_add_host(self):
+        """
+        The add_host() method should create relation between host and network
+        """
+        self.assertEqual(self.network.has_host(self.host_a), False)
+        self.assertEqual(self.network.has_host(self.host_b), False)
+
+        self.network.add_host(self.host_a)
+        self.assertEqual(self.network.has_host(self.host_a), True)
+        self.assertEqual(self.network.has_host(self.host_b), False)
+
+        self.network.add_host(self.host_b)
+        self.assertEqual(self.network.has_host(self.host_a), True)
+        self.assertEqual(self.network.has_host(self.host_b), True)
+
+    def test_remove_host(self):
+        """
+        The remove_host() method should remove relation between host
+        and network
+        """
+        self.network.add_host(self.host_a)
+        self.network.add_host(self.host_b)
+        self.assertEqual(self.network.has_host(self.host_a), True)
+        self.assertEqual(self.network.has_host(self.host_b), True)
+
+        self.network.remove_host(self.host_a)
+        self.assertEqual(self.network.has_host(self.host_a), False)
+        self.assertEqual(self.network.has_host(self.host_b), True)
+
+        self.network.remove_host(self.host_b)
+        self.assertEqual(self.network.has_host(self.host_a), False)
+        self.assertEqual(self.network.has_host(self.host_b), False)
+
+    def test_object_detail(self):
+        """
+        The following context should be provided:
+
+            * object - the network object
+            * hosts_other - list of hosts that are not in the network
+        """
+        self.network.add_host(self.host_a)
+        response = self.client.get(reverse('network_detail',
+                                           args=[self.network.pk]))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn('object', response.context)
+        self.assertEqual(response.context['object'], self.network)
+
+        self.assertIn('hosts_other', response.context)
+        self.assertNotIn(self.host_a, response.context['hosts_other'])
+        self.assertIn(self.host_b, response.context['hosts_other'])
+
+    def test_object_list(self):
+        """
+        """
+        response = self.client.get(reverse('network_list'))
+        self.assertEqual(response.status_code, 200)
+
+        self.assertIn('networks', response.context)
+
+        networks_list = response.context['networks'].object_list
+        self.assertIn(self.network, networks_list)
+
+    def test_network_create(self):
+        """
+        """
+        network_data = {
+            'name': 'New network',
+            'description': 'Description',
+            'user': self.user.pk
+        }
+        response = self.client.post(reverse('network_new'), network_data)
+        self.assertEqual(response.status_code, 301)
+
+        network = Network.objects.all().order_by('-id')[0]
+        self.assertEqual(network.name, network_data['name'])
+        self.assertEqual(network.description, network_data['description'])
+        self.assertEqual(network.user, self.user)
+
+    def test_network_delete(self):
+        """
+        """
+        network = self.create_network(self.user, "Net")
+        response = self.client.post(reverse('network_delete',
+                                            args=[network.pk]))
+        self.assertEqual(response.status_code, 302)
+
+        networks = Network.objects.all()
+        self.assertNotIn(network, networks)
+
+    def test_network_update(self):
+        """
+        """
+        new_data = {
+            'name': 'New name',
+            'description': 'New description'
+        }
+        response = self.client.post(reverse('network_update',
+                                            args=[self.network.pk]),
+                                    new_data)
+        self.assertEqual(response.status_code, 302)
+
+        network = Network.objects.get(pk=self.network.pk)
+        for key in new_data.keys():
+            self.assertEqual(network.__getattribute__(key), new_data[key])
+
+class NetworkTestOld(TestCase):
+    """Tests for networks"""
+
     def test_network_list(self):
         """Get networks list"""
         for i in xrange(10):
@@ -211,12 +342,12 @@ class NetworkTest(TestCase):
             network.save()
         response = self.client.get(reverse('network_list'))
         self.assertEqual(response.status_code, 200)
-        
+
     def test_network_list_empty(self):
         """Get empty networks list"""
         response = self.client.get(reverse('network_list'))
         self.assertEqual(response.status_code, 200)
-        
+
     def test_network_detail(self):
         """Get network details"""
         network = Network(name='Network', description='Description', user=self.user)
@@ -233,14 +364,14 @@ class NetworkTest(TestCase):
         }
         response = self.client.post(reverse('network_new'), network_data)
         self.assertEqual(response.status_code, 301)
-        
+
     def test_network_delete(self):
         """Deleting existing network"""
         network = Network(name='Network', description='Description', user=self.user)
         network.save()
         response = self.client.post(reverse('network_delete', args=[network.pk]))
         self.assertEqual(response.status_code, 302)
-        
+
     def test_network_update(self):
         """Update existing network"""
         network = Network(name='Network', description='Description', user=self.user)
@@ -251,7 +382,7 @@ class NetworkTest(TestCase):
         }
         response = self.client.post(reverse('network_update', args=[network.pk]), network_data)
         self.assertEqual(response.status_code, 302)
-        
+
 class UserAccessTest(HostBaseTest, NetworkBaseTest):
     """Tests for user access and sharing objects"""
     
