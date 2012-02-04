@@ -135,6 +135,23 @@ class Network(NetworkObject):
         related = self.networkhost_set.all()
         hosts_ids = [rel.host.pk for rel in related]
         return Host.objects.filter(pk__in=hosts_ids)
+
+    def add_host(self, host):
+        """Creates relation between host and network
+        """
+        try:
+            self.networkhost_set.get(host=host)
+        except NetworkHost.DoesNotExist:
+            return NetworkHost.objects.create(network=self, host=host)
+
+    def remove_host(self, host):
+        """Removes relation between host and network
+        """
+        try:
+            relation = self.networkhost_set.get(host=host)
+        except NetworkHost.DoesNotExist:
+            return
+        relation.delete()
     
     def has_host(self, host):
         return True if host in self.hosts() else False
