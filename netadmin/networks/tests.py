@@ -330,59 +330,6 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         for key in new_data.keys():
             self.assertEqual(network.__getattribute__(key), new_data[key])
 
-class NetworkTestOld(TestCase):
-    """Tests for networks"""
-
-    def test_network_list(self):
-        """Get networks list"""
-        for i in xrange(10):
-            network = Network(name='Network %i' % i,
-                              description='Description %i' % i,
-                              user=self.user)
-            network.save()
-        response = self.client.get(reverse('network_list'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_network_list_empty(self):
-        """Get empty networks list"""
-        response = self.client.get(reverse('network_list'))
-        self.assertEqual(response.status_code, 200)
-
-    def test_network_detail(self):
-        """Get network details"""
-        network = Network(name='Network', description='Description', user=self.user)
-        network.save()
-        response = self.client.get(reverse('network_detail', args=[network.pk]))
-        self.assertEqual(response.status_code, 200)
-
-    def test_network_create(self):
-        """Creating new network"""
-        network_data = {
-            'name': 'New network',
-            'description': 'New network description',
-            'user': self.user.pk
-        }
-        response = self.client.post(reverse('network_new'), network_data)
-        self.assertEqual(response.status_code, 301)
-
-    def test_network_delete(self):
-        """Deleting existing network"""
-        network = Network(name='Network', description='Description', user=self.user)
-        network.save()
-        response = self.client.post(reverse('network_delete', args=[network.pk]))
-        self.assertEqual(response.status_code, 302)
-
-    def test_network_update(self):
-        """Update existing network"""
-        network = Network(name='Network', description='Description', user=self.user)
-        network.save()
-        network_data = {
-            'name': 'New name',
-            'description': 'New description'
-        }
-        response = self.client.post(reverse('network_update', args=[network.pk]), network_data)
-        self.assertEqual(response.status_code, 302)
-
 class UserAccessTest(HostBaseTest, NetworkBaseTest):
     """Tests for user access and sharing objects"""
     
