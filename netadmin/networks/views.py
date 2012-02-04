@@ -151,16 +151,15 @@ def network_detail(request, object_id):
     if request.POST.getlist('remove_host'):
         if edit:
             hosts_pk = request.POST.getlist('remove_host')
-            network_host = NetworkHost.objects.filter(network=network,
-                                                      host__pk__in=hosts_pk)
-            network_host.delete()
+            hosts = Host.objects.filter(pk__in=hosts_pk)
+            for host in hosts:
+                network.remove_host(host)
     
     # create relation between the network and selected host
     if request.POST.get('add_host'):
         if edit:
             host = Host.objects.get(pk=request.POST.get('add_host'))
-            network_host = NetworkHost(network=network, host=host)
-            network_host.save()
+            network.add_host(host)
     
     queryset = Network.objects.filter(user=request.user)
     if network.hosts():
