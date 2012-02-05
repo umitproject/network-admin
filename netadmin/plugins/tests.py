@@ -35,62 +35,43 @@ class OptionsTest(TestCase):
         self.user.save()
         
     def test_unset_option(self):
-        option = CustomOption(name='opt', value='val')
-        option.save()
-        unset_option('opt')
-        try:
-            option = CustomOption.objects.get(name='opt', value='val')
-        except CustomOption.DoesNotExist:
-            option = None
-        self.assertEqual(option, None)
-        
-        option = CustomOption(name='opt', value='val', user=self.user)
-        option.save()
-        unset_option('opt', self.user)
-        try:
-            option = CustomOption.objects.get(name='opt', value='val',
-                user=self.user)
-        except CustomOption.DoesNotExist:
-            option = None
-        self.assertEqual(option, None)
-        
-    def test_set_option(self):
+        """
+        The unset_option() function should remove all definitions of an option
+        """
+        def check_option(user=None):
+            CustomOption.objects.get(name='opt', value='val', user=user)
+
         set_option('opt', 'val')
-        option = CustomOption.objects.get(name='opt', value='val')
-        option.delete()
-        
-        set_global_option('opt', 'val')
-        option = CustomOption.objects.get(name='opt', value='val')
-        option.delete()
-        
-    def test_set_user_option(self):
+        unset_option('opt')
+        self.assertRaises(CustomOption.DoesNotExist, check_option)
+
         set_option('opt', 'val', self.user)
-        option = CustomOption.objects.get(name='opt', value='val',
-            user=self.user)
-        option.delete()
-        
-        set_user_option('opt', 'val', self.user)
-        option = CustomOption.objects.get(name='opt', value='val',
-            user=self.user)
-        option.delete()
-        
-    def test_set_and_get_option(self):
-        set_option('opt', 'val')
-        value = get_option('opt', 'wrong value')
-        self.assertEqual(value, 'val')
-        unset_option('opt')
+        unset_option('opt', self.user)
+        self.assertRaises(CustomOption.DoesNotExist, check_option)
         
     def test_user_option(self):
+        """
+        Setting and getting USER options should be done with
+        set_user_option() and get_user_option() functions
+        """
         set_user_option('opt', 'val', self.user)
         value = get_user_option('opt', self.user)
         self.assertEqual(value, 'val')
         
     def test_global_option(self):
+        """
+        Setting and getting GLOBAL options should be done with
+        set_global_option() and get_global_option() functions
+        """
         set_global_option('opt', 'val')
         value = get_global_option('opt')
         self.assertEqual(value, 'val')
         
     def test_reset_option(self):
+        """
+        The reset_option() function should remove all previous definitions
+        of an option and reset its value
+        """
         set_option('opt', 'val')
         reset_option('opt', 'new_val')
         value = get_option('opt', 'wrong value')
@@ -102,6 +83,11 @@ class OptionsTest(TestCase):
         self.assertEqual(value, 'new_val')
         
     def test_default_value(self):
+        """
+        The second parameter of get_option() function is a default value for
+        an option and it should be used in case of getting option that hasn't
+        been set yet
+        """
         value = get_option('opt', 'val')
         self.assertEqual(value, 'val')
         option = CustomOption.objects.get(name='opt')
