@@ -20,8 +20,6 @@
 
 from django.conf.urls.defaults import *
 
-from netadmin.events.models import Event
-
 
 urlpatterns = patterns('netadmin.events.views',
     url(r'^(?P<object_id>\d+)/$', 'event_detail', name='event_detail'),
