@@ -69,6 +69,9 @@ class SharedObject(object):
         Grants user an access to the object and sets edit permission
         to specified value (by default: False)
         """
+        # TODO
+        # granting access on a network, it should be also granted on all hosts
+        # in that network
         if hasattr(self, 'user') and self.user == user:
             return
 
@@ -88,6 +91,11 @@ class SharedObject(object):
     def revoke(self, user):
         """Revokes user an access to the object
         """
+        # TODO
+        # * when revoking an access on a host, it should be removed from user's
+        #   networks
+        # * when revoking an access on a network, access should be also revoked
+        #   on all hosts in that network
         if hasattr(self, 'user') and self.user == user:
             raise CannotRevoke("The user is owner of this host")
 
