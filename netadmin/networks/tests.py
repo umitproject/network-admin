@@ -287,7 +287,7 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         networks_list = response.context['networks'].object_list
         self.assertIn(self.network, networks_list)
 
-    def test_network_create(self):
+    def test_object_create(self):
         """
         """
         network_data = {
@@ -303,7 +303,7 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         self.assertEqual(network.description, network_data['description'])
         self.assertEqual(network.user, self.user)
 
-    def test_network_delete(self):
+    def test_object_delete(self):
         """
         """
         network = self.create_network(self.user, "Net")
@@ -314,7 +314,7 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         networks = Network.objects.all()
         self.assertNotIn(network, networks)
 
-    def test_network_update(self):
+    def test_object_update(self):
         """
         """
         new_data = {
