@@ -43,7 +43,7 @@ def host_list(request, page=None):
     if search_phrase:
         hosts = search(Host, search_phrase)
     else:
-        hosts = filter_user_objects(request.user, Host)
+        hosts = Host.shared_objects(request.user)
         
     paginator = Paginator(list(hosts), 10)
     
@@ -107,7 +107,7 @@ def host_delete(request, object_id):
     
     if host.user != request.user:
         raise Http404()
-    
+
     return delete_object(request, object_id=object_id, model=Host,
                          post_delete_redirect=reverse('host_list'))
 
@@ -116,8 +116,10 @@ def network_list(request, page=None):
     search_phrase = request.GET.get('s')
     if search_phrase:
         nets = search(Network, search_phrase)
+        # TODO
+        # filter search results by user access
     else:
-        nets = filter_user_objects(request.user, Network)
+        nets = Network.shared_objects(request.user)
         
     paginator = Paginator(list(nets), 10)
     
@@ -145,7 +147,10 @@ def network_detail(request, object_id):
         * creating relations between network and host
         * removing relations between network and host(s)
     """
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    network = Network.objects.get(pk=object_id)
+    if not network.has_access(request.user):
+        return Http404()
+    edit = network.can_edit(request.user)
     
     # remove relation between the network and selected host(s)
     if request.POST.getlist('remove_host'):
@@ -161,12 +166,15 @@ def network_detail(request, object_id):
             host = Host.objects.get(pk=request.POST.get('add_host'))
             network.add_host(host)
     
-    queryset = Network.objects.filter(user=request.user)
+    queryset = Network.objects.all()
     if network.hosts():
         hosts_ids = [host.pk for host in network.hosts()]
-        hosts_other = Host.objects.exclude(pk__in=hosts_ids).filter(user=request.user)
+        user_hosts = Host.shared_objects(request.user)
+        # it's a very inefficient way to filter these hosts-we should think
+        # about a better solution
+        hosts_other = filter(lambda h: h.pk not in hosts_ids, user_hosts)
     else:
-        hosts_other = Host.objects.filter(user=request.user)
+        hosts_other = Host.shared_objects(request.user)
     extra_context = {
         'hosts_other': hosts_other,
         'can_edit': edit
@@ -192,9 +200,9 @@ def network_create(request):
 @login_required
 def network_update(request, object_id):
     
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    network = Network.objects.get(pk=object_id)
     
-    if not edit:
+    if not network.can_edit(request.user):
         raise Http404()
     
     return update_object(request, object_id=object_id,
@@ -204,7 +212,7 @@ def network_update(request, object_id):
 @login_required
 def network_delete(request, object_id):
     
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    network = Network.objects.get(pk=object_id)
     
     if network.user != request.user:
         raise Http404()
@@ -214,16 +222,19 @@ def network_delete(request, object_id):
 
 @login_required
 def network_events(request, object_id):
-    """Display events related to network"""
-    
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    """Display events related to a network
+    """
+    network = Network.objects.get(pk=object_id)
 
-    queryset = Network.objects.all()
+    if not network.has_access(request.user):
+        return Http404()
+
+    queryset = Network.shared_objects(request.user)
     related_hosts = [nh.host.pk for nh in NetworkHost.objects.filter(network=network)]
     events = Event.objects.filter(source_host__pk__in=related_hosts)
     extra_context = {
         'events': events,
-        'can_edit': edit
+        'can_edit': network.can_edit(request.user)
     }
     return object_detail(request, queryset, object_id,
                          extra_context=extra_context,
