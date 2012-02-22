@@ -1,0 +1,10 @@
+#footer {
+    clear: both;
+    border-top: 1px solid #efefef;
+    margin: 0 -50px 0 -50px;
+    padding: 20px 50px;
+}
+
+#footer p {
+    font-size: 11px;
+}

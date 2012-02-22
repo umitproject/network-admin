@@ -1,0 +1,137 @@
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background: #fff;
+	font-family: Arial, sans-serif;
+}
+
+body {
+	margin: 0 50px;
+	min-width: 800px;
+}
+
+a {
+    color: #00f;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p,
+ul {
+	font-size: 14px;
+}
+
+table {
+    width: 500px;
+    border-collapse: collapse;
+}
+
+form p label {
+    display: inline-block;
+    width: 200px;
+    vertical-align: top;
+}
+
+form input[type=text],
+form textarea {
+    width: 500px;
+}
+
+form input[type=submit] {
+    margin-bottom: 20px;
+}
+
+form.search input {
+    height: 23px;
+    padding: 2px 5px;
+    border: 1px solid #fff;
+    width: 200px;
+}
+
+form.search input[type=text]:focus {
+    height: 23px;
+    border: 1px solid #555;
+}
+
+form.search input[type=submit] {
+    display: none;
+}
+
+form.search a.submit {
+    height: 25px;
+    background: #555;
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 15px;
+    text-decoration: none;
+}
+
+.alignright {
+    text-align: right;
+}
+
+.alignleft {
+    text-align: left;
+}
+
+.floatright {
+    float: right;
+}
+
+.floatleft {
+    float: left;
+}
+
+table.objects-list {
+    background: none;
+    margin: 10px 0;
+    width: 100%;
+}
+
+table.objects-list thead tr th {
+    font-weight: bold;
+    font-size: 10pt;
+    text-align: left;
+    padding: 7px 5px;
+}
+
+table.objects-list tbody tr {
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+
+table.objects-list tbody tr td {
+    padding: 7px 5px;
+    font-size: 10pt;
+}
+
+table.objects-list tbody tr:hover {
+    background: #efefef;
+}
+
+p.object-field {
+	font-size: 16px;
+	margin: 4px 0;
+	padding: 3px 5px;
+}
+
+p.object-field:hover {
+	background: #efefef;
+}
+
+p.object-field span.label {
+	display: inline-block;
+	width: 30%;
+}
+
+p.object-field span.value {
+	text-align: right;
+	display: inline-block;
+	width: 70%;
+	font-weight: bold;
+}
