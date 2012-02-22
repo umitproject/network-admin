@@ -25,68 +25,73 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="{{ MEDIA_URL }}js/search.js"></script>
 	</head>
 	<body>
 		<div id="container">
 			<div id="header">
+                <h1><span><a href="/">Network Administrator</a></span></h1>
+
+                <ul class="navigation">
+                {% if request.user.is_authenticated %}
+                    <li><a href="/">{% trans "Dashboard" %}</a></li>
+                    <li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
+                    <li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
+                    <li><a href="{% url host_list %}">{% trans "Hosts" %}</a></li>
+                    <li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
+                    {% if request.user.is_superuser %}
+                        <li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
+                    <li><a href="{% url user_register %}">{% trans "Register" %}</a></li>
+                {% endif %}
+                </ul>
+
+                {% if request.user.is_authenticated %}
+                <form action="{% url global_search %}" method="GET" class="search global-search">
+                    <p>
+                        <input type="text" name="s" value="Search for events, hosts..." />
+                        <input type="submit" value="{% trans "Search" %}" />
+                        <a href="#" class="submit">{% trans "Search" %}</a>
+                    </p>
+                </form>
+                {% endif %}
+
 				<div id="toolbar">
-					<ul>
+                    <div id="alerts">
+                    {% if request.user.is_authenticated %}
+                        {% alerts_counter request.user.pk %}
+                    {% endif %}
+                    </div>
+					<ul class="sub-nav">
 					{% if request.user.is_authenticated %}
 						<li>
-							{% trans "Welcome" %}, <a href="{% url user_profile_private %}">{{ request.user.username }}</a>! 
+							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{{ request.user.get_profile.full_name }}</a>!
 							<a href="{% url logout %}">{% trans "Log out" %}</a>
 						</li>
 					{% endif %}
 					</ul>
 				</div>
-				<div id="alerts">
-				{% if request.user.is_authenticated %}
-					{% alerts_counter request.user.pk %}
-				{% endif %}
-				</div>
-				<h1><span><a href="/">Network Administrator</a></span></h1>
-				<div id="navigation">
-					<ul>
-					{% if request.user.is_authenticated %}
-						<li><a href="/">{% trans "Dashboard" %}</a></li>
-						<li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
-						<li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
-						<li><a href="{% url host_list %}">{% trans "Hosts" %}</a></li>
-						<li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
-						{% if request.user.is_superuser %}
-							<li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
-						{% endif %}
-					{% else %}
-						<li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
-						<li><a href="{% url user_register %}">{% trans "Register" %}</a></li>
-					{% endif %}
-					</ul>
-					{% if request.user.is_authenticated %}
-					<form action="{% url global_search %}" method="GET" class="search-form" id="global-search">
-						<p><input type="text" name="s" value="Search for events, hosts..." /><input type="submit" value="Search" /></p>
-					</form>
-					{% endif %}
-				</div>
 			</div>
-			<div id="content-wrapper">
+			<div>
 				{% init_charts 'corechart' %}
 				<div id="meta">
 				{% block meta %}{% endblock %}
 				</div>
 				<div id="content" class="{% block content_classes %}{% endblock %}">
 					{% block content %}{% endblock %}
-				</div>
-				<div id="sidebar">
-				{% block sidebar %}
-				{% if request.user.is_authenticated %}
-					{% widgets_area request.user "Sidebar" 1 %}
-				{% endif %}
-				{% endblock %}
+                    <div id="column-left">
+                        {% block column_left %}{% endblock %}
+                    </div>
+                    <div id="column-right">
+                        {% block column_right %}{% endblock %}
+                    </div>
 				</div>
 				{% show_charts %}
 				<div id="footer">
-					<p>&copy; Copyright 2011, Adriano Monteiro Marques</p>
-					<p><a href="http://www.umitproject.org/">www.umitproject.org</a></p>
+                    <p class="floatright"><a href="http://www.umitproject.org/">www.umitproject.org</a></p>
+					<p>Network Administrator to the Cloud Land<br />&copy; Copyright 2011 Adriano Monteiro Marques</p>
 				</div>
 			</div>
 		</div>
