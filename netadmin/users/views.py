@@ -79,10 +79,22 @@ def user_private(request):
     user_profile = request.user.get_profile()
     profile_form = UserProfileForm(instance=user_profile)
     user_form = UserForm(instance=request.user)
-    
-    api_consumer = Consumer.objects.get(user=request.user)
-    api_access_token = api_consumer.token_set.get(token_type=Token.ACCESS,
-                                                     user=request.user)
+
+    try:
+        api_consumer = Consumer.objects.get(user=request.user)
+    except Consumer.DoesNotExist:
+        api_consumer = Consumer.objects.create(user=request.user,
+                                               status='accepted')
+        api_consumer.generate_random_codes()
+
+    try:
+        api_access_token = api_consumer.token_set.get(token_type=Token.ACCESS,
+                                                      user=request.user)
+    except Token.DoesNotExist:
+        api_access_token = Token.objects.create(user=request.user,
+            consumer=api_consumer, is_approved=True, timestamp=time.time(),
+            token_type=Token.ACCESS)
+        api_access_token.generate_random_codes()
         
     extra_context = {
         'profile_form': profile_form,
