@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}host{% endblock %}
 
 {% block content %}
-<h2>{% trans "Hosts list" %}</h2>
+<h2>{% trans "Hosts" %}</h2>
 
 <form action="" method="GET" class="search">
 	<p>{% trans "Search for hosts" %}: 
@@ -32,7 +32,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</p>
 </form>
 
-<table>
+<table class="objects-list">
 	<thead>
 		<tr>
 			<th>{% trans "Name" %}</th>
@@ -42,7 +42,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		</tr>
 	</thead>
 	<tbody>
-	{% for host in hosts.object_list %} 
+	{% for host in hosts.object_list %}
 		<tr class="{% cycle 'odd' 'even' %}">
 			<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
 			<td>{{ host.short_description|action:"host_list_short_description" }}</td>
@@ -64,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 	</div>
 {% endif %}
-	
+
 {% endblock %}
 
 {% block meta %}
