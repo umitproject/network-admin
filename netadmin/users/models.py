@@ -40,6 +40,13 @@ class UserProfile(models.Model):
     @permalink
     def get_absolute_url(self):
         return ('user_profile_public', [str(self.user.username)])
+
+    @property
+    def full_name(self):
+        f_name, l_name = self.user.first_name, self.user.last_name
+        if f_name and l_name:
+            return '%s %s' % (f_name, l_name)
+        return f_name or l_name or self.user.username
     
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
