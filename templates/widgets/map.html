@@ -1,0 +1,53 @@
+{% comment %}
+{% endcomment %}
+{% load i18n chart_tools %}
+<h3>{{ request.user.username }}'s hosts</h3>
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<meta http-equiv="content-type" content="text/html; charset=UTF-8"/>
+<title>Google Maps JavaScript API v3 Example: Polyline Simple</title>
+<link href="http://code.google.com/apis/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript">
+
+  function initialize() {
+    var myLatLng = new google.maps.LatLng(0, -180);
+    var myOptions = {
+      zoom: 3,
+      center: myLatLng,
+      mapTypeId: google.maps.MapTypeId.TERRAIN
+      };
+
+	   var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+	   var flightPlanCoordinatesSet = [];
+	   var flightPlanCoordinates = [ {% for ip in geoIP %}{{ ip }}{% endfor %}];
+		  for(var i in flightPlanCoordinates){
+			  flightPlanCoordinatesSet.push(new google.maps.LatLng(flightPlanCoordinates[i][0], flightPlanCoordinates[i][1]));
+	       }     
+                     
+                     var flightPath = new google.maps.Polyline({
+                     path: flightPlanCoordinatesSet,
+                     strokeColor: "#FF0000",
+                     strokeOpacity: 1.0,
+                     strokeWeight: 2
+               });
+               flightPath.setMap(map);
+      }
+      
+      var showMap = function(){
+		  $('#content-wrapper').fadeOut(500);
+		  $('#map-wrapper').fadeIn(500);
+	  }
+  
+</script>
+</head>
+<body onload="initialize()">
+  <div id="map_canvas_button" >
+	<button onclick="return showMap()" >Show on Map</button>
+  </div>
+</body>
+</html>
+
+
