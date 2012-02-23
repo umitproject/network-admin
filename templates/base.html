@@ -111,6 +111,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					}
 				});
 			});
+			var hideMap = function(){
+				  $('#map-wrapper').fadeOut(500);
+				  $('#content-wrapper').fadeIn(500);
+			  }
 		</script>
+		<div id="map-wrapper" style="display:none;">
+			<button onclick="return hideMap();" >Hide Map</button>
+			<div id="map_canvas"  style="height: 500px !important; width: 75% !important; margin: auto !important;"></div>
+		</div>
 	</body>
 </html>
