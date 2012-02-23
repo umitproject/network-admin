@@ -262,8 +262,8 @@ form#global-search input[name=s] {
 
 #content {
 	float: left;
-	padding: 15px;
-	width: 650px;
+	padding: 15px 0;
+	width: 70%;
 	min-height: 500px;
 	background-position: -100px -100px;
 }
@@ -464,10 +464,10 @@ form#global-search input[name=s] {
 }
 
 #sidebar {
-	margin-top: 120px;
-	margin-left: 720px; 
-	width: 278px;
+	width: 26%;
+	float: left;
 	font-size: 10pt;
+	margin: 20px;
 }
 
 #sidebar a {
@@ -489,7 +489,7 @@ form#global-search input[name=s] {
 
 #sidebar ul.area-column li.widget h3 {
 	border-bottom: 3px solid #fc3;
-	padding: 3px;
+	padding: 7px;
 	margin-top: 5px;
 }
 
