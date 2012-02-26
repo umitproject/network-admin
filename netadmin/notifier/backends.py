@@ -20,7 +20,7 @@
 
 import itertools
 
-from django.core.mail.message import EmailMessage
+from django.core.mail.message import EmailMultiAlternatives
 from django.utils.translation import ugettext as _
 
 try:
@@ -46,7 +46,7 @@ class BaseBackend(object):
 
 
 class EMailBackend(BaseBackend):
-    __identifier__ = 'mail'
+    __identifier__ = 'e-mail'
     
     def __init__(self, from_address=NOTIFICATION_BACKEND_EMAIL_FROM):
         self.from_address = from_address
@@ -57,15 +57,20 @@ class EMailBackend(BaseBackend):
                                             lambda notif: notif.user.email):
             if not key:
                 raise UnknownEMailAddress()
-            messages = []
+            html_messages = []
+            text_messages = []
             for notif in group:
-                messages.append('<h2>%s</h2>%s' % \
-                                (notif.title, notif.content))
-            text_message = '<br /><hr /><br />'.join(messages)
+                html_messages.append('<h2>%s</h2><p>%s</p>' % \
+                                     (notif.title, notif.content))
+                text_messages.append('%s\n=====\n%s' % \
+                                     (notif.title, notif.content))
+            text_message = '\n'.join(text_messages)
+            html_message = '<br /><hr /><br />'.join(html_messages)
             subject = _("Notifications from the Network Administrator")
             to_address = key
-            email = EmailMessage(subject, text_message, self.from_address,
-                                 [to_address])
+            email = EmailMultiAlternatives(subject, text_message,
+                                           self.from_address, [to_address])
+            email.attach_alternative(html_message, "text/html")
             emails.append(email)
 
         for email in emails:
