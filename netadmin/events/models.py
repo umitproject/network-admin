@@ -72,8 +72,6 @@ class EventType(models.Model):
         super(EventType, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
-        from netadmin.reports.models import ReportMetaEventType
-        
         # delete relations between event type and reports
         related = self.reportmetaeventtype_set.all()
         related.delete()
