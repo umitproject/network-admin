@@ -19,6 +19,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes import generic
 from django.db import models
 
 
@@ -28,6 +30,10 @@ class Notification(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     user = models.ForeignKey(User)
+    related_type = models.ForeignKey(ContentType, null=True, blank=True)
+    related_id = models.PositiveIntegerField(null=True, blank=True)
+    
+    related_object = generic.GenericForeignKey('related_type', 'related_id')
 
     def __unicode__(self):
         return self.title
