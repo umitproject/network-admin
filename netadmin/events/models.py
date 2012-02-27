@@ -29,7 +29,6 @@ from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
 
 from netadmin.networks.models import Host
-from netadmin.notifier.models import NotifierQueueItem
 
 
 ALERT_LEVELS = (
@@ -176,13 +175,3 @@ class Event(models.Model):
             'id': self.pk,
             'short_description': self.short_message
         }
-
-class EventNotification(NotifierQueueItem):
-    event = models.ForeignKey(Event)
-    
-    def __unicode__(self):
-        return "Notification for event '%s'" % self.event.short_message
-    
-    def message(self):
-        return self.event.get_html()
-
