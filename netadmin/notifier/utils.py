@@ -78,11 +78,11 @@ class NotificationsManager(object):
         self._buffer = Notification.objects.all()
         return self._buffer
 
-    def add(self, title, content, user):
+    def add(self, title, content, user, related_object=None):
         """Creates a new notification
         """
         return Notification.objects.create(title=title, content=content,
-                                           user=user)
+                                           user=user, related_object=related_object)
 
     def clear(self):
         """Deletes all notifications that were fetched using get_all() method
