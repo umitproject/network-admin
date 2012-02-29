@@ -24,7 +24,13 @@ from netadmin.notifier.backends import BaseBackend
 from netadmin.notifier.models import Notification
 
 
-class NoBackendsAvailable(Exception):
+class BackendError(Exception):
+    pass
+
+class NoBackendsAvailable(BackendError):
+    pass
+
+class UnknownBackend(BackendError):
     pass
 
 class NotificationBufferEmpty(Exception):
@@ -48,6 +54,13 @@ class Dispatcher(object):
     def _refresh_backends(self):
         self._backends = self._get_backends()
 
+    def get_backend(self, identifier):
+        self._refresh_backends()
+        for backend in self._backends:
+            if backend.__identifier__ == identifier:
+                return backend()
+        raise UnknownBackend("Unknown backend: %s" % identifier)
+
     def iter_backends(self):
         """Iterates over all available notification back-ends
         """
@@ -59,12 +72,19 @@ class Dispatcher(object):
         for backend in self._backends:
             yield backend()
 
-    def dispatch(self, clear=True):
+    def dispatch(self, using_backends=None, clear=True):
         """Sends all notifications using available back-ends
         """
         notifications = self.manager.get_all()
-        for backend in self.iter_backends():
+        
+        if using_backends:
+            backends = [self.get_backend(id) for id in using_backends]
+        else:
+            backends = self.iter_backends()
+
+        for backend in backends:
             backend.send(notifications)
+
         if clear:
             self.manager.clear()
 
@@ -78,11 +98,18 @@ class NotificationsManager(object):
         self._buffer = Notification.objects.all()
         return self._buffer
 
-    def add(self, title, content, user, related_object=None):
-        """Creates a new notification
+    def create(self, title, content, user, related_object=None):
+        """Creates a new notification but DO NOT SAVES that notification
         """
-        return Notification.objects.create(title=title, content=content,
-                                           user=user, related_object=related_object)
+        return Notification(title=title, content=content, user=user,
+                            related_object=related_object)
+
+    def add(self, title, content, user, related_object=None):
+        """Creates notification and saves it
+        """
+        notification = self.create(title, content, user, related_object)
+        notification.save()
+        return notification
 
     def clear(self):
         """Deletes all notifications that were fetched using get_all() method
