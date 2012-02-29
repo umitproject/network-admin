@@ -30,6 +30,17 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% trans "new host" %}
 </p>
 
+<script type="text/javascript">
+	var d = new Date()
+	var gmtHours = -d.getTimezoneOffset()/60;
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('form input[name$="time_zone"]').val(gmtHours)
+    })
+</script>
+
 <form action="" method="POST">
 	{{ form.as_p }}
 	<input type="submit" value="{% trans "Add host" %}" />
