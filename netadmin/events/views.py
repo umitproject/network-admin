@@ -22,7 +22,7 @@ import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
-from django.views.generic.list_detail import object_list, object_detail
+from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
@@ -31,12 +31,10 @@ from search.core import search
 
 from forms import EventSearchForm, EventSearchSimpleForm, \
     EventTypeFormset, EventCheckForm
-from models import Event, EventType, EventNotification, ALERT_LEVELS
+from models import Event, EventType, ALERT_LEVELS
 from utils import filter_user_events
 
-from netadmin.notifier.utils import NotifierQueue, NotifierEmptyQueue
-from netadmin.permissions.utils import user_has_access, \
-    get_object_or_forbidden
+from netadmin.permissions.utils import user_has_access
 from netadmin.webapi.views import api_ok, api_error
 
 
