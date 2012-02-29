@@ -75,6 +75,7 @@ class Host(NetworkObject):
     """The single host in the network
     """
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
+    time_zone = models.FloatField(verbose_name=_("Time Zone"),blank = True,null=True)
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
                             blank=True, null=True)
     
@@ -126,7 +127,8 @@ class Host(NetworkObject):
             'host_name': self.name,
             'host_description': self.description,
             'ipv4': self.ipv4,
-            'ipv6': self.ipv6
+            'ipv6': self.ipv6,
+            'time_zone':self.time_zone
         }
 
 class Network(NetworkObject):
