@@ -26,12 +26,10 @@ from django.contrib.contenttypes import generic
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.db import models
-from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from geraldo.generators import PDFGenerator
 
 from netadmin.networks.reports import HostReport, NetworkReport
-from netadmin.notifier.models import NotifierScheduleJob
 from netadmin.events.models import EventType
 
 
@@ -45,6 +43,9 @@ REPORT_PERIOD = (
     (MONTHLY, _("Monthly"))
 )
 
+SEND_HOURS = tuple((hour, hour) for hour in xrange(24))
+SEND_DAYS = tuple((day, day) for day in xrange(1, 32))
+
 
 class ReportMeta(models.Model):
     """
@@ -53,14 +54,22 @@ class ReportMeta(models.Model):
     """
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
-    report_period = models.IntegerField(choices=REPORT_PERIOD, default=0)
+    period = models.IntegerField(choices=REPORT_PERIOD, default=0)
+    send_hour = models.SmallIntegerField(choices=SEND_HOURS, default=12)
+    send_day = models.SmallIntegerField(choices=SEND_DAYS, default=1)
     object_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
-    reported_object = generic.GenericForeignKey('object_type', 'object_id')
     user = models.ForeignKey(User)
+
+    reported_object = generic.GenericForeignKey('object_type', 'object_id')
     
     def __unicode__(self):
         return "Report for %s" % self.reported_object.name
+
+    def save(self, *args, **kwargs):
+        if self.period == WEEKLY and self.send_day > 7:
+            raise Exception("Cannot set send_day > 7 for a weekly report")
+        super(ReportMeta, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
         return reverse('reportmeta_detail', args=[self.pk])
@@ -90,11 +99,11 @@ class ReportMeta(models.Model):
         
         now = datetime.datetime.now()
         date_from = None
-        if self.report_period == 0:
+        if self.period == 0:
             date_from = now.replace(day=now.day-1)
-        elif self.report_period == 1:
+        elif self.period == 1:
             date_from = now.replace(day=now.day-7)
-        elif self.report_period == 2:
+        elif self.period == 2:
             date_from = now.replace(month=now.month-1)
         if date_from:
             events = events.filter(timestamp__gte=date_from)
@@ -103,7 +112,7 @@ class ReportMeta(models.Model):
     
     def get_period_name(self):
         for number, name in REPORT_PERIOD:
-            if number == self.report_period:
+            if number == self.period:
                 return name
     
     def get_report(self):
@@ -113,17 +122,23 @@ class ReportMeta(models.Model):
             return NetworkReport(self.name, queryset=self.get_events())
         else:
             return None
-    
-    def get_notification_form_class(self):
-        from netadmin.reportmeta.forms import ReportDailyForm, \
-            ReportWeeklyForm, ReportMonthlyForm
-        period = self.report_period
-        if period == 0:
-            return ReportDailyForm
-        elif period == 1:
-            return ReportWeeklyForm
-        elif period == 2:
-            return ReportMonthlyForm
+
+    def ready_to_send(self, date=None):
+        if not date:
+            date = datetime.datetime.now()
+
+        if self.period == DAILY:
+            if date.hour == self.send_hour:
+                return True
+        elif self.period == WEEKLY:
+            weekday = date.weekday() + 1
+            if weekday == self.send_day and date.hour == self.send_hour:
+                return True
+        else:
+            if date.day == self.send_day and date.hour == self.send_hour:
+                return True
+            
+        return False
         
 class ReportMetaEventType(models.Model):
     """
@@ -132,25 +147,4 @@ class ReportMetaEventType(models.Model):
     """
     report_meta = models.ForeignKey(ReportMeta)
     event_type = models.ForeignKey(EventType)
-    
-class ReportNotification(NotifierScheduleJob):
-    report_meta = models.ForeignKey(ReportMeta)
-    
-    def __unicode__(self):
-        return "Notification for report %s" % self.report_meta.name
-    
-    def message(self):
-        return _("<h2>%s</h2><p>%s</p>") % \
-            (self.report_meta.name, self.report_meta.description)
-            
-    def attachment(self):
-        report_file = HttpResponse(mimetype='application/pdf')
-        report = self.report_meta.get_report()
-        report.generate_by(PDFGenerator, filename=report_file)
-        att = {
-            'name': 'report.pdf',
-            'data': report_file.content,
-            'mimetype': 'application/pdf'
-        }
-        return att
 
