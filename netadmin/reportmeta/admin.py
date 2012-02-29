@@ -20,8 +20,7 @@
 
 from django.contrib import admin
 
-from models import ReportMeta, ReportMetaEventType, ReportNotification
+from models import ReportMeta, ReportMetaEventType
 
 admin.site.register(ReportMeta)
 admin.site.register(ReportMetaEventType)
-admin.site.register(ReportNotification)
