@@ -47,28 +47,55 @@ class BaseBackend(object):
 
 class EMailBackend(BaseBackend):
     __identifier__ = 'e-mail'
+
+    subject = _("Notifications from the Network Administrator")
+    text_separator = '\n\n'
+    html_separator = '<br /><hr /><br />'
     
     def __init__(self, from_address=NOTIFICATION_BACKEND_EMAIL_FROM):
         self.from_address = from_address
 
+    def to_text(self, notification):
+        underline = '=' * len(notification.title)
+        return '%s\n%s\n%s' % \
+               (notification.title, underline, notification.content)
+
+    def to_html(self, notification):
+        return '<h2>%s</h2><p>%s</p>' % \
+               (notification.title, notification.content)
+
     def send(self, queryset):
+        try:
+            queryset = queryset.order_by('user_id')
+        except AttributeError:
+            notification = queryset
+
+            text_msg = self.to_text(notification)
+            html_msg = self.to_html(notification)
+            to_address = notification.user.email
+            email = EmailMultiAlternatives(self.subject, text_msg,
+                                           self.from_address, [to_address])
+            email.attach_alternative(html_msg, "text/html")
+            email.send()
+            
+            return email
+
         emails = []
         for key, group in itertools.groupby(queryset.order_by('user_id'),
                                             lambda notif: notif.user.email):
             if not key:
                 raise UnknownEMailAddress()
-            html_messages = []
-            text_messages = []
-            for notif in group:
-                html_messages.append('<h2>%s</h2><p>%s</p>' % \
-                                     (notif.title, notif.content))
-                text_messages.append('%s\n=====\n%s' % \
-                                     (notif.title, notif.content))
-            text_message = '\n'.join(text_messages)
-            html_message = '<br /><hr /><br />'.join(html_messages)
-            subject = _("Notifications from the Network Administrator")
+
+            html_messages, text_messages = [], []
+            for notification in group:
+                html_messages.append(self.to_html(notification))
+                text_messages.append(self.to_text(notification))
+            text_message = self.text_separator.join(text_messages)
+            html_message = self.html_separator.join(html_messages)
+
             to_address = key
-            email = EmailMultiAlternatives(subject, text_message,
+
+            email = EmailMultiAlternatives(self.subject, text_message,
                                            self.from_address, [to_address])
             email.attach_alternative(html_message, "text/html")
             emails.append(email)
