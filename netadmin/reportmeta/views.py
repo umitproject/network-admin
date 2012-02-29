@@ -24,17 +24,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
 
-from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType, \
-    ReportNotification
+from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType
 from netadmin.reportmeta.forms import ReportMetaForm, ReportMetaNewForm
 from netadmin.networks.models import Host, Network
-from netadmin.notifier.utils import NotifierSchedule
-from netadmin.events.models import Event, EventType
+from netadmin.notifier import dispatcher, manager
+from netadmin.events.models import EventType
 
 
 @login_required
@@ -219,11 +217,12 @@ def reportmeta_get_report(request, object_id):
     return response
 
 def reportmeta_send_emails(request):
-    notifier = NotifierSchedule(ReportNotification)
-    response = '<p><strong>%s</strong></p>' % datetime.datetime.now()
-    log = notifier.send_emails(_("New report from the Network Administrator"))
-    if log:
-        response += "<p>Emails sent:</p>%s" % '<br />'.join(log)
-    else:
-        response += "<p>No emails to send</p>"
-    return HttpResponse(response)
+    reports = filter(lambda r: r.ready_to_send(), ReportMeta.objects.all())
+
+    email_backend = dispatcher.get_backend('e-mail')
+
+    for report in reports:
+        notification = manager.create(report.name, report.description,
+                                      report.user, report)
+        email_backend.send(notification)
+    return HttpResponse("")
