@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
 Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
@@ -20,6 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "edit report" %}{% endblock %}
 
+{% block headers %}
+    <script type="text/javascript" src="{{ MEDIA_URL }}js/reportmeta_form.js"></script>
+{% endblock %}
+
 {% block content_classes %}report{% endblock %}
 
 {% block content %}
@@ -35,23 +39,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% trans "settings" %}
 </p>
 
-<form action="" method="POST">
+<form action="" method="POST" id="reportmeta_update_form">
 	{{ form.errors }}
-	{% for field in form %}
-		{% if field.is_hidden %}
-			{{ field }}
-		{% else %}
-			{% if field.name == 'report_period' %}
-				<fieldset>
-					<legend>{% trans "Notifications" %}</legend>
-					<p>{{ field.label_tag }}: {{ field }}</p>
-					{{ schedule_form.as_p }}
-				</fieldset>
-			{% else %}
-				<p>{{ field.label_tag }}: {{ field }}</p>
-			{% endif %}
-		{% endif %}
-	{% endfor %}
+	{{ form.as_p }}
 	<p>Event types:</p>
 	<ul>
 	{% for type in event_types %}
