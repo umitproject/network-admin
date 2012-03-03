@@ -19,7 +19,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
-import StringIO
 
 from django.contrib.auth.models import User
 from django.contrib.contenttypes import generic
@@ -44,7 +43,16 @@ REPORT_PERIOD = (
 )
 
 SEND_HOURS = tuple((hour, hour) for hour in xrange(24))
-SEND_DAYS = tuple((day, day) for day in xrange(1, 32))
+SEND_MONTH_DAYS = tuple((day, day) for day in xrange(1, 32))
+SEND_WEEK_DAYS = (
+    (1, _("Monday")),
+    (2, _("Tuesday")),
+    (3, _("Wednesday")),
+    (4, _("Thursday")),
+    (5, _("Friday")),
+    (6, _("Saturday")),
+    (7, _("Sunday"))
+)
 
 
 class ReportMeta(models.Model):
@@ -56,7 +64,8 @@ class ReportMeta(models.Model):
     description = models.TextField(blank=True)
     period = models.IntegerField(choices=REPORT_PERIOD, default=0)
     send_hour = models.SmallIntegerField(choices=SEND_HOURS, default=12)
-    send_day = models.SmallIntegerField(choices=SEND_DAYS, default=1)
+    send_day_month = models.SmallIntegerField(choices=SEND_MONTH_DAYS, default=1)
+    send_day_week = models.SmallIntegerField(choices=SEND_WEEK_DAYS, default=1)
     object_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     user = models.ForeignKey(User)
@@ -65,11 +74,6 @@ class ReportMeta(models.Model):
     
     def __unicode__(self):
         return "Report for %s" % self.reported_object.name
-
-    def save(self, *args, **kwargs):
-        if self.period == WEEKLY and self.send_day > 7:
-            raise Exception("Cannot set send_day > 7 for a weekly report")
-        super(ReportMeta, self).save(*args, **kwargs)
     
     def get_absolute_url(self):
         return reverse('reportmeta_detail', args=[self.pk])
@@ -98,17 +102,25 @@ class ReportMeta(models.Model):
         events = events.filter(event_type__pk__in=pks)
         
         now = datetime.datetime.now()
-        date_from = None
+
         if self.period == 0:
-            date_from = now.replace(day=now.day-1)
+            delta = datetime.timedelta(days=1)
         elif self.period == 1:
-            date_from = now.replace(day=now.day-7)
+            delta = datetime.timedelta(days=7)
         elif self.period == 2:
-            date_from = now.replace(month=now.month-1)
-        if date_from:
-            events = events.filter(timestamp__gte=date_from)
+            delta = datetime.timedelta(days=31)
+            
+        date_from = now - delta
+        events = events.filter(timestamp__gte=date_from)
         
         return events
+
+    @property
+    def has_events(self):
+        events = self.reported_object.events()
+        pks = [et.pk for et in self.event_types]
+        events = events.filter(event_type__pk__in=pks)
+        return events.exists()
     
     def get_period_name(self):
         for number, name in REPORT_PERIOD:
@@ -132,14 +144,15 @@ class ReportMeta(models.Model):
                 return True
         elif self.period == WEEKLY:
             weekday = date.weekday() + 1
-            if weekday == self.send_day and date.hour == self.send_hour:
+            if weekday == self.send_day_week and date.hour == self.send_hour:
                 return True
         else:
-            if date.day == self.send_day and date.hour == self.send_hour:
+            if date.day == self.send_day_month and date.hour == self.send_hour:
                 return True
             
         return False
-        
+
+
 class ReportMetaEventType(models.Model):
     """
     Many-to-many relationship between report meta objects
