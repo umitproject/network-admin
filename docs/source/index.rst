@@ -16,15 +16,20 @@ Welcome to Network Administrator's official documentation! Follow the links belo
 Using Network Administrator
 ---------------------------
 
+For those of you, who want to keep your networks up and safe using NA.
+
 .. toctree::
 	:maxdepth: 1
-	
+
+	features
 	installation
 	
 ..  integrating_with_NI
 
 Core reference
 --------------
+
+For core developers and for everyone else who wish to know how NA works.
 
 .. toctree::
 	:maxdepth: 1
@@ -37,6 +42,8 @@ Core reference
 Utilities reference
 -------------------
 
+Some useful information for both core and plugins developers.
+
 .. toctree::
 	:maxdepth: 1
 
@@ -47,6 +54,7 @@ Utilities reference
 Extending Network Administrator
 -------------------------------
 
+For plugins developers.
 
 .. toctree::
 	:maxdepth: 1
