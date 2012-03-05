@@ -236,7 +236,7 @@ Widgets
 -------
 
 Developing widgets is pretty like writing plugins. You should start with
-writing a class deriving from Widget. It have to override the following
+writing a class deriving from Widget. It has to override the following
 fields: ``name``, ``description`` and ``template_name``. The first one is a name
 for your widget, the second is a description and it depends on you what
 user will find there, the last is a name of template file which will be used
@@ -284,7 +284,7 @@ This is how template ``my_widget.html`` might look like::
     <h3>{{ request.user.username }}'s hosts</h3>
     <ul>
     {% for host in hosts %}
-        <li>{{ host.name }}, {{ host.ipv4 }}, {{ host.ipv6 }}
+        <li>{{ host.name }}, {{ host.ipv4 }}, {{ host.ipv6 }}</li>
     {% endfor %}
     <ul>
 
