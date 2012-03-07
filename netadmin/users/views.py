@@ -31,7 +31,10 @@ from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 
-from search.core import search
+try:
+    from search.core import search
+except ImportError:
+    search = None
 from piston.models import Consumer, Token
 
 from settings import GAE_MAIL_ACCOUNT, SITE_DOMAIN
@@ -110,14 +113,17 @@ def user_private(request):
     
 @login_required
 def user_search(request):
-    users = None
-    search_phrase = request.GET.get('s')
-    if search_phrase:
-        users = search(User, search_phrase)
-        
-    extra_context = {
-        'users': users
-    }
+    if search != None:
+        users = None
+        search_phrase = request.GET.get('s')
+        if search_phrase:
+            users = search(User, search_phrase)
+
+        extra_context = {
+            'users': users
+        }
+    else:
+        extra_context = {}
         
     return direct_to_template(request, 'users/user_search.html',
                               extra_context=extra_context)
