@@ -20,7 +20,10 @@
 
 from django.views.generic.simple import direct_to_template
 
-from search.core import search
+try:
+    from search.core import search
+except ImportError:
+    search = None
 
 from events.models import Event
 from networks.models import Host, Network
@@ -33,7 +36,7 @@ RESULTS_LIMIT = 10
 def global_search(request):
     extra_context = {}
     
-    if request.method == 'GET':
+    if request.method == 'GET' and search != None:
         search_phrase = request.GET.get('s')
         if search_phrase:
             events = search(Event, search_phrase)

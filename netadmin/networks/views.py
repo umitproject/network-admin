@@ -26,7 +26,10 @@ from django.views.generic.create_update import update_object, delete_object
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.http import Http404
-from search.core import search
+try:
+    from search.core import search
+except ImportError:
+    search = None
 
 from netadmin.events.models import Event
 from netadmin.permissions.utils import filter_user_objects, \
@@ -40,7 +43,7 @@ from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
 @login_required
 def host_list(request, page=None):
     search_phrase = request.GET.get('s')
-    if search_phrase:
+    if search_phrase and search != None:
         hosts = search(Host, search_phrase)
     else:
         hosts = Host.shared_objects(request.user)
@@ -114,7 +117,7 @@ def host_delete(request, object_id):
 @login_required
 def network_list(request, page=None):
     search_phrase = request.GET.get('s')
-    if search_phrase:
+    if search_phrase and search != None:
         nets = search(Network, search_phrase)
         # TODO
         # filter search results by user access

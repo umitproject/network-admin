@@ -27,7 +27,10 @@ from django.views.generic.simple import direct_to_template
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext as _
 
-from search.core import search
+try:
+    from search.core import search
+except ImportError:
+    search = None
 
 from forms import EventSearchForm, EventSearchSimpleForm, \
     EventTypeFormset, EventCheckForm
@@ -122,7 +125,8 @@ def events_search(request):
     
     events = None
     
-    if search_form.is_valid() and search_form.cleaned_data['message']:
+    if search_form.is_valid() and search_form.cleaned_data['message'] and \
+        search != None:
         cleaned_data = search_form.cleaned_data
         
         search_phrase = cleaned_data.get('message')
