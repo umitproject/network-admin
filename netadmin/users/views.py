@@ -37,7 +37,7 @@ except ImportError:
     search = None
 from piston.models import Consumer, Token
 
-from settings import GAE_MAIL_ACCOUNT, SITE_DOMAIN
+from django.conf import settings
 from forms import UserForm, UserProfileForm, UserRegistrationForm
 from models import UserActivationCode
 
@@ -141,10 +141,10 @@ def user_register(request, template_name="users/user_registration.html"):
             activation.save()
             
             code_url = reverse('user_activation', args=[code])
-            activation_url = "http://%s%s" % (SITE_DOMAIN, code_url)
+            activation_url = "http://%s%s" % (settings.SITE_DOMAIN, code_url)
             send_mail(ACTIVATION_MAIL_SUBJECT,
                       ACTIVATION_MAIL_CONTENT % activation_url,
-                      GAE_MAIL_ACCOUNT, [user.email])
+                      settings.ACTIVATION_FROM_EMAIL, [user.email])
             
             return direct_to_template(request,
                         "users/user_registration_confirm.html")
