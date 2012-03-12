@@ -58,7 +58,13 @@ class EventType(models.Model):
     only indicates importance of events and is used to distinguish those of
     them which should be treated differently.
     """
-    name = models.CharField(max_length=50)
+    Type_Level = (
+		('CRITICAL','Critical'),
+		('ERROR','Error'),
+		('INFO','Info'),
+		('WARNING','Warning'),
+	)
+    name = models.CharField(max_length=10,choices=Type_Level)
     name_slug = models.SlugField(blank=True)
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
