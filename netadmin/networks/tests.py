@@ -139,8 +139,7 @@ class HostTest(HostBaseTest, EventBaseTest):
 
         response = self.client.get(reverse('host_list'))
         self.assertEqual(response.status_code, 200)
-
-        print response.context['hosts']
+        
         self.assertIn('hosts', response.context)
         self.assertIsInstance(response.context['hosts'], Page)
         self.assertItemsEqual(hosts[:10], response.context['hosts'].object_list)
