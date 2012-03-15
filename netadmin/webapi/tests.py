@@ -129,7 +129,7 @@ class WebAPITest(TestCase):
         self.assertEqual(r_json['status'], 'ok')
         
         try:
-            host = Host.objects.get(ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:102:304')
+            Host.objects.get(ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:102:304')
         except Host.DoesNotExist:
             self.assertTrue(False)
         
@@ -167,13 +167,12 @@ class WebAPITest(TestCase):
             raise Exception
         for event in Event.objects.all():
             response = self.client.get('/api/event/%s/' % event.pk)
-            print response
             j = json.loads(response.content)
             self.assertIn('event_id', j.keys())
             
     def test_events_list(self):
         """Get events list"""
         url = reverse('api_event_list')
-        response = self.client.get('/api/event/list/')
+        response = self.client.get(url)
         j = json.loads(response.content)
         self.assertIn('events', j.keys())
