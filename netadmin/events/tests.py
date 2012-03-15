@@ -32,6 +32,7 @@ class EventTest(EventBaseTest):
     """
     
     def setUp(self):
+        super(EventTest, self).setUp()
         self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user)
         self.source_host.save()
         
