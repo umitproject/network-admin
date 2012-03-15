@@ -28,8 +28,7 @@ First, you have to clone NA's Git repository::
 
 To make sure that everything will run correctly on you system, run tests::
 
-    cd network-admin/netadmin
-    python ../manage.py test events networks reportmeta webapi
+    python manage.py test events networks reportmeta webapi
 
 Even after installing packages mentioned in the previous section, NA still has
 some dependencies. To get them just run (I assume you're in projects's root
@@ -96,6 +95,14 @@ machine.
             'PORT': '',
         }
     }
+
+#. Open ``settings.py`` file and change this line::
+
+    DEBUG = True
+
+   to::
+
+    DEBUG = False
 
 #. Put the following code into the file ``handler.wsgi`` in application's
    directory::
@@ -186,6 +193,14 @@ well.
    application::
 
     SITE_DOMAIN = 'example.appspot.com'
+
+#. Still in the same file change this line::
+
+    DEBUG = True
+
+   to::
+
+    DEBUG = False
 
 #. Create file ``app.yaml`` and put there the following code::
 
