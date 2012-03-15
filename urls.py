@@ -44,7 +44,11 @@ urlpatterns = patterns('',
     url(r'^oauth/request_token/$','piston.authentication.oauth_request_token'),
     url(r'^oauth/authorize/$','piston.authentication.oauth_user_auth'),
     url(r'^oauth/access_token/$','netadmin.webapi.views.xauth_callback'),
-    
-    (r'^static/(?P<path>.*)$', 'django.views.static.serve',
-     {'document_root': settings.STATIC_ROOT}),
+
 )
+
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        (r'^static/(?P<path>.*)$', 'django.views.static.serve',
+             {'document_root': settings.STATIC_ROOT})
+    )
