@@ -18,15 +18,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.conf.urls.defaults import *
+from django.conf import settings
+from django.conf.urls.defaults import patterns, url
 from piston.resource import Resource
 from piston.authentication import NoAuthentication, HttpBasicAuthentication
 
-from settings import DEBUG
 from handlers import HostHandler, NetworkHandler, EventHandler
 
 
-if DEBUG:
+# While running tests we don't have to use authentication
+if settings.API_TEST_DEBUG:
     auth = NoAuthentication()
 else:
     auth = HttpBasicAuthentication()

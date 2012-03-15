@@ -25,6 +25,11 @@ import os
 
 DEBUG = True
 
+# By default Django disables debug mode when running test. However in webapi
+# tests we need to know if DEBUG was set to True, otherwise testing this
+# application would be difficult.
+API_TEST_DEBUG = True if DEBUG else False
+
 STATIC_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
 STATIC_URL = '/static/'
 
