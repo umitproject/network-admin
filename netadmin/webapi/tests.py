@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
 import time
 import datetime
 import random
-import simplejson as json
 
-from django.http import HttpRequest
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -32,7 +34,6 @@ from django.contrib.auth.models import User
 
 from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
-from netadmin.utils.oauthclient import NetadminOAuthClient
 
 
 class WebAPITest(TestCase):
