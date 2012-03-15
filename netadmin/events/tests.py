@@ -46,14 +46,13 @@ class EventTest(EventBaseTest):
             'timestamp': '%s' % str(datetime.datetime.now()),
             'source_host': self.source_host
         }
-        self.event = Event(**event_data)
-        self.event.save()
+        self.event = Event.objects.create(**event_data)
         
     def test_event_detail(self):
         """Get event's details
         """
-        response = self.client.get(reverse('event_detail',
-                                           args=[self.event.pk]))
+        url = reverse('event_detail', kwargs={'object_id': self.event.pk})
+        response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertIn('object', response.context)
         self.assertIn('check_form', response.context)
@@ -73,7 +72,7 @@ class EventTest(EventBaseTest):
         other_user =  self.create_user('other', 'otherpassword')
         self.source_host.user = other_user
         self.source_host.save()
-        url = reverse('event_detail', args=[self.event.pk])
+        url = reverse('event_detail', kwargs={'object_id': self.event.pk})
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
