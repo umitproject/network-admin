@@ -59,21 +59,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </form>
                 {% endif %}
 
+                {% if request.user.is_authenticated %}
 				<div id="toolbar">
                     <div id="alerts">
-                    {% if request.user.is_authenticated %}
                         {% alerts_counter request.user.pk %}
-                    {% endif %}
                     </div>
 					<ul class="sub-nav">
-					{% if request.user.is_authenticated %}
 						<li>
 							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{{ request.user.get_profile.full_name }}</a>!
 							<a href="{% url logout %}">{% trans "Log out" %}</a>
 						</li>
-					{% endif %}
 					</ul>
 				</div>
+                {% endif %}
 			</div>
 			<div>
 				{% init_charts 'corechart' %}
