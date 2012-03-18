@@ -1,3 +1,4 @@
 django
 django-piston==0.2.2
+reportlab
 geraldo
