@@ -1,0 +1,53 @@
+@import "head";
+@import "content";
+@import "foot";
+
+body {
+    /* Box */
+    padding: 75px 0 0 0;
+    margin: 0;
+
+    /* Fonts */
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 14px;
+}
+
+a {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+form {
+    @padding_top: 5px;
+
+    span.helptext {
+        font-size: 11px;
+        color: #999;
+        display: block;
+    }
+
+    input[type=text],
+    textarea {
+        border: 1px solid #ccc;
+        background: #f9f9f9;
+        padding: @padding_top 5px;
+        width: 500px;
+        vertical-align: top;
+        font: inherit;
+    }
+
+    input[type=submit] {
+        border: 2px solid #ccc;
+        background: #efefef;
+        padding: 3px 10px;
+    }
+
+    label {
+        display: inline-block;
+        width: 200px;
+        padding-top: @padding_top;
+    }
+}

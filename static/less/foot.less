@@ -1,0 +1,40 @@
+@border_color: #ddd;
+
+#footer {
+    margin: 15px 0 0 0;
+    padding: 10px 55px;
+    border-top: 1px solid @border_color;
+    color: #999;
+
+    a {
+        color: #f00;
+    }
+
+    ul.columns {
+        list-style-type: none;
+        margin: 0;
+        padding: 0;
+
+        li {
+            display: inline-block;
+            width: 300px;
+            margin-right: 30px;
+            vertical-align: top;
+
+            form {
+                input[type=text] {
+                    width: 200px;
+                }
+
+                input[type=submit] {
+                    display: none;
+                }
+
+                a {
+                    display: inline-block;
+                    padding: 6px 0 0 10px;
+                }
+            }
+        }
+    }
+}
