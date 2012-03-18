@@ -26,13 +26,8 @@ First, you have to clone NA's Git repository::
 
     git clone -b develop git://github.com/umitproject/network-admin.git
 
-To make sure that everything will run correctly on you system, run tests::
-
-    python manage.py test events networks reportmeta webapi
-
 Even after installing packages mentioned in the previous section, NA still has
-some dependencies. To get them just run (I assume you're in projects's root
-directory)::
+some dependencies. To get them just run this command::
 
     pip install -r dependencies.txt
 
@@ -52,6 +47,14 @@ code::
             'PORT': '',
         }
     }
+
+Next, you have to synchronise your database::
+
+    python manage.py syncdb
+
+To make sure that everything will run correctly on you system, run tests::
+
+    python manage.py test events networks reportmeta webapi
 
 At this point everything is ready to run the development server::
 
@@ -139,6 +142,10 @@ machine.
    don't hesitate to change this configuration, as this is just the example of
    how you may set it up. For more details about available options, please
    refer to the documentation of Apache [#apache]_.
+
+#. Synchronise the database::
+
+    python manage.py syncdb
 
 #. Finally, restart Apache web server::
 
@@ -234,6 +241,10 @@ well.
       script: djangoappengine/main/main.py
 
    Remember to replace ``example`` with your application's name.
+
+#. Synchronise the database::
+
+    python manage.py syncdb
 
 #. Now the application is ready for deployment, just run the following
    command::
