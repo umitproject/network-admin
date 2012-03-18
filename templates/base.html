@@ -21,11 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="en" lang="en">	
 	<head>
 		<title>Network Administrator &#8211; {% block title %}{% endblock %}</title>
-		<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
+        <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}less/base.less">
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/search.js"></script>
+        <script type="text/javascript" src="{{ STATIC_URL }}js/less-1.3.0.min.js"></script>
         {% block headers %}{% endblock %}
 	</head>
 	<body>
@@ -50,16 +51,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </ul>
 
                 {% if request.user.is_authenticated %}
-                <form action="{% url global_search %}" method="GET" class="search global-search">
-                    <p>
-                        <input type="text" name="s" value="Search for events, hosts..." />
-                        <input type="submit" value="{% trans "Search" %}" />
-                        <a href="#" class="submit">{% trans "Search" %}</a>
-                    </p>
-                </form>
-                {% endif %}
-
-                {% if request.user.is_authenticated %}
 				<div id="toolbar">
                     <div id="alerts">
                         {% alerts_counter request.user.pk %}
@@ -72,12 +63,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					</ul>
 				</div>
                 {% endif %}
+
+                <div id="meta">
+				{% block meta %}{% endblock %}
+				</div>
 			</div>
 			<div>
 				{% init_charts 'corechart' %}
-				<div id="meta">
-				{% block meta %}{% endblock %}
-				</div>
 				<div id="content" class="{% block content_classes %}{% endblock %}">
 					{% block content %}{% endblock %}
                     <div id="column-left">
@@ -89,8 +81,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				{% show_charts %}
 				<div id="footer">
-                    <p class="floatright"><a href="http://www.umitproject.org/">www.umitproject.org</a></p>
-					<p>Network Administrator to the Cloud Land<br />&copy; Copyright 2011 Adriano Monteiro Marques</p>
+                    <ul class="columns">
+                        <li>
+					        <p>Network Administrator to the Cloud Land<br />&copy; Copyright 2011 Adriano Monteiro Marques</p>
+                        </li>
+                        <li>
+                            <p>
+                                Home: <a href="http://dev.umitproject.org/">dev.umitproject.org</a><br />
+                                Source: <a href="https://github.com/umitproject/network-admin/">Github</a><br />
+                                Documentation: <a href="http://readthedocs.org/docs/network-administrator-to-the-cloud-land/en/latest/">Read the Docs</a>
+                            </p>
+                        </li>
+                        {% if request.user.is_authenticated %}
+                        <li>
+                            <form action="{% url global_search %}" method="GET" class="search global-search">
+                                <p>
+                                    <input type="text" name="s" value="Search for events, hosts..." />
+                                    <input type="submit" value="{% trans "Search" %}" />
+                                    <a href="#" class="submit">{% trans "Search" %}</a>
+                                </p>
+                            </form>
+                        </li>
+                        {% endif %}
+                    </ul>
 				</div>
 			</div>
 		</div>
