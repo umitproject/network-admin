@@ -186,11 +186,11 @@ class EventTypeCategory(models.Model):
 	category = models.ForeignKey(EventType, verbose_name="Event Types")
 	
 	def __unicode__(self):
-		return self.CategoryName
+		return self.category_name
 	
 	def save(self, *args, **kwargs):
 		if not self.pk:
-			self.Message_slug = slugify(self.CategoryName)
+			self.Message_slug = slugify(self.category_name)
 		super(EventTypeCategory, self).save(*args, **kwargs)
 	
 	def delete(self, *args, **kwargs):
