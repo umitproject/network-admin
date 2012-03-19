@@ -30,7 +30,12 @@ DEBUG = True
 # application would be difficult.
 API_TEST_DEBUG = True if DEBUG else False
 
-STATIC_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
+if DEBUG:
+    STATICFILES_DIRS = (
+        os.path.join(os.path.dirname(__file__), 'static'),
+    )
+else:
+    STATIC_ROOT = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static')
 STATIC_URL = '/static/'
 
 ADMIN_MEDIA_PREFIX = '%sadmin/' % STATIC_URL
@@ -50,6 +55,9 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'piston',
 )
+
+if DEBUG:
+    INSTALLED_APPS += ('django.contrib.staticfiles',)
 
 NETADMIN_APPS = (
     'netadmin',
