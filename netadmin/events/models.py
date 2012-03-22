@@ -180,20 +180,20 @@ class EventTypeCategory(models.Model):
 	""" Models for event type cateogry
 		
 	"""
-	category_name = models.CharField(max_length=50, verbose_name="Name")
-	created_user = models.ForeignKey(User, verbose_name="User")
+	name = models.CharField(max_length=50, verbose_name="Name")
+	user = models.ForeignKey(User, verbose_name="User")
 	Message_slug = models.SlugField(blank=True, verbose_name="Message")
-	category = models.ForeignKey(EventType, verbose_name="Event Types")
+	category = models.ForeignKey(EventType, verbose_name="Choose Event Types")
+    
 	
 	def __unicode__(self):
-		return self.category_name
+		return self.name
 	
 	def save(self, *args, **kwargs):
 		if not self.pk:
-			self.Message_slug = slugify(self.category_name)
+			self.Message_slug = slugify(self.name)
 		super(EventTypeCategory, self).save(*args, **kwargs)
 	
-	def delete(self, *args, **kwargs):
-		super(EventTypeCategory, self).delete(*args, **kwargs)
+	
     
 	
