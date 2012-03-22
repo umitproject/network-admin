@@ -20,7 +20,8 @@
 
 from django.contrib import admin
 
-from models import Event, EventType
+from models import Event, EventType, EventTypeCategory
 
 admin.site.register(Event)
 admin.site.register(EventType)
+admin.site.register(EventTypeCategory)
