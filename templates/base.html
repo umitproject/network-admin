@@ -34,8 +34,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="header">
                 <h1><span><a href="/">Network Administrator</a></span></h1>
 
-                <ul class="navigation">
                 {% if request.user.is_authenticated %}
+                <ul class="navigation">
                     <li><a href="/">{% trans "Dashboard" %}</a></li>
                     <li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
                     <li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
@@ -44,13 +44,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     {% if request.user.is_superuser %}
                         <li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
                     {% endif %}
-                {% else %}
-                    <li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
-                    <li><a href="{% url user_register %}">{% trans "Register" %}</a></li>
-                {% endif %}
                 </ul>
-
-                {% if request.user.is_authenticated %}
+                    
 				<div id="toolbar">
                     <div id="alerts">
                         {% alerts_counter request.user.pk %}
@@ -81,29 +76,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				{% show_charts %}
 				<div id="footer">
-                    <ul class="columns">
-                        <li>
-					        <p>Network Administrator to the Cloud Land<br />&copy; Copyright 2011 Adriano Monteiro Marques</p>
-                        </li>
-                        <li>
-                            <p>
-                                Home: <a href="http://dev.umitproject.org/">dev.umitproject.org</a><br />
-                                Source: <a href="https://github.com/umitproject/network-admin/">Github</a><br />
-                                Documentation: <a href="http://readthedocs.org/docs/network-administrator-to-the-cloud-land/en/latest/">Read the Docs</a>
-                            </p>
-                        </li>
-                        {% if request.user.is_authenticated %}
-                        <li>
-                            <form action="{% url global_search %}" method="GET" class="search global-search">
-                                <p>
-                                    <input type="text" name="s" value="Search for events, hosts..." />
-                                    <input type="submit" value="{% trans "Search" %}" />
-                                    <a href="#" class="submit">{% trans "Search" %}</a>
-                                </p>
-                            </form>
-                        </li>
-                        {% endif %}
-                    </ul>
+                    <p>Network Administrator to the Cloud Land &copy; Copyright 2012 Adriano Monteiro Marques</p>
+                    <p class="align-right"><a href="/about/">{% trans "About" %}</a></p>
 				</div>
 			</div>
 		</div>
