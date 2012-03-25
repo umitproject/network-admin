@@ -6,17 +6,15 @@
 @nav_light_color: #888;
 
 #header {
-    /* Box */
     min-width: 1024px;
     width: 100%;
+    height: 51px;
     padding: 0 50px;
     border-bottom: 1px solid @border_color;
 
-    /* Colors */
     background: @bg_color;
     color: @font_color;
 
-    /* Position */
     position: fixed;
     top: 0;
     left: 0;
@@ -30,7 +28,8 @@
         display: inline-block;
         font-size: 15px;
         width: 280px;
-        margin-left: 5px;
+        padding: 0;
+        margin: 15px 5px 0 0;
         
         a {
             font-weight: bold;
@@ -53,6 +52,7 @@
                 width: 100%;
                 height: 100%;
                 padding: 15px 10px;
+
                 font-weight: bold;
             }
 
@@ -72,10 +72,12 @@
             list-style-type: none;
             margin: 0;
             padding: 0;
+
             font-size: 14px;
 
             li {
                 padding: 17px 0;
+
                 color: @nav_light_color;
 
                 a {
@@ -93,12 +95,14 @@
     #meta {
         margin-left: -50px;
         padding: 0 45px;
+
         background: #ac4747;
         color: #fff;
 
         ul {
             margin: 0 0 0 295px;
             padding: 7px 0;
+            
             list-style-type: none;
             font-size: 14px;
 
