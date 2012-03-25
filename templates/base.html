@@ -81,27 +81,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript">
-			$(function(){
-				var global_search_initial = $('form#global-search input[name=s]').val();
-				$('a.ajax').click(function(){
-					var url = $(this).attr('href'); 
-					$.get(url, {}, function(data){}, 'json');
-					return false;
-				});
-				$('form#global-search input[name=s]').focus(function(){
-					if ($(this).val() === global_search_initial) {
-						$(this).val('');
-						$(this).css('color','#000');
-					}
-				});
-				$('form#global-search input[name=s]').blur(function(){
-					if ($(this).val() === '') {
-						$(this).css('color','#ccc');
-						$(this).val(global_search_initial);
-					}
-				});
-			});
-		</script>
 	</body>
 </html>
