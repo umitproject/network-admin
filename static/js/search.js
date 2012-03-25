@@ -1,7 +1,7 @@
 $(document).ready(function(){
     var global_search = {};
 
-    global_search.form = $('#header form.global-search');
+    global_search.form = $('form.global-search');
     global_search.submit = $(global_search.form).find('a.submit').first();
     global_search.input = $(global_search.form).find('input[name=s]').first();
 
