@@ -132,8 +132,6 @@ def widgets_ajax(request):
             changed = widget.move(order, column)
             if changed:
                 widget.save()
-                area  = widget.widgets_area
-                area.recalculate_order()
                 return api_ok(_("Widgets order changed"))
             return api_ok(_("Widgets stay in the same order"))
         
