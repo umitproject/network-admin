@@ -25,13 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 <h2>{% trans "Networks list" %}</h2>
 
-<form action="" method="GET" class="search">
-	<p>{% trans "Search for networks" %}: 
-		<input type="text" name="s" value="{{ request.GET.s }}"/>
-		<input type="submit" value="{% trans "Search" %}" />
-	</p>
-</form>
-
 <table class="objects-list">
 	<thead>
 		<tr>
