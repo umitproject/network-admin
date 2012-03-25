@@ -1,53 +1,153 @@
+/*
+Copyright (C) 2012 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 @import "head";
 @import "content";
+@import "widgets";
+@import "login";
 @import "foot";
 
 body {
-    /* Box */
-    padding: 75px 0 0 0;
     margin: 0;
+    padding-bottom: 35px;
 
-    /* Fonts */
     font-family: Helvetica, Arial, sans-serif;
     font-size: 14px;
 }
 
 a {
     text-decoration: none;
+
+    color: #f00;
+
+    &.button {
+        padding: 5px 10px;
+        margin: 5px 0;
+        display: inline-block;
+        border: 2px solid #ccc;
+
+        background: #efefef;
+        color: #000;
+    }
+
+    &:hover {
+        text-decoration: underline;
+
+        &.button {
+            text-decoration: none;
+        }
+    }
 }
 
-a:hover {
-    text-decoration: underline;
+h1, h2, h3 {
+    border-bottom: 1px solid #efefef;
 }
 
-form {
+form,
+div.dummy-form {
     @padding_top: 5px;
 
     span.helptext {
-        font-size: 11px;
-        color: #999;
         display: block;
+
+        font-size: 11px;
+
+        color: #999;
     }
 
     input[type=text],
+    input[readonly],
+    input[type=password],
     textarea {
         border: 1px solid #ccc;
-        background: #f9f9f9;
         padding: @padding_top 5px;
         width: 500px;
-        vertical-align: top;
+
         font: inherit;
+        vertical-align: top;
+        
+        background: #f9f9f9;
+
+        &.monospace {
+            font-family: monospace;
+        }
+    }
+
+    input[type=password] {
+        max-width: 250px
+    }
+
+    input[readonly] {
+        color: #666;
     }
 
     input[type=submit] {
         border: 2px solid #ccc;
-        background: #efefef;
         padding: 3px 10px;
+
+        background: #efefef;
     }
 
     label {
         display: inline-block;
         width: 200px;
-        padding-top: @padding_top;
+        padding-top: 5px;
+    }
+
+    &.search {
+        input[name=s] {
+            margin-left: 10px;
+            padding: 6px 5px 7px 5px;
+            width: 200px;
+        }
+    }
+}
+
+table {
+    width: 100%;
+    margin: 10px 0;
+    border-collapse: collapse;
+    
+    thead {
+        text-align: left;
+
+        th {
+            padding: 5px 0;
+            border-bottom: 1px solid #000;
+        }
+    }
+
+    tbody {
+        tr {
+            td {
+                padding: 5px 0;
+                border-top: 1px solid #efefef;
+                border-bottom: 1px solid #efefef;
+
+                &.monospace {
+                    font-family: monospace;
+                }
+            }
+
+            &:hover {
+                background: #f6f6f6;
+            }
+        }
     }
 }
