@@ -26,6 +26,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <h2>{% trans "Register new account" %}</h2>
 <form action="" method="POST">
 	{{ registration_form.as_p }}
-	<input type="submit" value="{% trans "Register account" %}" />
+	<input type="submit" value="{% trans "Register account" %}" /> {% trans "or" %} <a href="{% url login_page %}">{% trans "Login" %}</a>
 </form>
 {% endblock %}
