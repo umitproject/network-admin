@@ -26,7 +26,9 @@ admin.autodiscover()
 handler500 = 'djangotoolbox.errorviews.server_error'
 
 urlpatterns = patterns('',
-    ('^$', 'django.views.generic.simple.direct_to_template', {'template': 'home.html'}),
+    ('^$', 'views.home'),
+    ('^about/$', 'django.views.generic.simple.direct_to_template',
+         {'template': 'about.html'}),
     (r'^api/', include('netadmin.webapi.urls')),
     (r'^network/', include('netadmin.networks.urls')),
     (r'^event/', include('netadmin.events.urls')),
