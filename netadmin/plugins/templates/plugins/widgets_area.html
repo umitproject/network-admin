@@ -31,11 +31,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	<ul id="area-{{ widgets_area.pk }}-column-{{ forloop.counter }}" class="area-column">
 	{% for widget_settings in column %}
 		<li id="widget-{{ widget_settings.pk }}" class="widget">
-            <div class="widget-meta">
-				<a href="{% url widget_detail widget_settings.pk %}" class="settings"><span>{% trans "Edit widget" %}</span></a>
-				<a href="{% url widget_ajax %}?delete={{ widget_settings.pk }}" class="delete ajax"><span>{% trans "Delete widget" %}</span></a>
-			</div>
-			<h3>{{ widget_settings.widget_title }}</h3>
+            <div class="widget-head">
+                <h3>{{ widget_settings.widget_title }}</h3>
+                <div class="widget-meta">
+                    <a href="{% url widget_detail widget_settings.pk %}" class="settings"><span>{% trans "Edit widget" %}</span></a>
+                    <a href="{% url widget_ajax %}?delete={{ widget_settings.pk }}" class="delete ajax"><span>{% trans "Delete widget" %}</span></a>
+                </div>
+            </div>
 			<div class="widget-content">
 				{% render_widget widget_settings %}
 			</div>
