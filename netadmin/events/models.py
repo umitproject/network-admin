@@ -24,6 +24,7 @@ except ImportError:
     import json
 
 from django.db import models
+
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
@@ -45,6 +46,25 @@ class EventFieldNotFound(Exception):
 class EventFieldsNotValid(Exception):
     pass
 
+
+class EventTypeCategory(models.Model):
+	""" Models for event type cateogry
+		
+	"""
+	name = models.CharField(max_length=50, verbose_name="Name")
+	user = models.ForeignKey(User, verbose_name="User")
+	Message_slug = models.SlugField(blank=True, verbose_name="Message")
+	sub_categ = models.OneToOneField('self', verbose_name = "Self-categories", null = True, blank = True, unique = True)
+	
+	def __unicode__(self):
+		return self.name
+        
+	def save(self, *args, **kwargs):
+		if not self.pk:
+			self.Message_slug = slugify(self.name)
+		super(EventTypeCategory, self).save(*args, **kwargs)
+
+
 class EventType(models.Model):
     """
     Describes type of an event, e.g. INFO, CRITICAL etc. Note that every event
@@ -61,6 +81,7 @@ class EventType(models.Model):
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
     notify = models.BooleanField(default=False)
+    catg = models.OneToOneField(EventTypeCategory, verbose_name="Choose Event Types", unique = True)
     
     def __unicode__(self):
         return self.name
@@ -175,25 +196,3 @@ class Event(models.Model):
             'id': self.pk,
             'short_description': self.short_message
         }
-
-class EventTypeCategory(models.Model):
-	""" Models for event type cateogry
-		
-	"""
-	name = models.CharField(max_length=50, verbose_name="Name")
-	user = models.ForeignKey(User, verbose_name="User")
-	Message_slug = models.SlugField(blank=True, verbose_name="Message")
-	category = models.ForeignKey(EventType, verbose_name="Choose Event Types")
-    
-	
-	def __unicode__(self):
-		return self.name
-	
-	def save(self, *args, **kwargs):
-		if not self.pk:
-			self.Message_slug = slugify(self.name)
-		super(EventTypeCategory, self).save(*args, **kwargs)
-	
-	
-    
-	
