@@ -22,9 +22,10 @@ import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse
+from django.core.urlresolvers import reverse
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404,render
 from django.utils.translation import ugettext as _
 
 try:
@@ -33,12 +34,14 @@ except ImportError:
     search = None
 
 from forms import EventSearchForm, EventSearchSimpleForm, \
-    EventTypeFormset, EventCheckForm
-from models import Event, EventType, ALERT_LEVELS
+    EventTypeFormset, EventCheckForm, EventCategoryFromset
+from models import Event, EventType, ALERT_LEVELS, EventTypeCategory
 from utils import filter_user_events
 
 from netadmin.permissions.utils import user_has_access
 from netadmin.webapi.views import api_ok, api_error
+from django.views.generic.create_update import update_object, delete_object
+
 
 
 @login_required
@@ -231,9 +234,54 @@ def eventtype_edit(request):
     return direct_to_template(request, 'events/eventtype_edit.html',
                               extra_context=extra_context)
 
+@login_required
+def eventcateg_detail(request):
+    ca = EventTypeCategory.objects.values()
+    categories =[]
+    for i in range(0, len(ca)):
+        pk_sub = ca[i]['sub_categ_id']
+        if (pk_sub!=None):
+            category = EventTypeCategory.objects.get(id = pk_sub)
+            category = category.name
+            categories.append(category)
+        else:
+            categories.append('None')
+    iterator = 0
+    new_dict_list = []
+    temp_dict = {}
+    for obj in ca:
+        temp_dict['Message_slug'] = ca[iterator]['Message_slug']
+        temp_dict['name'] = ca[iterator]['name']
+        temp_dict['category'] = categories[iterator]
+        temp_dict['id'] = ca[iterator]['id']
+        new_dict_list.append(temp_dict)
+        temp_dict={}
+        iterator = iterator + 1
+    return render(request,"events/categ.html",{
+		'obj': new_dict_list
+		})
+		
+@login_required
+def categ_detail(request, categ_id):
+	et = EventTypeCategory.objects.get(id = categ_id)
+	return render(request, "events/categ_detail.html",{
+		'object': et
+		})
+		
+@login_required
+def categ_delete(request, categ_id):
+   # print "in categ_Delete function"
+    et = EventTypeCategory.objects.get(id = categ_id)
+    if et.user != request.user:
+        raise Http404()
+    return delete_object(request, object_id=categ_id, model=EventTypeCategory,
+                         post_delete_redirect=reverse('eventcateg_detail'))
+
+	
 def events_notify(request):
     notifier = NotifierQueue(EventNotification)
     try:
+		
         log = notifier.send_emails(_("You have new alert(s) "
                                      "in Network Administrator"),
                                    clear_queue=True)
