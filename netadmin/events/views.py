@@ -270,7 +270,6 @@ def categ_detail(request, categ_id):
 		
 @login_required
 def categ_delete(request, categ_id):
-   # print "in categ_Delete function"
     et = EventTypeCategory.objects.get(id = categ_id)
     if et.user != request.user:
         raise Http404()
