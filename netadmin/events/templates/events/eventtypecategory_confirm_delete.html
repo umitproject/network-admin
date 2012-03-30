@@ -31,8 +31,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% trans "delete" %}
 </p>
 
-<p>{% blocktrans with object.name as name %}Do you really want to remove host {{ name }}?{% endblocktrans %}</p>
-<p><strong>{% trans "Remember, that ALL sub-categories and events related to this category will be REMOVED." %}</strong></p>
+<p>{% blocktrans with object.name as name %}Do you really want to remove category {{ name }}?{% endblocktrans %}</p>
+
 <form action="" method="POST">
 	<input type="submit" value="{% trans "Remove host" %}" />
 	<p><a href="{% url categ_detail object.id %}">{% trans "Cancel" %}</a></p>
