@@ -18,14 +18,19 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n widgets %}
-{% block title %}It works!{% endblock %}
-
-{% block content_classes %}dashboard{% endblock %}
+{% block title %}About the Network Administrator{% endblock %}
 
 {% block content %}
-{% if request.user.is_authenticated %}
-	{% widgets_area request.user "Dashboard" 3 %}
-{% endif %}
+<div class="centered-box">
+    <h2>About</h2>
+    <p>Network Administrator to the Cloud Land</p>
+    <p>&copy; Copyright 2011 Adriano Monteiro Marques</p>
+    <p>
+        Home: <a href="http://dev.umitproject.org/">dev.umitproject.org</a><br />
+        Source: <a href="https://github.com/umitproject/network-admin/">Github</a><br />
+        Documentation: <a href="http://readthedocs.org/docs/network-administrator-to-the-cloud-land/en/latest/">Read the Docs</a>
+    </p>
+</div>
 {% endblock %}
 
 {% block sidebar %}{% endblock %}

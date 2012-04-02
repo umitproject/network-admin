@@ -46,8 +46,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		<tr class="{% cycle 'odd' 'even' %}">
 			<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
 			<td>{{ host.short_description|action:"host_list_short_description" }}</td>
-			<td>{{ host.ipv4|action:"host_list_ipv4" }}</td>
-			<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
+			<td class="monospace">{{ host.ipv4|action:"host_list_ipv4" }}</td>
+			<td class="monospace">{{ host.ipv6|action:"host_list_ipv6" }}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
