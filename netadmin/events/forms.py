@@ -62,14 +62,15 @@ class EventTypeForm(forms.ModelForm):
 EventTypeFormset = modelformset_factory(EventType, form=EventTypeForm, extra=0)
 
 class EventCategoryForm(forms.ModelForm):
-	class Meta:
-		model = EventTypeCategory
-		fields = ('name','Message_slug','user')
-		widgets = {
-			'user': forms.HiddenInput()
-		}
+    class Meta:
+        model = EventTypeCategory
+        fields = ('name', 'slug', 'user')
+        widgets = {
+            'user': forms.HiddenInput()
+        }
 
-EventCategoryFromset = modelformset_factory(EventTypeCategory, form = EventCategoryForm, extra =0)
+EventCategoryFromset = modelformset_factory(EventTypeCategory,
+                                            form=EventCategoryForm, extra=0)
 
 class EventCheckForm(forms.ModelForm):
     class Meta:

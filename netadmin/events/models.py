@@ -48,21 +48,22 @@ class EventFieldsNotValid(Exception):
 
 
 class EventTypeCategory(models.Model):
-	""" Models for event type cateogry
+    """Represents category to which an event type may be assigned
 		
 	"""
-	name = models.CharField(max_length=50, verbose_name="Name")
-	user = models.ForeignKey(User, verbose_name="User")
-	Message_slug = models.SlugField(blank=True, verbose_name="Message")
-	sub_categ = models.OneToOneField('self', verbose_name = "Self-categories", null = True, blank = True, unique = True)
-	
-	def __unicode__(self):
-		return self.name
-        
-	def save(self, *args, **kwargs):
-		if not self.pk:
-			self.Message_slug = slugify(self.name)
-		super(EventTypeCategory, self).save(*args, **kwargs)
+    name = models.CharField(max_length=50, verbose_name=_("Name"))
+    slug = models.SlugField(blank=True, verbose_name=_("Message"))
+    user = models.ForeignKey(User, verbose_name=_("User"))
+    parent = models.OneToOneField('self', verbose_name=_("Parent category"),
+                                  null=True, blank=True, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.slug = slugify(self.name)
+        super(EventTypeCategory, self).save(*args, **kwargs)
 
 
 class EventType(models.Model):
@@ -81,7 +82,7 @@ class EventType(models.Model):
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
     notify = models.BooleanField(default=False)
-    catg = models.OneToOneField(EventTypeCategory, verbose_name="Choose Event Types", unique = True)
+    category = models.OneToOneField(EventTypeCategory, unique=True)
     
     def __unicode__(self):
         return self.name
