@@ -34,7 +34,7 @@ except ImportError:
     search = None
 
 from forms import EventSearchForm, EventSearchSimpleForm, \
-    EventTypeFormset, EventCheckForm, EventCategoryFromset
+    EventTypeFormset, EventCheckForm, EventCategoryFormset
 from models import Event, EventType, ALERT_LEVELS, EventTypeCategory
 from utils import filter_user_events
 

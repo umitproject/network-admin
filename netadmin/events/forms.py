@@ -69,7 +69,7 @@ class EventCategoryForm(forms.ModelForm):
             'user': forms.HiddenInput()
         }
 
-EventCategoryFromset = modelformset_factory(EventTypeCategory,
+EventCategoryFormset = modelformset_factory(EventTypeCategory,
                                             form=EventCategoryForm, extra=0)
 
 class EventCheckForm(forms.ModelForm):
