@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p class="breadcrumbs"><a href="{% url eventcateg_detail %}">{% trans "Categories" %}</a> > {% trans "Category details" %}</p>
 <h3>{% trans "Basic info" %}</h3>
 <p><strong>{% trans "Message "%}</strong>:{{ object.Message_slug }}</p>
-<p><strong>{% trans "Sub category" %}</strong>: {{ object.sub_categ }}</p>
+<p><strong>{% trans "Sub category" %}</strong>: {% for sub in sub_categories %} <ul> {{sub}} </ul> {% endfor %}</p>
 {% endblock %}
   
 {% block meta %}

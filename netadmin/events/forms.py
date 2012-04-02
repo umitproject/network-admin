@@ -26,7 +26,7 @@ from django.forms.widgets import RadioSelect, Select
 from django.forms.extras.widgets import SelectDateWidget
 from django.utils.translation import ugettext as _
 
-from models import EventType, Event
+from models import EventType, Event, EventTypeCategory
 
 
 YEARS_RANGE = range(2000, datetime.datetime.now().year + 1)
@@ -60,6 +60,16 @@ class EventTypeForm(forms.ModelForm):
         }
 
 EventTypeFormset = modelformset_factory(EventType, form=EventTypeForm, extra=0)
+
+class EventCategoryForm(forms.ModelForm):
+	class Meta:
+		model = EventTypeCategory
+		fields = ('name','Message_slug','user')
+		widgets = {
+			'user': forms.HiddenInput()
+		}
+
+EventCategoryFromset = modelformset_factory(EventTypeCategory, form = EventCategoryForm, extra =0)
 
 class EventCheckForm(forms.ModelForm):
     class Meta:
