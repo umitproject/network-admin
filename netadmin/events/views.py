@@ -257,14 +257,14 @@ def eventcateg_detail(request):
         new_dict_list.append(temp_dict)
         temp_dict={}
         iterator = iterator + 1
-    return render(request,"events/categ.html",{
+    return render(request,"events/eventtypecategory.html",{
 		'obj': new_dict_list
 		})
 		
 @login_required
 def categ_detail(request, categ_id):
 	et = EventTypeCategory.objects.get(id = categ_id)
-	return render(request, "events/categ_detail.html",{
+	return render(request, "events/eventtypecategory_detail.html",{
 		'object': et
 		})
 		
