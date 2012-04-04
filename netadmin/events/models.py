@@ -82,7 +82,7 @@ class EventType(models.Model):
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
     notify = models.BooleanField(default=False)
-    category = models.OneToOneField(EventTypeCategory, unique=True)
+    category = models.OneToOneField(EventTypeCategory, unique=True, null=True)
     
     def __unicode__(self):
         return self.name
