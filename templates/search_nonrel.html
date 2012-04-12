@@ -20,22 +20,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n events_tags actions %}
 {% block title %}{% trans "Search" %}{% endblock %}
 
-{% block content_classes %}search{% endblock %}
-
 {% block content %}
 <h2>{% trans "Search" %}</h2>
 
-<form action="{% url global_search %}" method="GET" class="search">
-	<p>{% trans "Search for phrase" %}: <input type="text" name="s" value="{{ request.GET.s }}" /><input type="submit" value="{% trans 'Search' %}" /></p>
+<form action="{% url search %}" method="GET">
+    {{ form.as_p }}
+	<p><input type="submit" value="{% trans 'Search' %}" /></p>
 </form>
 
-{% if events %}
+{% if results_events %}
 	<h3>{% trans "Events" %}</h3>
-	{% events_list request events %}
-	<p><a href="{% url event_search %}?message={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
+	{% events_list request results_events %}
 {% endif %}
 
-{% if hosts %}
+{% if results_hosts %}
 	<h3>{% trans "Hosts" %}</h3>
 	<table>
 		<thead>
@@ -47,7 +45,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			</tr>
 		</thead>
 		<tbody>
-		{% for host in hosts %} 
+		{% for host in results_hosts %}
 			<tr class="{% cycle 'odd' 'even' %}">
 				<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
 				<td>{{ host.short_description|action:"host_list_short_description" }}</td>
@@ -57,10 +55,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		{% endfor %}
 		</tbody>
 	</table>
-	<p><a href="{% url host_list %}?s={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
 {% endif %}
 
-{% if networks %}
+{% if results_networks %}
 	<h3>{% trans "Networks" %}</h3>
 	<table>
 		<thead>
@@ -70,7 +67,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			</tr>
 		</thead>
 		<tbody>
-		{% for network in networks %}
+		{% for network in results_networks %}
 			<tr>
 				<td>
 					<a href="{% url network_detail network.pk %}">
@@ -82,10 +79,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		{% endfor %}
 		</tbody>
 	</table>
-	<p><a href="{% url network_list %}?s={{ request.GET.s }}">{% trans "More results" %} ...</a></p>
 {% endif %}
 
-{% if not events and not hosts and not networks %}
+{% if query and not results_events and not results_hosts and not results_networks %}
 	<p>{% trans "No results" %}.</p>
 {% endif %}
 
