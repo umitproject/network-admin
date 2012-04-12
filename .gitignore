@@ -1,0 +1,11 @@
+*.pyc
+local_settings.py
+autoload
+dbindexer
+djangoappengine
+djangotoolbox
+permission_backend_nonrel
+search
+app.yaml
+handler.wsgi
+netadmin.db
