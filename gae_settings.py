@@ -19,6 +19,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 
+
+from djangoappengine.settings_base import *
+
 DEBUG = True
 
 # By default Django disables debug mode when running test. However in webapi
@@ -50,7 +53,6 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'piston',
-    'haystack'
 )
 
 if DEBUG:
@@ -94,9 +96,32 @@ LOGIN_URL = '/login/'
 
 ACTIVATION_FROM_EMAIL = 'your_email@example.com'
 
-HAYSTACK_SITECONF = 'search_indexes'
-HAYSTACK_SEARCH_ENGINE = 'whoosh'
-HAYSTACK_WHOOSH_PATH = os.path.join(os.path.dirname(__file__), 'whoosh_index')
+DATABASES['native'] = DATABASES['default']
+DATABASES['default'] = {'ENGINE': 'dbindexer', 'TARGET': 'native'}
+
+GAE_APPS = (
+    'djangotoolbox',
+    'dbindexer',
+    'permission_backend_nonrel',
+    'autoload',
+    'search',
+    'djangoappengine',
+)
+
+INSTALLED_APPS += GAE_APPS
+
+AUTHENTICATION_BACKENDS = (
+    'permission_backend_nonrel.backends.NonrelPermissionBackend',
+)
+
+MIDDLEWARE_CLASSES += (
+    'autoload.middleware.AutoloadMiddleware',
+)
+
+SITE_DOMAIN = 'example.appspot.com'
+TEST_RUNNER = 'djangotoolbox.test.CapturingTestSuiteRunner'
+GAE_MAIL_ACCOUNT = 'your_email@example.com'
+AUTOLOAD_SITECONF = 'search_indexes'
 
 try:
     from local_settings import *
