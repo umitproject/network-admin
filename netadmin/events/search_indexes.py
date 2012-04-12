@@ -18,10 +18,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import search
-from search.core import startswith
-
 from models import Event
 
+try:
+    import search
+    from search.core import startswith
 
-search.register(Event, ('short_message', 'message'), indexer=startswith)
+    search.register(Event, ('short_message', 'message'), indexer=startswith)
+except ImportError:
+    from haystack import indexes
+    from haystack import site
+
+    class EventIndex(indexes.SearchIndex):
+        text = indexes.CharField(document=True, use_template=True)
+
+        def index_queryset(self):
+            return Event.objects.all()
+
+    site.register(Event, EventIndex)

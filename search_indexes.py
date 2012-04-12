@@ -17,5 +17,15 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from search import autodiscover
-autodiscover()
+
+try:
+    from django.conf import settings
+except ImportError:
+    import settings
+
+if 'haystack' in settings.INSTALLED_APPS:
+    import haystack
+    haystack.autodiscover()
+elif 'search' in settings.INSTALLED_APPS:
+    import search
+    search.autodiscover()
