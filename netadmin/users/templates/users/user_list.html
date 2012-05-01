@@ -29,13 +29,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <form action="" method="POST">
 	<table>
 		<thead>
-			<tr><th>{% trans "Users" %}</th><th>{% trans "Blocked" %}</th><th>{% trans "Status" %}</th></tr>
+			<tr><th>{% trans "Users" %}</th>
+            <th>{% trans "First Name" %}</th>
+            <th>{% trans "Last Name" %}</th>
+            <th>{%trans "Email" %}</th>
+            <th>{%trans "Staff status"%}</th></tr>
 		</thead>
 		<tbody>
 					{% for obj in users_list.object_list %}
 					
 			<tr class="{% cycle 'odd' 'even' %}">
-				<td>{{ obj}}</a></td>
+				<td>{{obj}}</td>
+                <td>{{obj.first_name}}</td>
+                <td>{{obj.last_name}}</td>
+                <td>{{obj.email}}</td>
+                <td>{{obj.is_staff}}</td>
 				
 			</tr>
 		{% endfor %}
