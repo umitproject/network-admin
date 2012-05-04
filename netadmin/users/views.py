@@ -22,6 +22,7 @@ import random
 import time
 
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
 from django.http import HttpResponseForbidden, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -30,6 +31,7 @@ from django.views.generic.simple import direct_to_template
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 try:
     from search.core import search
@@ -110,6 +112,23 @@ def user_private(request):
                          queryset=User.objects.all(),
                          template_name='users/user_private.html',
                          extra_context=extra_context)
+
+@login_required
+def user_list(request, page=None):
+    users_list = User.objects.all()
+    paginator = Paginator(list(users_list), 10)
+    page = page or request.GET.get('page', 1)
+    try:
+        users_list = paginator.page(page)
+    except PageNotAnInteger:
+        users_list = paginator.page(1)
+    except EmptyPage:
+        users_list = paginator.page(paginator.num_pages)
+    extra_context = { 
+        'users_list': users_list
+    }
+    return direct_to_template(request, 'users/user_list.html',
+                              extra_context = extra_context)
     
 @login_required
 def user_search(request):
