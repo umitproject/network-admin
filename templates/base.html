@@ -43,6 +43,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <li><a href="{% url network_list %}">{% trans "Networks" %}</a></li>
                     {% if request.user.is_superuser %}
                         <li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
+                        <li><a href="{% url user_list %}">{% trans "Admin" %}</a></li>
                     {% endif %}
                 </ul>
                     
