@@ -66,7 +66,7 @@ class EventType(models.Model):
     them which should be treated differently.
     """
    
-    name = models.CharField(max_length=10,choices=TYPE_LEVELS)
+    name = models.CharField(max_length=10,choices=TYPE_LEVELS,unique=True)
     name_slug = models.SlugField(blank=True)
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
