@@ -21,12 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="en" lang="en">	
 	<head>
 		<title>Network Administrator &#8211; {% block title %}{% endblock %}</title>
-        <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}less/base.less">
+		<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}css/style.css" />
 		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/search.js"></script>
-        <script type="text/javascript" src="{{ STATIC_URL }}js/less-1.3.0.min.js"></script>
         {% block headers %}{% endblock %}
 	</head>
 	<body>
@@ -34,8 +33,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<div id="header">
                 <h1><span><a href="/">Network Administrator</a></span></h1>
 
-                {% if request.user.is_authenticated %}
                 <ul class="navigation">
+                {% if request.user.is_authenticated %}
                     <li><a href="/">{% trans "Dashboard" %}</a></li>
                     <li><a href="{% url events_list %}">{% trans "Events" %}</a></li>
                     <li><a href="{% url reports %}">{% trans "Reports" %}</a></li>
@@ -45,8 +44,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
                         <li><a href="{% url user_list %}">{% trans "Admin" %}</a></li>
                     {% endif %}
+                {% else %}
+                    <li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
+                    >
+                {% endif %}
                 </ul>
-                    
+
+                {% if request.user.is_authenticated %}
+                <form action="{% url global_search %}" method="GET" class="search global-search">
+                    <p>
+                        <input type="text" name="s" value="Search for events, hosts..." />
+                        <input type="submit" value="{% trans "Search" %}" />
+                        <a href="#" class="submit">{% trans "Search" %}</a>
+                    </p>
+                </form>
+                {% endif %}
+
+                {% if request.user.is_authenticated %}
 				<div id="toolbar">
                     <div id="alerts">
                         {% alerts_counter request.user.pk %}
@@ -59,13 +73,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 					</ul>
 				</div>
                 {% endif %}
-
-                <div id="meta">
-				{% block meta %}{% endblock %}
-				</div>
 			</div>
 			<div>
 				{% init_charts 'corechart' %}
+				<div id="meta">
+				{% block meta %}{% endblock %}
+				</div>
 				<div id="content" class="{% block content_classes %}{% endblock %}">
 					{% block content %}{% endblock %}
                     <div id="column-left">
@@ -77,10 +90,32 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</div>
 				{% show_charts %}
 				<div id="footer">
-                    <p>Network Administrator to the Cloud Land &copy; Copyright 2012 Adriano Monteiro Marques</p>
-                    <p class="align-right"><a href="/about/">{% trans "About" %}</a></p>
+                    <p class="floatright"><a href="http://www.umitproject.org/">www.umitproject.org</a></p>
+					<p>Network Administrator to the Cloud Land<br />&copy; Copyright 2011 Adriano Monteiro Marques</p>
 				</div>
 			</div>
 		</div>
+		<script type="text/javascript">
+			$(function(){
+				var global_search_initial = $('form#global-search input[name=s]').val();
+				$('a.ajax').click(function(){
+					var url = $(this).attr('href'); 
+					$.get(url, {}, function(data){}, 'json');
+					return false;
+				});
+				$('form#global-search input[name=s]').focus(function(){
+					if ($(this).val() === global_search_initial) {
+						$(this).val('');
+						$(this).css('color','#000');
+					}
+				});
+				$('form#global-search input[name=s]').blur(function(){
+					if ($(this).val() === '') {
+						$(this).css('color','#ccc');
+						$(this).val(global_search_initial);
+					}
+				});
+			});
+		</script>
 	</body>
 </html>
