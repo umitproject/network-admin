@@ -46,19 +46,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     {% endif %}
                 {% else %}
                     <li><a href="{% url login_page %}">{% trans "Log in" %}</a></li>
-                    >
                 {% endif %}
                 </ul>
-
-                {% if request.user.is_authenticated %}
-                <form action="{% url global_search %}" method="GET" class="search global-search">
-                    <p>
-                        <input type="text" name="s" value="Search for events, hosts..." />
-                        <input type="submit" value="{% trans "Search" %}" />
-                        <a href="#" class="submit">{% trans "Search" %}</a>
-                    </p>
-                </form>
-                {% endif %}
 
                 {% if request.user.is_authenticated %}
 				<div id="toolbar">
