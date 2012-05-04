@@ -23,6 +23,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('netadmin.users.views',
     url(r'^search/$', 'user_search', name='user_search'),
+    url(r'^users/$', 'user_list', name='user_list'),
     url(r'^profile/$', 'user_private', name='user_profile_private'),
     url(r'^public/(?P<slug>\w+)/$', 'user_public', name='user_profile_public'),
     url(r'^register/$', 'user_register', name='user_register'),
