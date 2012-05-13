@@ -34,6 +34,9 @@ from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
 try:
     from search.core import search
 except ImportError:
@@ -228,6 +231,7 @@ def remove_inactive_users(request):
             counter += 1
     return HttpResponse('Removed %i accounts' % counter)
 
+@login_required
 def user_change_password(request, id):
     user = User.objects.get(pk=id)
     form = AdminPasswordChangeForm(user, request.POST)
@@ -235,7 +239,7 @@ def user_change_password(request, id):
         new_user = form.save()
         msg = _('Password changed successfully.')
         request.user.message_set.create(message=msg)
-        return HttpResponse("The password has successfully chnaged")
+        return HttpResponseRedirect('../../user/users')
     else:
         form = AdminPasswordChangeForm(user)
     extra_context = {
@@ -245,3 +249,23 @@ def user_change_password(request, id):
         }
     return direct_to_template(request,"users/user_password_change.html",
                 extra_context = extra_context)
+                
+@login_required
+def user_change_status(request, id):
+    user = User.objects.get(pk=id)
+    if user.is_staff:
+        user.is_staff = False
+    else:
+        user.is_staff = True
+    user.save()
+    return HttpResponseRedirect('../../user/users')
+    
+@login_required        
+def user_block(request, id):
+    user = User.objects.get(pk=id)
+    if user.is_active:
+        user.is_active = False
+    else:
+        user.is_active = True
+    user.save()
+    return HttpResponseRedirect('../../user/users')    
