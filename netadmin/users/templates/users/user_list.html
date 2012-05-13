@@ -33,17 +33,20 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
             <th>{% trans "First Name" %}</th>
             <th>{% trans "Last Name" %}</th>
             <th>{%trans "Email" %}</th>
-            <th>{%trans "Staff status"%}</th></tr>
+            <th>{%trans "Staff status"%}</th>
+            <th>{%trans "Active status"%}</th></tr>
 		</thead>
 		<tbody>
 					{% for obj in users_list.object_list %}
 					
 			<tr class="{% cycle 'odd' 'even' %}">
-				<td>{{obj}}</td>
+				<td><a href="{% url user_change_password obj.pk %}">{{obj}}</a></td>
                 <td>{{obj.first_name}}</td>
                 <td>{{obj.last_name}}</td>
                 <td>{{obj.email}}</td>
-                <td>{{obj.is_staff}}</td>
+                <td><a href="{% url user_change_status obj.pk %}">{{obj.is_staff}}</a></td>
+                <td><a href="{% url user_block obj.pk %}">{{obj.is_active}}</a></td>
+                
 				
 			</tr>
 		{% endfor %}
