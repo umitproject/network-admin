@@ -38,7 +38,10 @@ ADMIN_MEDIA_PREFIX = '%sadmin/' % STATIC_URL
 
 SECRET_KEY = '=r-$b*8hglm+858&9t043hlm6-&6-3d3vfc4((7yd0dbrakhvi'
 
+AUTH_PROFILE_MODULE = 'users.UserProfile'
+
 SITE_ID = 1
+SITE_DOMAIN = 'example.com'
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'America/Chicago'
 USE_I18N = True
@@ -84,13 +87,16 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
 )
 
-AUTH_PROFILE_MODULE = 'users.UserProfile'
-
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__), 'templates'),
 )
 ROOT_URLCONF = 'urls'
 LOGIN_URL = '/login/'
+
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 ACTIVATION_FROM_EMAIL = 'your_email@example.com'
 
