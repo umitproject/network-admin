@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,6 +33,7 @@ class UserProfile(models.Model):
         help_text=_('Show my profile in search results'))
     is_public = models.BooleanField(default=True,
         help_text=_('Let others to see my public profile'))
+    timezone = models.CharField(max_length = 30, help_text = "Select the local timezone")
     
     def __unicode__(self):
         return 'Profile for user %s' % self.user.username
