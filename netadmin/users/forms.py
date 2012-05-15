@@ -56,8 +56,10 @@ class UserRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super(UserRegistrationForm, self).save(commit=False)
         user.email = self.cleaned_data["email2"]
-        user.timezone = self.cleaned_data["timezone2"]
         user.is_active = False
         if commit:
             user.save()
+            user_profile = user.get_profile()
+            user_profile.timezone = self.cleaned_data["timezone2"]
+            user_profile.save()
         return user
