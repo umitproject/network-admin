@@ -1,0 +1,4 @@
+{{ object.name }}
+{{ object.description }}
+{{ object.ipv4 }}
+{{ object.ipv6 }}
