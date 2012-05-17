@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -88,3 +88,17 @@ class UserTest(TestCase):
         
         self.assertNotEqual(token.key, token_key)
         self.assertNotEqual(token.secret, token_secret)
+        
+    def test_is_staffStatus(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.user.is_staff = False
+        self.user.save()
+    
+    def test_is_activeStatus(self):
+        self.user.is_active = True
+        self.user.save()
+        self.user.is_acive = False
+        self.user.save()
+            
+        
