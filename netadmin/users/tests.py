@@ -32,12 +32,12 @@ class UserTest(TestCase):
     """
     
     def setUp(self):
-        self.user = User.objects.create_user('user', 'user@something.com',
+        self.user = User.objects.create_user('username', 'user@something.com',
             'userpassword')
         self.user.save()
         
         self.client = Client()
-        self.client.login(username='user', password='userpassword')
+        self.client.login(username='username', password='userpassword')
         
         self.consumer = Consumer(name=self.user.username, status='accepted',
                                  user=self.user)
@@ -100,5 +100,11 @@ class UserTest(TestCase):
         self.user.save()
         self.user.is_acive = False
         self.user.save()
+        
+    def test_is_authorize(self):
+        self.user.is_staff = False
+        response = self.client.get('/user/users/')
+        self.assertEqual(response.status_code, 404)
+        
             
         
