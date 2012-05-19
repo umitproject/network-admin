@@ -32,6 +32,7 @@ from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseRedirect
+from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from django.contrib import admin
@@ -120,20 +121,24 @@ def user_private(request):
 
 @login_required
 def user_list(request, page=None):
-    users_list = User.objects.all()
-    paginator = Paginator(list(users_list), 10)
-    page = page or request.GET.get('page', 1)
-    try:
-        users_list = paginator.page(page)
-    except PageNotAnInteger:
-        users_list = paginator.page(1)
-    except EmptyPage:
-        users_list = paginator.page(paginator.num_pages)
-    extra_context = { 
-        'users_list': users_list
-    }
-    return direct_to_template(request, 'users/user_list.html',
+    user_status = request.user.is_staff
+    if user_status:
+        users_list = User.objects.all()
+        paginator = Paginator(list(users_list), 10)
+        page = page or request.GET.get('page', 1)
+        try:
+            users_list = paginator.page(page)
+        except PageNotAnInteger:
+            users_list = paginator.page(1)
+        except EmptyPage:
+            users_list = paginator.page(paginator.num_pages)
+        extra_context = { 
+            'users_list': users_list
+        }
+        return direct_to_template(request, 'users/user_list.html',
                               extra_context = extra_context)
+    else:
+        raise Http404
     
 @login_required
 def user_search(request):
