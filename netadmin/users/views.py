@@ -124,21 +124,21 @@ def user_list(request, page=None):
     user_status = request.user.is_staff
     if not user_status:
         raise Http404
-    else:
-        users_list = User.objects.all()
-        paginator = Paginator(list(users_list), 10)
-        page = page or request.GET.get('page', 1)
-        try:
-            users_list = paginator.page(page)
-        except PageNotAnInteger:
-            users_list = paginator.page(1)
-        except EmptyPage:
-            users_list = paginator.page(paginator.num_pages)
-        extra_context = { 
-            'users_list': users_list
-        }
-        return direct_to_template(request, 'users/user_list.html',
-                              extra_context = extra_context)
+        
+    users_list = User.objects.all()
+    paginator = Paginator(list(users_list), 10)
+    page = page or request.GET.get('page', 1)
+    try:
+        users_list = paginator.page(page)
+    except PageNotAnInteger:
+        users_list = paginator.page(1)
+    except EmptyPage:
+        users_list = paginator.page(paginator.num_pages)
+    extra_context = { 
+        'users_list': users_list
+    }
+    return direct_to_template(request, 'users/user_list.html',
+                            extra_context = extra_context)
                               
 @login_required
 def user_search(request):
