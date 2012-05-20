@@ -72,6 +72,4 @@ urlpatterns = patterns('netadmin.events.views',
     url(r'^stats/$',
         'events_stats', name='events_stats'),
    
-    url(r'^notify/$',
-        'events_notify', name='events_notify'),
 )

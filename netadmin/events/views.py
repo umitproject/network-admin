@@ -263,10 +263,10 @@ def eventcateg_detail(request):
 		
 @login_required
 def categ_detail(request, categ_id):
-	et = EventTypeCategory.objects.get(id = categ_id)
-	return render(request, "events/eventtypecategory_detail.html",{
-		'object': et
-		})
+    et = EventTypeCategory.objects.get(id = categ_id)
+    return render(request, "events/eventtypecategory_detail.html",{
+        'object': et
+    })
 		
 @login_required
 def categ_delete(request, categ_id):
@@ -275,22 +275,6 @@ def categ_delete(request, categ_id):
         raise Http404()
     return delete_object(request, object_id=categ_id, model=EventTypeCategory,
                          post_delete_redirect=reverse('eventcateg_detail'))
-
-	
-def events_notify(request):
-    notifier = NotifierQueue(EventNotification)
-    try:
-		
-        log = notifier.send_emails(_("You have new alert(s) "
-                                     "in Network Administrator"),
-                                   clear_queue=True)
-    except NotifierEmptyQueue:
-        log = []
-    if log:
-        response = "<p>Emails sent:</p>%s" % '<br />'.join(log)
-    else:
-        response = "<p>No emails to send</p>"
-    return HttpResponse(response)
 
 @login_required
 def events_ajax(request):

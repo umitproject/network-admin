@@ -34,10 +34,11 @@ urlpatterns = patterns('',
     (r'^event/', include('netadmin.events.urls')),
     (r'^report/', include('netadmin.reportmeta.urls')),
     (r'^user/', include('netadmin.users.urls')),
+    (r'^notifications/', include('netadmin.notifier.urls')),
     (r'^plugins/', include('netadmin.plugins.urls')),
     (r'^admin/', include(admin.site.urls)),
     url(r'^search/', 'netadmin.views.search', name='search'),
-    
+
     url(r'login/', 'django.contrib.auth.views.login',
         {'template_name': 'login.html'}, name='login_page'),
     url(r'^logout/$', 'django.contrib.auth.views.logout',

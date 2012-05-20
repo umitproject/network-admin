@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2011 Adriano Monteiro Marques
+# Copyright (C) 2012 Adriano Monteiro Marques
 #
 # Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
@@ -18,13 +18,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.http import HttpResponse
-
-from netadmin.notifier.utils import dispatcher
+from django.conf.urls.defaults import *
 
 
-def dispatch_all(request):
-    """Sends all notifications using Dispatcher
-    """
-    dispatcher.dispatch()
-    return HttpResponse("<p>Done</p>")
+urlpatterns = patterns('netadmin.notifier.views',
+    url(r'^send_all/', 'dispatch_all', name='send_all')
+)

@@ -192,14 +192,3 @@ def reportmeta_get_report(request, object_id):
     response = HttpResponse(mimetype='application/pdf')
     report.generate_by(PDFGenerator, filename=response)
     return response
-
-def reportmeta_send_emails(request):
-    reports = filter(lambda r: r.ready_to_send(), ReportMeta.objects.all())
-
-    email_backend = dispatcher.get_backend('e-mail')
-
-    for report in reports:
-        notification = manager.create(report.name, report.description,
-                                      report.user, report)
-        email_backend.send(notification)
-    return HttpResponse('')
