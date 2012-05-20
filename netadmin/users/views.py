@@ -122,7 +122,9 @@ def user_private(request):
 @login_required
 def user_list(request, page=None):
     user_status = request.user.is_staff
-    if user_status:
+    if not user_status:
+        raise Http404
+    else:
         users_list = User.objects.all()
         paginator = Paginator(list(users_list), 10)
         page = page or request.GET.get('page', 1)
@@ -137,9 +139,7 @@ def user_list(request, page=None):
         }
         return direct_to_template(request, 'users/user_list.html',
                               extra_context = extra_context)
-    else:
-        raise Http404
-    
+                              
 @login_required
 def user_search(request):
     if search != None:
