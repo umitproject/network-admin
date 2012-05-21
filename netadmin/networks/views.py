@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -85,7 +85,6 @@ def host_create(request):
         if form.is_valid():
             host = form.save()
             return redirect_to(request, url=host.get_absolute_url())
-    
     extra_context = {
         'form': HostCreateForm(initial={'user': request.user.pk})
     }
