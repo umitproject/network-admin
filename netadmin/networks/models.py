@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,6 +22,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import permalink
 from django.utils.translation import ugettext as _
+import datetime
 
 from netadmin.permissions.utils import SharedObject
 
@@ -62,9 +63,11 @@ class NetworkObject(models.Model, SharedObject):
 class Host(NetworkObject):
     """The single host in the network
     """
+    timezone = models.CharField(max_length = 30, null=True, blank=True)
     ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
                             blank=True, null=True)
+    
 
     @permalink
     def get_absolute_url(self):
