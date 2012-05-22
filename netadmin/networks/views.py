@@ -32,6 +32,7 @@ except ImportError:
     search = None
 
 from netadmin.events.models import Event
+from netadmin.shortcuts import get_timezone
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
@@ -83,8 +84,11 @@ def host_create(request):
     if request.method == 'POST':
         form = HostCreateForm(request.POST)
         if form.is_valid():
-            host = form.save()
-            return redirect_to(request, url=host.get_absolute_url())
+            my_inst = form.save(commit=False)
+            zone_data = get_timezone(user=request.user.username)
+            my_inst.timezone = zone_data
+            my_inst.save()
+            return redirect_to(request, url=my_inst.get_absolute_url())
     extra_context = {
         'form': HostCreateForm(initial={'user': request.user.pk})
     }
