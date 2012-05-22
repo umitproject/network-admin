@@ -22,6 +22,8 @@ from datetime import timedelta
 
 from events.models import Event, EventType
 from networks.models import Host, Network
+from users.models import UserProfile
+from django.contrib.auth.models import User
 
 
 def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
@@ -85,3 +87,10 @@ def get_network(id):
 
 def get_networks(user=None):
     return _get_network_objects(Network, user)
+
+def get_timezone(user=None):
+    user = User.objects.get(username = user)
+    id_user = user.id
+    obj = UserProfile.objects.get(id = id_user)
+    timezone = obj.timezone
+    return timezone
