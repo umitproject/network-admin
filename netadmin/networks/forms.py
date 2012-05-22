@@ -24,17 +24,12 @@ import pytz
 from pytz import timezone
 import pdb
 
+from django.contrib.auth.models import User
 from models import Host, Network
+from netadmin.users.models import UserProfile
 
 
 class HostCreateForm(forms.ModelForm):
-    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=("TimeZone"))
-    def save(self, commit=True):
-        host1 = super(HostCreateForm, self).save(commit=False)
-        host1.timezone=self.cleaned_data["timezone2"]
-        host1.save()
-        return host1
-        
     class Meta:
         model = Host
         widgets = {
@@ -44,9 +39,20 @@ class HostCreateForm(forms.ModelForm):
     
         
 class HostUpdateForm(forms.ModelForm):
+    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=("TimeZone"))
+    def save(self, commit=True):
+        host1 = super(HostUpdateForm, self).save(commit=False)
+        host1.timezone=self.cleaned_data["timezone2"]
+        host1.save()
+        return host1
+    
     class Meta:
         model = Host
-        fields = ('name', 'description')
+        fields = ('name', 'description','timezone')
+        widgets = {
+            'timezone': forms.HiddenInput()
+        }
+    
         
 class NetworkCreateForm(forms.ModelForm):
     class Meta:
