@@ -13,11 +13,22 @@ the following command::
 
     sudo apt-get install python2.7 python-pip
 
-Now, when you have both Python and pip, you can setup NA in one of the
-following options.
+Now, when you have both Python and pip, you can setup NA for development or
+deploy it on a production server. The next section describes the most common
+scenarios of installation.
+
+Installation options
+--------------------
+
+Depending on your needs, you may want to set up NA in a different way. In this
+section you will find several tutorials covering the most common scenarios:
+
+#. Install NA for development
+#. Deploy NA on Debian with Apache and mod_wsgi
+#. Deploy on the Google AppEngine
 
 Install NA for development
---------------------------
+""""""""""""""""""""""""""
 
 If you want to support development of the Network Administrator, you should
 start here. Otherwise you can move to the next section.
@@ -63,7 +74,7 @@ At this point everything is ready to run the development server::
 That's it! Now open a web browser and go to address: ``127.0.0.1:8000``.
 
 Deploy NA on Debian with Apache and mod_wsgi
---------------------------------------------
+""""""""""""""""""""""""""""""""""""""""""""
 
 Deployment on Apache is the best way to use NA in production on your own
 machine.
@@ -152,7 +163,7 @@ machine.
     service apache2 restart
 
 Deploy on the Google AppEngine
-------------------------------
+""""""""""""""""""""""""""""""
 
 Network Administrator perfectly integrates with the Google AppEngine, so it's
 the best choice if you want to deploy NA in the cloud.
@@ -232,6 +243,11 @@ well.
       static_dir: django/contrib/admin/media
       expiration: '0'
 
+    - url: /notifications/send_all/
+      script: djangoappengine/main/main.py
+      secure: always
+      login: admin
+
     - url: /user/remove_inactive_users/
       script: djangoappengine/main/main.py
       secure: always
@@ -250,6 +266,39 @@ well.
    command::
 
     python manage.py deploy
+
+Scheduling maintenance tasks
+----------------------------
+
+There are some tasks that Network Administrator needs to run periodically, for
+example dispatching notifications. To run these jobs you have to use an external
+scheduler like cron. Check all the commands below and make sure that they run
+often enough, otherwise NA will not work properly.
+
+.. Note::
+    If you are deploying NA on the Google AppEngine, you don't have to use any
+    external scheduler. Just use the ``app.yaml`` file listed above and GAE
+    will know what to do.
+
+Removing inactive accounts
+""""""""""""""""""""""""""
+
+Upon registering in NA, user has 7 days to activate account. After that, account
+should be deleted. The following command removes all inactive accounts which are
+older than 7 days::
+
+    python manage.py remove_inactive_users
+
+Dispatching notifications
+"""""""""""""""""""""""""
+
+Instead of sending notifications immediately, NA groups them by email address
+and leaves them for dispatcher to send them later on. This mechanism prevents
+NA from spamming your email box. The command below calls dispatcher to send
+grouped notifications::
+
+    python manage.py send_notifications
+
 
 .. rubric:: Footnotes
 
