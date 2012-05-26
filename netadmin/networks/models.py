@@ -23,8 +23,12 @@ from django.db import models
 from django.db.models import permalink
 from django.utils.translation import ugettext as _
 import datetime
+from django.core.exceptions import ValidationError
 
 from netadmin.permissions.utils import SharedObject
+from utils import IPv6_validation, IPv4_validation
+
+
 
 class NetworkObject(models.Model, SharedObject):
     """
@@ -59,21 +63,23 @@ class NetworkObject(models.Model, SharedObject):
     
     class Meta:
         abstract = True
-
+        
 class Host(NetworkObject):
     """The single host in the network
     """
     timezone = models.CharField(max_length = 30, null=True, blank=True)
-    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
+    ipv4 = models.CharField(max_length=39,verbose_name=_("IPv4 address"),
+                            validators=[IPv4_validation])
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
-                            blank=True, null=True)
-    
+                            blank=True, null=True, validators=[IPv6_validation])    
 
     @permalink
     def get_absolute_url(self):
+       # import pdb;pdb.set_trace()
         return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
+        #import pdb;pdb.set_trace()
         # delete all events related to this host
         # TODO
         # user should be asked if events should be deleted
@@ -112,6 +118,7 @@ class Host(NetworkObject):
         return True
     
     def api_detail(self):
+        #import pdb;pdb.set_trace()
         return {
             'host_id': self.pk,
             'host_name': self.name,
