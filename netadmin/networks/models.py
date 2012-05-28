@@ -38,6 +38,11 @@ class NetworkObject(models.Model, SharedObject):
     name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
+    ipv4_sub_net = models.CharField(max_length = 30, verbose_name=_("Sub Net"),
+                               blank=True)
+    ipv6_sub_net = models.CharField(max_length = 30, verbose_name=_("Sub Net"),
+                               blank=True)
+    
     
     def __unicode__(self):
         return self.name
@@ -71,7 +76,7 @@ class Host(NetworkObject):
     ipv4 = models.CharField(max_length=39,verbose_name=_("IPv4 address"),
                             validators=[IPv4_validation])
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
-                            blank=True, null=True, validators=[IPv6_validation])    
+                            blank=True, null=True, validators=[IPv6_validation])
 
     @permalink
     def get_absolute_url(self):
