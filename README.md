@@ -34,4 +34,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Installation instructions can be found in the online documentation:
 
-http://readthedocs.org/docs/network-administrator-to-the-cloud-land/en/develop/
+http://readthedocs.org/docs/network-administrator-to-the-cloud-land/en/latest/
