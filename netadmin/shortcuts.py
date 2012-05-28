@@ -19,12 +19,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import timedelta
-
 from events.models import Event, EventType
 from networks.models import Host, Network
 from users.models import UserProfile
-from django.contrib.auth.models import User
 
+from django.contrib.auth.models import User
 
 def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
     """
@@ -94,3 +93,9 @@ def get_timezone(user=None):
     obj = UserProfile.objects.get(id = id_user)
     timezone = obj.timezone
     return timezone
+
+def get_netmask(user=None):
+    obj = Host.objects.filter(user=user)
+    ipv4_value = obj.values('ipv4_sub_net').distinct('ipv4_sub_net')
+    ipv6_value = obj.values('ipv6_sub_net').distinct('ipv6_sub_net')
+    return ipv4_value, ipv6_value
