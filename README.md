@@ -7,11 +7,14 @@
 2. Installation instructions
 
 
-### 1. License note
+## 1. License note
+
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Authors: Amit Pal <amix.pal@gmail.com>
-         Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Authors:
+
+  * Amit Pal <amix.pal@gmail.com>
+  * Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -27,7 +30,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-### 2. Installation instructions
+## 2. Installation instructions
 
 Installation instructions can be found in the online documentation:
 
