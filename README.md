@@ -1,15 +1,13 @@
-Network Administrator to the Cloud Land
-=======================================
+# Network Administrator to the Cloud Land
 
 
-Table Of Contents
------------------
+## Table Of Contents
+
 1. License note
 2. Installation instructions
 
 
-1. License note
----------------
+### 1. License note
 Copyright (C) 2011 Adriano Monteiro Marques
 
 Authors: Amit Pal <amix.pal@gmail.com>
@@ -29,8 +27,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-2. Installation instructions
-----------------------------
+### 2. Installation instructions
 
 Installation instructions can be always be found in the online documentation:
 
