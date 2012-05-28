@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,6 +21,8 @@
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+import unittest
+from IPy import IP
 
 from models import Host, Network, NetworkHost
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
@@ -383,3 +385,48 @@ class UserAccessTest(HostBaseTest, NetworkBaseTest):
         revoke_access(self.net, self.other_user)
         access = user_has_access(self.net, self.other_user)
         self.assertEqual(access, False)
+
+class IPobject(unittest.TestCase):
+    
+    def testStrCompressed(self):
+        testValues = ['127.0.0.1',
+                  'dead::beef',
+                  'dead:beef::',
+                  'dead:beef::/48',
+                  'ff00:1::',
+                  'ff00:0:f000::',
+                  '0:0:1000::',
+                  '::e000:0/112',
+                  '::e001:0/112',
+                  'dead:beef::/48',
+                  'ff00:1::/64',
+                  'ff00:0:f000::/64',
+                  '0:0:1000::/64',
+                  '::e000:0/112',
+                  '::e001:0/112',
+                  '::1:0:0:0:2',
+                  '0:1:2:3:4:5:6:7',
+                  '1:2:3:4:0:5:6:7',
+                  '1:2:3:4:5:6:7:0',
+                  '1:0:0:2::',
+                  '1:0:0:2::3',
+                  '1::2:0:0:3']
+        for question in testValues:
+            result = IP(question).strCompressed()
+            self.assertEqual(question, result, (question, result))
+            
+    def testBroadcast(self):
+        self.assertEqual(str(IP("127.0.0.1").broadcast()), "127.0.0.1")
+        self.assertEqual(str(IP("0.0.0.0/0").broadcast()), "255.255.255.255")
+        self.assertEqual(str(IP("2001:1234:5678:1234::/64").broadcast()), "2001:1234:5678:1234:ffff:ffff:ffff:ffff")
+    
+    def testStrNetmask(self):
+        self.assertEqual(IP("0.0.0.0/0").strNetmask(), "0.0.0.0")
+        self.assertEqual(IP("0.0.0.0/32").strNetmask(), "255.255.255.255")
+        self.assertEqual(IP("127.0.0.0/24").strNetmask(), "255.255.255.0")
+        self.assertEqual(IP("2001:1234:5678:1234::/64").strNetmask(), "/64")
+    
+    def testVersion(self):
+        self.assertEqual(IP("0.0.0.0/0").version(), 4)
+        self.assertEqual(IP("::1").version(), 6)
+            
