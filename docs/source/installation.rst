@@ -30,8 +30,8 @@ section you will find several tutorials covering the most common scenarios:
 Install NA for development
 """"""""""""""""""""""""""
 
-If you want to support development of the Network Administrator, you should
-start here. Otherwise you can move to the next section.
+If you want to support development of the Network Administrator, this is the
+place where you should start.
 
 First, you have to clone NA's Git repository::
 
@@ -298,6 +298,13 @@ NA from spamming your email box. The command below calls dispatcher to send
 grouped notifications::
 
     python manage.py send_notifications
+
+
+Final notes
+-----------
+
+If you find this tutorial incomplete or buggy, please report to the Umit Project
+development team: http://dev.umitproject.org. We will be grateful for any comments and suggestions.
 
 
 .. rubric:: Footnotes
