@@ -24,14 +24,17 @@ from IPy import IP
 
 def IPv6_validation(value):
     try:
-        6 == IP(value).version()
+        ip_version = IP(value).version()
+        if ip_version !=6:
+            raise ValidationError(u'%s is not a correct IPv6 address' % value)
     except ValueError:
-        import pdb;pdb.set_trace()
         raise ValidationError(u'%s is not a correct IPv6 address' % value)
 
 def IPv4_validation(value):
     try:
-        4 == IP(value).version()
+        ip_version = IP(value).version()
+        if ip_version !=4:
+            raise ValidationError(u'%s is not a correct IPv4 address' % value)
     except ValueError:
         raise ValidationError(u'%s is not a correct IPv4 address' % value)
     
