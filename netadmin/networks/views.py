@@ -32,7 +32,7 @@ except ImportError:
     search = None
 
 from netadmin.events.models import Event
-from netadmin.shortcuts import get_timezone
+from netadmin.shortcuts import get_timezone, get_netmask
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
@@ -290,3 +290,32 @@ def share_list(request, object_type, object_id):
         'other_users': other_users
     }
     return direct_to_template(request, 'networks/share.html', extra_context)
+
+@login_required
+def subnet_network(request, page=None):
+    ipv4_sub_net , ipv6_sub_net= get_netmask(user=request.user)
+    search_phrase = request.GET.get('s')
+    if search_phrase and search != None:
+        nets = search(Host, search_phrase)
+        # TODO
+        # filter search results by user access
+    else:
+        nets = Host.shared_objects(request.user)
+        
+    paginator = Paginator(list(nets), 10)
+    
+    page = page or request.GET.get('page', 1)
+    try:
+        nets = paginator.page(page)
+    except PageNotAnInteger:
+        nets = paginator.page(1)
+    except EmptyPage:
+        nets = paginator.page(paginator.num_pages)
+    extra_context = {
+        'ipv4_net': ipv4_sub_net,
+        'ipv6_net': ipv6_sub_net
+    }
+    return direct_to_template(request, 'networks/subnet_network.html',
+                              extra_context=extra_context)
+    
+    
