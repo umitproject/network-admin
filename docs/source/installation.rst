@@ -202,23 +202,9 @@ well.
       other package you want to use have to be uploaded along with
       application's source code.
 
-#. Open the file ``settings.py`` and uncomment all lines preceded by comments
-   like this one::
+#. Replace file ``settings.py`` with file ``gae_settings.py``::
 
-    # uncomment the next line if you want to run NA on the Google AppEngine
-
-#. In the same file set ``SITE_DOMAIN`` variable to the domain of your GAE
-   application::
-
-    SITE_DOMAIN = 'example.appspot.com'
-
-#. Still in the same file change this line::
-
-    DEBUG = True
-
-   to::
-
-    DEBUG = False
+    $ mv gae_settings.py settings.py
 
 #. Create file ``app.yaml`` and put there the following code::
 
