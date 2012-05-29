@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,10 +26,17 @@ except ImportError:
 import datetime
 
 from django.utils.translation import ugettext as _
+import pytz
+import datetime as dt
+import time
+from time import localtime
+from datetime import timedelta
 
 from netadmin.permissions.utils import filter_user_objects
 from netadmin.networks.models import Host
+from netadmin.shortcuts import get_host, get_timezone, timezone_to_UTC
 from netadmin.events.models import Event, EventType
+
 
 
 class EventParseError(Exception):
@@ -40,8 +47,9 @@ def filter_user_events(user):
     """
     hosts = filter_user_objects(user, Host)
     pks = [host.pk for host in hosts]
-    return Event.objects.filter(source_host__pk__in=pks)
-
+    events_object = Event.objects.filter(source_host__pk__in=pks)
+    return get_utc_time(user,events_object)
+    
 def get_event_data(request, event_dict):
     """
     Creates dictionary with parameters for Event's __init__ method. If needed
@@ -118,4 +126,29 @@ def get_event_data(request, event_dict):
     }
     
     return event_data
+    
+def get_utc_time(user, event_obj):
+    for i in range(0,len(event_obj)):
+        host = get_host(id = event_obj[i].source_host_id)
+        host_timezone = host.timezone
+        host_utc = pytz.timezone(host_timezone) 
+        
+        """To convert unicode to pytz datetime"""
+        user_timezone = get_timezone(user=user)
+        user_utc = pytz.timezone(user_timezone) 
+        
+        """To convert unicode to pytz datetime"""
+        local_time = event_obj[i].timestamp
+        localized_datetime_host = host_utc.localize(local_time)
+        localized_datetime_user = user_utc.localize(local_time)
+        differ_datetime_event = localized_datetime_host - localized_datetime_user
+        local_time_new = local_time - differ_datetime_event
+        return Event.objects.filter(source_host__pk__in=pks)
+        
+        
+        
+        
+        
+        
+        
     
