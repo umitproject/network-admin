@@ -141,7 +141,6 @@ class Event(models.Model):
     fields_class = models.CharField(max_length=50, null=True, blank=True)
     fields_data = models.TextField(null=True, blank=True)
     checked = models.BooleanField(default=False)
-    
     def __unicode__(self):
         return "'%s' at %s" % (self.message, self.timestamp)
     
@@ -160,20 +159,15 @@ class Event(models.Model):
     fields = property(get_details)
     
     def get_localized_timestamp(self):
-        """ Method to convert the local time accoridng 
-        to Host and user default timezone"""
-        get_host = Host.objects.get(pk=self.source_host.pk)
-        host_timezone = get_host.timezone
-        host_utc = pytz.timezone(host_timezone) 
-        obj = UserProfile.objects.get(id = 2)
-        user_timezone = obj.timezone
-        user_utc = pytz.timezone(user_timezone) 
-        local_time = self.timestamp
-        localized_datetime_host = host_utc.localize(local_time)
-        localized_datetime_user = user_utc.localize(local_time)
+        host_timezone = pytz.timezone(self.source_host.timezone)
+        user = User.objects.get(username = self.source_host.user)
+        user_obj = UserProfile.objects.get(id = user.id)
+        user_timezone = pytz.timezone(user_obj.timezone) 
+        localized_datetime_host = host_timezone.localize(self.timestamp)
+        localized_datetime_user = user_timezone.localize(self.timestamp)
         differ_datetime_event = localized_datetime_host - localized_datetime_user
-        local_time_new = local_time - differ_datetime_event
-        return local_time_new
+        event_time = self.timestamp - differ_datetime_event
+        return event_time
     
     def get_field(self, field_name, default=None):
         try:
