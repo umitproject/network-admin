@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,8 +28,11 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
+import pytz
+import time
 
 from netadmin.networks.models import Host
+from netadmin.users.models import UserProfile
 
 
 ALERT_LEVELS = (
@@ -105,7 +108,6 @@ class EventType(models.Model):
     def pending_events(self):
         return self.events().filter(checked=False)
 
-
 class Event(models.Model):
     """
     Event model class represents single notification reported to the Network
@@ -157,6 +159,20 @@ class Event(models.Model):
         return fields
     fields = property(get_details)
     
+    def get_localized_timestamp(self):
+        get_host = Host.objects.get(pk=self.source_host.pk)
+        host_timezone = get_host.timezone
+        host_utc = pytz.timezone(host_timezone) 
+        obj = UserProfile.objects.get(id = 2)
+        user_timezone = obj.timezone
+        user_utc = pytz.timezone(user_timezone) 
+        local_time = self.timestamp
+        localized_datetime_host = host_utc.localize(local_time)
+        localized_datetime_user = user_utc.localize(local_time)
+        differ_datetime_event = localized_datetime_host - localized_datetime_user
+        local_time_new = local_time - differ_datetime_event
+        return local_time_new
+    
     def get_field(self, field_name, default=None):
         try:
             fields = self.get_details()
@@ -184,8 +200,8 @@ class Event(models.Model):
             'event_id': self.pk,
             'description': self.message,
             'short_description': self.short_message,
-            'timestamp': str(self.timestamp),
             'event_type': self.event_type.name,
+            'timestamp':  self.timestamp,
             'protocol': self.protocol,
             'source_host_id': self.source_host.pk,
             'fields_class': self.fields_class,
@@ -197,3 +213,12 @@ class Event(models.Model):
             'id': self.pk,
             'short_description': self.short_message
         }
+
+class EventComment(models.Model):
+    comment = models.TextField()
+    timestamp = models.DateTimeField()
+    user = models.ForeignKey(User, blank=False, null=False)
+    event = models.ForeignKey(Event, blank=False, null=False)
+    
+    def __unicode__(self):
+        return "'%s' at %s" % (self.comment, self.timestamp)
