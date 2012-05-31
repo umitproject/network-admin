@@ -1,7 +1,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -37,9 +37,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<tr>
 				<td>
 					<a href="{% url events_date event.timestamp.year event.timestamp.month event.timestamp.day %}">
-						{{ event.timestamp.date|action:"event_list_timestamp_date" }}
-					</a>,
-					{{ event.timestamp.time|action:"event_list_timestamp_time" }}
+						{{ event.get_localized_timestamp|action:"event_list_timestamp_date" }}
+					</a>
 				</td>
 				<td class="notification-message">
 					<a href="{% url event_detail event.message_slug %}">
