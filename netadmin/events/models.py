@@ -160,6 +160,8 @@ class Event(models.Model):
     fields = property(get_details)
     
     def get_localized_timestamp(self):
+        """ Method to convert the local time accoridng 
+        to Host and user default timezone"""
         get_host = Host.objects.get(pk=self.source_host.pk)
         host_timezone = get_host.timezone
         host_utc = pytz.timezone(host_timezone) 
