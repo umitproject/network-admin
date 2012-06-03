@@ -62,6 +62,14 @@ urlpatterns = patterns('netadmin.events.views',
      url(r'^categ/delete/(?P<categ_id>\d+)/$',
         'categ_delete', name="categ_delete"),
     
+     url(r'^comment/(?P<object_id>\d+)$',
+        'comment_detail', name='comment_detail'),
+    url(r'^comment/$',
+        'event_comment', name=" event_comment"),
+     
+        
+    
+    
     
     url(r'^ajax/$',
         'events_ajax', name='event_ajax'),
