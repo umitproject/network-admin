@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				<th>{% trans "Message" %}</th>
 				<th>{% trans "Type" %}</th>
 				<th>{% trans "Protocol" %}</th>
+                <th>{% trans "Comment" %}</th>
 				<th>{% trans "Host" %}</th>
 				<th></th>
 			</tr>
@@ -56,6 +57,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</td>
 				<td>{{ event.protocol|action:"event_list_protocol" }}</td>
 				<td>
+                    <a href = "{% url comment_detail event.pk %}">
+                        Read
+                    </a>
+                       <b>/</b>
+                     <a href = "/event/comment/">
+                     Post</a>
+                <td>
 					<a href="{% url host_detail event.source_host.pk %}">
 						{{ event.source_host.name|action:"event_list_source_host_name" }}
 					</a>
