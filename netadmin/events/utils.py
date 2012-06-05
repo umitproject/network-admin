@@ -26,11 +26,12 @@ except ImportError:
 import datetime
 
 from django.utils.translation import ugettext as _
-import time
 
 from netadmin.permissions.utils import filter_user_objects
 from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
+
+
 
 class EventParseError(Exception):
     pass
@@ -40,8 +41,7 @@ def filter_user_events(user):
     """
     hosts = filter_user_objects(user, Host)
     pks = [host.pk for host in hosts]
-    events_object = Event.objects.filter(source_host__pk__in=pks)
-    return get_utc_time(user,events_object)
+    return Event.objects.filter(source_host__pk__in=pks)
     
 def get_event_data(request, event_dict):
     """
@@ -119,3 +119,4 @@ def get_event_data(request, event_dict):
     }
     
     return event_data
+ 
