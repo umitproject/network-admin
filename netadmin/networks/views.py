@@ -25,7 +25,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic.create_update import update_object, delete_object
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template, redirect_to
-from django.http import Http404
+from django.shortcuts import render_to_response
+from django.http import Http404, HttpResponse,HttpResponseRedirect
 try:
     from search.core import search
 except ImportError:
@@ -39,7 +40,9 @@ from netadmin.permissions.utils import filter_user_objects, \
 
 from models import Host, Network, NetworkHost
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
-    NetworkUpdateForm
+    NetworkUpdateForm, SubnetCreateFrom
+from utils import get_subnet
+from netadmin.shortcuts import get_hosts
 
 @login_required
 def host_list(request, page=None):
@@ -145,50 +148,6 @@ def network_list(request, page=None):
                               extra_context=extra_context)
 
 @login_required
-def network_detail(request, object_id):
-    """
-    Network detail page has the following features:
-        * displaying basic network info (name, description, etc.)
-        * listing hosts related to network
-        * creating relations between network and host
-        * removing relations between network and host(s)
-    """
-    network = Network.objects.get(pk=object_id)
-    if not network.has_access(request.user):
-        return Http404()
-    edit = network.can_edit(request.user)
-    
-    # remove relation between the network and selected host(s)
-    if request.POST.getlist('remove_host'):
-        if edit:
-            hosts_pk = request.POST.getlist('remove_host')
-            hosts = Host.objects.filter(pk__in=hosts_pk)
-            for host in hosts:
-                network.remove_host(host)
-    
-    # create relation between the network and selected host
-    if request.POST.get('add_host'):
-        if edit:
-            host = Host.objects.get(pk=request.POST.get('add_host'))
-            network.add_host(host)
-    
-    queryset = Network.objects.all()
-    if network.hosts():
-        hosts_ids = [host.pk for host in network.hosts()]
-        user_hosts = Host.shared_objects(request.user)
-        # it's a very inefficient way to filter these hosts-we should think
-        # about a better solution
-        hosts_other = filter(lambda h: h.pk not in hosts_ids, user_hosts)
-    else:
-        hosts_other = Host.shared_objects(request.user)
-    extra_context = {
-        'hosts_other': hosts_other,
-        'can_edit': edit
-    }
-    return object_detail(request, queryset, object_id,
-                         extra_context=extra_context)
-
-@login_required
 def network_create(request):
     
     if request.method == 'POST':
@@ -292,30 +251,56 @@ def share_list(request, object_type, object_id):
     return direct_to_template(request, 'networks/share.html', extra_context)
 
 @login_required
-def subnet_network(request, page=None):
-    ipv4_sub_net , ipv6_sub_net= get_netmask(user=request.user)
-    search_phrase = request.GET.get('s')
-    if search_phrase and search != None:
-        nets = search(Host, search_phrase)
-        # TODO
-        # filter search results by user access
+def subnet_network(request):
+    if request.method == 'POST':
+        form = SubnetCreateFrom(request.POST)
+        if form.is_valid():
+            subnet = form.cleaned_data['Subnet_Address']
+            ip = form.cleaned_data['IP_Address']
+            user_host = get_hosts(user=request.user)
+            hosts_list = get_subnet(user_host, subnet,ip)
+            subnet_network = form.save()
+            network_obj = Network.objects.get(name__exact = form.cleaned_data['name'])
+            for hosts in hosts_list:
+                network_entry = NetworkHost(network_id = network_obj.id, host_id = hosts.id)
+                network_entry.save()
+            extra_context = {
+                'form': SubnetCreateFrom(initial={'user': request.user.pk}),
+                'host_list': hosts_list
+                }
+            return redirect_to(request, url=subnet_network.get_absolute_url())
     else:
-        nets = Host.shared_objects(request.user)
-        
-    paginator = Paginator(list(nets), 10)
-    
-    page = page or request.GET.get('page', 1)
-    try:
-        nets = paginator.page(page)
-    except PageNotAnInteger:
-        nets = paginator.page(1)
-    except EmptyPage:
-        nets = paginator.page(paginator.num_pages)
+        form = SubnetCreateFrom()
     extra_context = {
-        'ipv4_net': ipv4_sub_net,
-        'ipv6_net': ipv6_sub_net
-    }
-    return direct_to_template(request, 'networks/subnet_network.html',
-                              extra_context=extra_context)
-    
-    
+        'form':SubnetCreateFrom(initial={'user': request.user.pk})
+        }
+    return direct_to_template(request,'networks/subnet_form.html',extra_context)
+
+@login_required
+def network_detail(request, object_id):
+    network_obj = Network.objects.get(id = object_id)
+    host_list = []
+    if network_obj.subnet:
+        hosts = NetworkHost.objects.filter(network = object_id)
+        host_id = hosts.values('host')
+        for h_id in host_id:
+            for key,value in h_id.items():
+                host_obj = Host.objects.get(pk= value)
+                host_list.append(host_obj)
+    else:
+        host_list = Host.objects.filter(user=request.user)
+    extra_context = {
+        'hosts': host_list,
+        'id':object_id
+        }
+    return direct_to_template(request,'networks/network_detail.html',extra_context)
+
+@login_required
+def network_select(request,object_id):
+    if request.method == 'POST':
+        host = request.POST.getlist('host')
+        NetworkHost.objects.filter(network = object_id).delete()
+        for hosts in host:
+            network_entry = NetworkHost(network_id = object_id, host_id = hosts.replace("/",""))
+            network_entry.save()
+    return HttpResponseRedirect('../.././../list')
