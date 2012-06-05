@@ -21,6 +21,7 @@
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from IPy import IP 
+from netaddr import *
 
 def IPv6_validation(value):
     try:
@@ -37,4 +38,22 @@ def IPv4_validation(value):
             raise ValidationError(u'%s is not a correct IPv4 address' % value)
     except ValueError:
         raise ValidationError(u'%s is not a correct IPv4 address' % value)
+
+def get_subnet(host_list,sub,add):
+    subnet_ip = []
+    render_hosts = []
+    find_host = []
+    subnet_ip  = [add,sub]
+    subnet_ip = "/".join(subnet_ip)
+    ip = IPNetwork(subnet_ip)
+    for x in ip:
+        render_hosts.append(str(x))
+    for user_host in host_list:
+        for render_host in render_hosts:
+            if user_host.ipv4 == render_host or user_host.ipv6 == render_host:
+                find_host.append(user_host)
+    return find_host
+    
+
+
     
