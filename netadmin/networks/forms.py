@@ -22,7 +22,6 @@ from django import forms
 from datetime import datetime
 import pytz
 from pytz import timezone
-import pdb
 
 from django.contrib.auth.models import User
 from models import Host, Network
@@ -34,7 +33,8 @@ class HostCreateForm(forms.ModelForm):
         model = Host
         widgets = {
             'user': forms.HiddenInput(),
-            'timezone': forms.HiddenInput()
+            'timezone': forms.HiddenInput(),
+            'subnet': forms.HiddenInput()
         }
     
         
@@ -53,14 +53,23 @@ class HostUpdateForm(forms.ModelForm):
             'timezone': forms.HiddenInput()
         }
     
-        
 class NetworkCreateForm(forms.ModelForm):
     class Meta:
         model = Network
         widgets = {
-            'user': forms.HiddenInput()
+            'user': forms.HiddenInput(),
+            'subnet': forms.HiddenInput()
         }
         
+class SubnetCreateFrom(forms.ModelForm):
+    Subnet_Address = forms.CharField(max_length=40)
+    IP_Address = forms.CharField(max_length=40)
+    class Meta:
+        model = Network
+        widgets = {
+            'user': forms.HiddenInput()
+            }
+    
 class NetworkUpdateForm(forms.ModelForm):
     class Meta:
         model = Network
