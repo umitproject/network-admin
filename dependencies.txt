@@ -3,5 +3,5 @@ django-piston==0.2.2
 reportlab
 geraldo
 django-haystack
-python-netaddr
+netaddr
 pytz
