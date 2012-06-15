@@ -34,6 +34,7 @@ class UserProfile(models.Model):
     is_public = models.BooleanField(default=True,
         help_text=_('Let others to see my public profile'))
     timezone = models.CharField(max_length = 30, help_text = "Select the local timezone")
+    skype = models.CharField(max_length = 20, blank= True)
     
     def __unicode__(self):
         return 'Profile for user %s' % self.user.username

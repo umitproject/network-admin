@@ -22,7 +22,11 @@ import itertools
 
 from django.core.mail.message import EmailMultiAlternatives
 from django.utils.translation import ugettext as _
+try:
+	from Skype4Py import Skype
+except ImportError
 
+import sys
 try:
     from django.conf.settings import NOTIFICATION_BACKEND_EMAIL_FROM
 except ImportError:
@@ -104,3 +108,26 @@ class EMailBackend(BaseBackend):
             email.send()
 
         return emails
+
+class SkypeBackend(BaseBackend):
+	__identifier__ = 'skype'
+	
+	Title = "Notifications from the Network Administrator"
+	
+	def to_text(slef, notification):
+		underline = '=' * len(notification.title)
+		return '%s\n%s\n%s' % \
+				(notification.title, underline, notification.content)
+		
+	def send(self, queryset):
+		try:
+			queryset = queryset.order_by('user_id')
+		except AttributeError:
+			notification = queryset
+        
+		test_message = self.to_text(notification)
+		test_user = slef.to_user(notification.user.skype)
+		client = Skype(Transport='x11')
+		client.Attach()
+		client.SendMessage(test_user,test_message)
+		return test_user
