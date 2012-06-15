@@ -5,3 +5,4 @@ geraldo
 django-haystack
 netaddr
 pytz
+Skype4Py
