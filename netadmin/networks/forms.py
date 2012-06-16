@@ -39,10 +39,10 @@ class HostCreateForm(forms.ModelForm):
     
         
 class HostUpdateForm(forms.ModelForm):
-    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=("TimeZone"))
+    timezone = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=("TimeZone"))
     def save(self, commit=True):
         host1 = super(HostUpdateForm, self).save(commit=False)
-        host1.timezone=self.cleaned_data["timezone2"]
+        host1.timezone=self.cleaned_data["timezone"]
         host1.save()
         return host1
     
