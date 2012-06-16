@@ -22,9 +22,7 @@ import itertools
 
 from django.core.mail.message import EmailMultiAlternatives
 from django.utils.translation import ugettext as _
-try:
-	from Skype4Py import Skype
-except ImportError
+from Skype4Py import Skype
 
 import sys
 try:
