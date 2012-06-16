@@ -53,7 +53,7 @@ class EventTest(EventBaseTest):
         """
         url = reverse('event_detail', kwargs={'object_id': self.event.pk})
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.assertIn('object', response.context)
         self.assertIn('check_form', response.context)
 
