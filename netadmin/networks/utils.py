@@ -20,12 +20,11 @@
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from IPy import IP 
 from netaddr import *
 
 def IPv6_validation(value):
     try:
-        ip_version = IP(value).version()
+        ip_version = IPAddress(value).version
         if ip_version !=6:
             raise ValidationError(u'%s is not a correct IPv6 address' % value)
     except ValueError:
@@ -33,7 +32,7 @@ def IPv6_validation(value):
 
 def IPv4_validation(value):
     try:
-        ip_version = IP(value).version()
+        ip_version = IPAddress(value).version
         if ip_version !=4:
             raise ValidationError(u'%s is not a correct IPv4 address' % value)
     except ValueError:
