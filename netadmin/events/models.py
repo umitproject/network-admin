@@ -197,7 +197,7 @@ class Event(models.Model):
             'description': self.message,
             'short_description': self.short_message,
             'event_type': self.event_type.name,
-            'timestamp':  self.timestamp,
+            'timestamp':  str(self.timestamp),
             'protocol': self.protocol,
             'source_host_id': self.source_host.pk,
             'fields_class': self.fields_class,
@@ -212,8 +212,8 @@ class Event(models.Model):
 
 class EventComment(models.Model):
     comment = models.TextField()
-    user = models.CharField(max_length=30, null = False)
-    timestamp = models.DateTimeField()
+    user = models.CharField(max_length=30, null = False, blank=True)
+    timestamp = models.DateTimeField(null=False, blank=True)
     event = models.ForeignKey(Event, blank=False, null=False)
     
     def __unicode__(self):
