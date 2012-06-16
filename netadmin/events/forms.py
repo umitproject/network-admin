@@ -80,9 +80,10 @@ class EventCheckForm(forms.ModelForm):
 class EventCommentForm(forms.ModelForm):
     class Meta:
         model = EventComment
-        fields = ('comment', 'user', 'event')
+        fields = ('comment', 'user', 'event','timestamp')
         widgets = {
-            'user': forms.HiddenInput()
+            'user': forms.HiddenInput(),
+            'timestamp': forms.HiddenInput()
             }
 EventCommentFormset = modelformset_factory(EventComment,
                                             form = EventCommentForm)
