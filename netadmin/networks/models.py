@@ -35,7 +35,7 @@ class NetworkObject(models.Model, SharedObject):
     Abstract model class for objects like host or network.
     Every object belongs to specified user
     """
-    name = models.CharField(max_length=250, unique=True)
+    name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
     subnet = models.BooleanField(default= False)
@@ -72,7 +72,7 @@ class Host(NetworkObject):
     ipv4 = models.CharField(max_length=39,verbose_name=_("IPv4 address"),
                             validators=[IPv4_validation])
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
-                            blank=True, null=True, validators=[IPv6_validation])
+                            blank=True, validators=[IPv6_validation])
 
     @permalink
     def get_absolute_url(self):
