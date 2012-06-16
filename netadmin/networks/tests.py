@@ -21,7 +21,6 @@
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
-import unittest
 
 from models import Host, Network, NetworkHost
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
@@ -313,58 +312,22 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         for key in new_data.keys():
             self.assertEqual(network.__getattribute__(key), new_data[key])
 
-class UserAccessTest(HostBaseTest, NetworkBaseTest):
-    """Tests for user access and sharing objects"""
-    
-    def setUp(self):
-        super(UserAccessTest, self).setUp()
-        self.other_user = self.create_user('other', 'otherpassword')
-        self.host = self.create_host(self.user, "Host", '1.2.3.4')
-        self.net = self.create_network(self.user, "Net")
-        
-    def test_user_host_access(self):
-        access = user_has_access(self.host, self.user)
-        self.assertEqual(access, True)
-        
-        access = user_has_access(self.host, self.other_user)
-        self.assertEqual(access, False)
-        
-    def test_user_host_share(self):
-        grant_access(self.host, self.other_user)
-        access = user_has_access(self.host, self.other_user)
-        self.assertEqual(access, True)
-        
-        access = user_can_edit(self.host, self.other_user)
-        self.assertEqual(access, True)
-        
-        revoke_edit(self.host, self.other_user)
-        access = user_can_edit(self.host, self.other_user)
-        self.assertEqual(access, False)
-        
-        revoke_access(self.host, self.other_user)
-        access = user_has_access(self.host, self.other_user)
-        self.assertEqual(access, False)
-        
-    def test_user_network_access(self):
-        access = user_has_access(self.net, self.user)
-        self.assertEqual(access, True)
-        
-        access = user_has_access(self.net, self.other_user)
-        self.assertEqual(access, False)
-        
-    def test_user_network_share(self):
-        grant_access(self.net, self.other_user)
-        access = user_has_access(self.net, self.other_user)
-        self.assertEqual(access, True)
-        
-        access = user_can_edit(self.net, self.other_user)
-        self.assertEqual(access, True)
-        
-        revoke_edit(self.net, self.other_user)
-        access = user_can_edit(self.net, self.other_user)
-        self.assertEqual(access, False)
-        
-        revoke_access(self.net, self.other_user)
-        access = user_has_access(self.net, self.other_user)
-        self.assertEqual(access, False)
-            
+class NetaddrTest():
+	""" Test for Netaddr library
+	"""
+	def setup(self):
+	
+	def testBroadcast(self):
+		self.assertEqual(str(IPNetwork("127.0.0.1").broadcast), "127.0.0.1")
+		self.assertEqual(str(IPNetwork("0.0.0.0/0").broadcast), "255.255.255.255")
+		self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").broadcast), "2001:1234:5678:1234:ffff:ffff:ffff:ffff")
+       
+	def testStrNetmask(self):
+		self.assertEqual(IPNetwork("0.0.0.0/0").netmask, "0.0.0.0")
+		self.assertEqual(IPNetwork("0.0.0.0/32").netmask, "255.255.255.255")
+		self.assertEqual(IPNetwork("127.0.0.0/24").netmask, "255.255.255.0")
+		self.assertEqual(IPNetwork("2001:1234:5678:1234::/64").netmask, "/64")
+	
+	def testVersion(self):
+		self.assertEqual(IPAddress("0.0.0.0/0").version, 4)
+		self.assertEqual(IPAddress("::1").version, 6)
