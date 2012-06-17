@@ -108,10 +108,20 @@ def options_form(options_dict):
     Returns form class generated based on options dictionary
     of plugin or widget.
     """
+    class Back_Form(forms.Form):
+		field_integer = forms.IntegerField()
+		field_boolean = forms.BooleanField()
+		def __init__(self, *args, **kwargs):
+			option = kwargs.pop('option')
+			if option == "integer":
+				self.field_boolean.widget = self.field_boolean.hidden_widget()
+			else:
+				self.field_integer.widget = self.field_integer.hidden_widget()
+			super(Back_Form,self).__init__(*args,**kwargs)
+		
     class OptionsForm(forms.Form):
         def __init__(self, *args, **kwargs):
-            super(OptionsForm, self).__init__(*args, **kwargs)
-            
+            super(OptionsForm, self).__init__(*args, **kwargs)		
             for key in options_dict:
                 option = options_dict[key]
                 label = option.get('label', key)
@@ -119,10 +129,9 @@ def options_form(options_dict):
                 
                 if option.get('choices'):
                     field = forms.ChoiceField(choices=option.get('choices'))
-                elif option_type == 'integer':
-                    field = forms.IntegerField()
-                elif option_type == 'bool':
-                    field = forms.BooleanField()
+					
+                elif option_type:
+					Back_Form(option=option_type)
                 else:
                     field = forms.CharField(max_length=CUSTOM_OPTION_MAX_LENGTH)
                     
