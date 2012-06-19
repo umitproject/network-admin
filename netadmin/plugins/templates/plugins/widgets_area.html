@@ -1,7 +1,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -38,14 +38,35 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     <a href="{% url widget_ajax %}?delete={{ widget_settings.pk }}" class="delete ajax"><span>{% trans "Delete widget" %}</span></a>
                 </div>
             </div>
-			<div class="widget-content">
-				{% render_widget widget_settings %}
+			<div class="widget-content" id="widget-content-{{widget_settings.pk}}">
+					Loading...
 			</div>
 		</li>
 	{% endfor %}
 	</ul>
 {% endfor %}
+
 <script type="text/javascript">
+var ajax_url = {
+	{% for column in widgets_area.columns %}
+		{% for widget_settings in column %}
+			"{{widget_settings.pk}}:" {% url ajax_render_data widget_settings.pk %} {% if not forloop.last %},{% endif %}
+		{% endfor %}
+	{% endfor %}
+};
+
+$(document).ready(loadwidget());
+
+function loadwidget() {
+	 jquery.each(ajax_url, function(widget_id, url) {
+		 $.get(url, function(data) {
+			 $('#widget-content-' +widget_id+).html(data);
+			 });
+			 });
+}
+</script>
+
+<script>	
 $(function() {
 	$('a#area-{{ widgets_area.pk }}-submit').click(function(){
 		var data = $('form#area-{{ widgets_area.pk }}-form').serialize();
