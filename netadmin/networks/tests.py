@@ -313,6 +313,61 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         network = Network.objects.get(pk=self.network.pk)
         for key in new_data.keys():
             self.assertEqual(network.__getattribute__(key), new_data[key])
+            
+class UserAccessTest(HostBaseTest, NetworkBaseTest):
+    """Tests for user access and sharing objects"""
+    
+    def setUp(self):
+        super(UserAccessTest, self).setUp()
+        self.other_user = self.create_user('other', 'otherpassword')
+        self.host = self.create_host(self.user, "Host", '1.2.3.4')
+        self.net = self.create_network(self.user, "Net")
+        
+    def test_user_host_access(self):
+        access = user_has_access(self.host, self.user)
+        self.assertEqual(access, True)
+        
+        access = user_has_access(self.host, self.other_user)
+        self.assertEqual(access, False)
+        
+    def test_user_host_share(self):
+        grant_access(self.host, self.other_user)
+        access = user_has_access(self.host, self.other_user)
+        self.assertEqual(access, True)
+        
+        access = user_can_edit(self.host, self.other_user)
+        self.assertEqual(access, True)
+        
+        revoke_edit(self.host, self.other_user)
+        access = user_can_edit(self.host, self.other_user)
+        self.assertEqual(access, False)
+        
+        revoke_access(self.host, self.other_user)
+        access = user_has_access(self.host, self.other_user)
+        self.assertEqual(access, False)
+        
+    def test_user_network_access(self):
+        access = user_has_access(self.net, self.user)
+        self.assertEqual(access, True)
+        
+        access = user_has_access(self.net, self.other_user)
+        self.assertEqual(access, False)
+        
+    def test_user_network_share(self):
+        grant_access(self.net, self.other_user)
+        access = user_has_access(self.net, self.other_user)
+        self.assertEqual(access, True)
+        
+        access = user_can_edit(self.net, self.other_user)
+        self.assertEqual(access, True)
+        
+        revoke_edit(self.net, self.other_user)
+        access = user_can_edit(self.net, self.other_user)
+        self.assertEqual(access, False)
+        
+        revoke_access(self.net, self.other_user)
+        access = user_has_access(self.net, self.other_user)
+        self.assertEqual(access, False
 
 class NetaddrTest(unittest.TestCase):
 
