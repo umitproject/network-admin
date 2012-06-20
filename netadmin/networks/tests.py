@@ -312,22 +312,19 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         for key in new_data.keys():
             self.assertEqual(network.__getattribute__(key), new_data[key])
 
-class NetaddrTest():
-	""" Test for Netaddr library
-	"""
-	def setup(self):
-	
-	def testBroadcast(self):
-		self.assertEqual(str(IPNetwork("127.0.0.1").broadcast), "127.0.0.1")
-		self.assertEqual(str(IPNetwork("0.0.0.0/0").broadcast), "255.255.255.255")
-		self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").broadcast), "2001:1234:5678:1234:ffff:ffff:ffff:ffff")
-       
-	def testStrNetmask(self):
-		self.assertEqual(IPNetwork("0.0.0.0/0").netmask, "0.0.0.0")
-		self.assertEqual(IPNetwork("0.0.0.0/32").netmask, "255.255.255.255")
-		self.assertEqual(IPNetwork("127.0.0.0/24").netmask, "255.255.255.0")
-		self.assertEqual(IPNetwork("2001:1234:5678:1234::/64").netmask, "/64")
-	
-	def testVersion(self):
-		self.assertEqual(IPAddress("0.0.0.0/0").version, 4)
-		self.assertEqual(IPAddress("::1").version, 6)
+class NetaddrTest(unittest.TestCase):
+
+    def testBroadcast(self):
+	self.assertEqual(str(IPNetwork("127.0.0.1").broadcast), "127.0.0.1")
+	self.assertEqual(str(IPNetwork("0.0.0.0/0").broadcast), "255.255.255.255")
+	self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").broadcast), "2001:1234:5678:1234:ffff:ffff:ffff:ffff")
+			   
+    def testStrNetmask(self):
+	self.assertEqual(str(IPNetwork("0.0.0.0/0").netmask), "0.0.0.0")
+	self.assertEqual(str(IPNetwork("0.0.0.0/32").netmask), "255.255.255.255")
+	self.assertEqual(str(IPNetwork("127.0.0.0/24").netmask), "255.255.255.0")
+	self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").netmask), "ffff:ffff:ffff:ffff::")
+    
+    def testVersion(self):
+	self.assertEqual(IPAddress("10.2.3.4").version, 4)
+	self.assertEqual(IPAddress("::1").version, 6)
