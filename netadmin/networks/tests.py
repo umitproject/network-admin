@@ -367,7 +367,7 @@ class UserAccessTest(HostBaseTest, NetworkBaseTest):
         
         revoke_access(self.net, self.other_user)
         access = user_has_access(self.net, self.other_user)
-        self.assertEqual(access, False
+        self.assertEqual(access, False)
 
 class NetaddrTest(unittest.TestCase):
 
