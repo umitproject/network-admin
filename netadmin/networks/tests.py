@@ -21,6 +21,8 @@
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+import unittest
+from netaddr import *
 
 from models import Host, Network, NetworkHost
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
