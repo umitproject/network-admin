@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -89,13 +89,11 @@ def get_networks(user=None):
 
 def get_timezone(user=None):
     user = User.objects.get(username = user)
-    id_user = user.id
-    obj = UserProfile.objects.get(id = id_user)
-    timezone = obj.timezone
-    return timezone
+    user_object = UserProfile.objects.get(id = user.id)
+    return user_object.timezone
 
 def get_netmask(user=None):
-    obj = Host.objects.filter(user=user)
-    ipv4_value = obj.values('ipv4_sub_net').distinct('ipv4_sub_net')
-    ipv6_value = obj.values('ipv6_sub_net').distinct('ipv6_sub_net')
+    host_object = _get_network_objects(Host, user)
+    ipv6_value = host_object.values('ipv6_sub_net').distinct('ipv6_sub_net')
+    ipv4_value = host_object.values('ipv4_sub_net').distinct('ipv4_sub_net')
     return ipv4_value, ipv6_value
