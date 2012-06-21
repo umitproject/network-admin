@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Amit Pal <amix.pal@gmail.com>
+# Author: Amit pal<amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -159,15 +159,17 @@ class Event(models.Model):
     fields = property(get_details)
     
     def get_localized_timestamp(self):
-        host_timezone = pytz.timezone(self.source_host.timezone)
-        user = User.objects.get(username = self.source_host.user)
-        user_obj = UserProfile.objects.get(id = user.id)
-        user_timezone = pytz.timezone(user_obj.timezone) 
-        localized_datetime_host = host_timezone.localize(self.timestamp)
-        localized_datetime_user = user_timezone.localize(self.timestamp)
-        differ_datetime_event = localized_datetime_host - localized_datetime_user
-        event_time = self.timestamp - differ_datetime_event
-        return event_time
+		host_timezone = pytz.timezone(self.source_host.timezone)
+		user = User.objects.get(username = self.source_host.user)
+		user_obj = UserProfile.objects.get(id = user.id)
+		if user_obj.timezone == u'': 
+			user_obj.timezone = self.source_host.timezone
+		user_timezone = pytz.timezone(user_obj.timezone) 
+		localized_datetime_host = host_timezone.localize(self.timestamp)
+		localized_datetime_user = user_timezone.localize(self.timestamp)
+		differ_datetime_event = localized_datetime_host - localized_datetime_user
+		event_time = self.timestamp - differ_datetime_event
+		return event_time
     
     def get_field(self, field_name, default=None):
         try:
