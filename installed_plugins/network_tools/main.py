@@ -44,7 +44,7 @@ class HostWidget(Widget):
         return "%s's details" % host.name.capitalize()
     
     def options(self, widget):
-        hosts = get_hosts(widget.user)
+        hosts = get_hosts(self.user)
         return  {
             'host_detail_widget_host': {
                 'label': _("Host"),
@@ -108,7 +108,7 @@ class NetworkWidget(Widget):
         return "%s's details" % network.name.capitalize()
     
     def options(self, widget):
-        networks = get_networks(widget.user)
+        networks = get_networks(self.user)
         return  {
             'network_detail_widget_network': {
                 'label': _("Network"),
