@@ -30,3 +30,7 @@ urlpatterns = patterns('netadmin.plugins.views',
     url(r'^widget/down/(?P<widget_down>\d+)/$', 'widgets_settings', name='widget_down'),
     url(r'^widget/ajax/$', 'widgets_ajax', name='widget_ajax'),
 )
+
+urlpatterns += patterns('netadmin.plugins.ajax_view',
+	url(r'^ajax/(?P<object_id>\d+)/$', 'ajax_render_data', name='ajax_render_data'),
+)

@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -21,6 +21,8 @@
 from django.core.paginator import Page
 from django.core.urlresolvers import reverse
 from django.test import TestCase
+import unittest
+from netaddr import *
 
 from models import Host, Network, NetworkHost
 from netadmin.permissions.utils import user_has_access, user_can_edit, \
@@ -180,10 +182,12 @@ class HostTest(HostBaseTest, EventBaseTest):
         """
         host_data = {
             'name': 'New name',
-            'description': 'New description'
+            'description': 'New Description',
+            'timezone': 'Asia/Kolkata'
         }
         self.assertNotEqual(self.host.name, host_data['name'])
         self.assertNotEqual(self.host.description, host_data['description'])
+        self.assertNotEqual(self.host.timezone, host_data['timezone'])
 
         url = reverse('host_update', args=[self.host.pk])
         response = self.client.post(url, host_data)
@@ -256,25 +260,6 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         self.assertEqual(self.network.has_host(self.host_a), False)
         self.assertEqual(self.network.has_host(self.host_b), False)
 
-    def test_object_detail(self):
-        """
-        The following context should be provided:
-
-            * object - the network object
-            * hosts_other - list of hosts that are not in the network
-        """
-        self.network.add_host(self.host_a)
-        response = self.client.get(reverse('network_detail',
-                                           args=[self.network.pk]))
-        self.assertEqual(response.status_code, 200)
-
-        self.assertIn('object', response.context)
-        self.assertEqual(response.context['object'], self.network)
-
-        self.assertIn('hosts_other', response.context)
-        self.assertNotIn(self.host_a, response.context['hosts_other'])
-        self.assertIn(self.host_b, response.context['hosts_other'])
-
     def test_object_list(self):
         """
         """
@@ -328,7 +313,7 @@ class NetworkTest(NetworkBaseTest, HostBaseTest):
         network = Network.objects.get(pk=self.network.pk)
         for key in new_data.keys():
             self.assertEqual(network.__getattribute__(key), new_data[key])
-
+            
 class UserAccessTest(HostBaseTest, NetworkBaseTest):
     """Tests for user access and sharing objects"""
     
@@ -383,3 +368,20 @@ class UserAccessTest(HostBaseTest, NetworkBaseTest):
         revoke_access(self.net, self.other_user)
         access = user_has_access(self.net, self.other_user)
         self.assertEqual(access, False)
+
+class NetaddrTest(unittest.TestCase):
+
+    def testBroadcast(self):
+	self.assertEqual(str(IPNetwork("127.0.0.1").broadcast), "127.0.0.1")
+	self.assertEqual(str(IPNetwork("0.0.0.0/0").broadcast), "255.255.255.255")
+	self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").broadcast), "2001:1234:5678:1234:ffff:ffff:ffff:ffff")
+			   
+    def testStrNetmask(self):
+	self.assertEqual(str(IPNetwork("0.0.0.0/0").netmask), "0.0.0.0")
+	self.assertEqual(str(IPNetwork("0.0.0.0/32").netmask), "255.255.255.255")
+	self.assertEqual(str(IPNetwork("127.0.0.0/24").netmask), "255.255.255.0")
+	self.assertEqual(str(IPNetwork("2001:1234:5678:1234::/64").netmask), "ffff:ffff:ffff:ffff::")
+    
+    def testVersion(self):
+	self.assertEqual(IPAddress("10.2.3.4").version, 4)
+	self.assertEqual(IPAddress("::1").version, 6)

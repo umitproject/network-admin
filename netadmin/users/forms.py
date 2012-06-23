@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,8 +20,13 @@
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
+from datetime import datetime
+import pytz
+from pytz import timezone
+import pdb
 
 from netadmin.users.models import UserProfile
 
@@ -38,6 +43,8 @@ class UserProfileForm(forms.ModelForm):
         
 class UserRegistrationForm(UserCreationForm):
     email2 = forms.EmailField(label=_("E-mail"))
+    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label = _("TimeZone"))
+    skype = forms.CharField(max_length=20)
     
     def clean_email2(self):
         email2 = self.cleaned_data['email2']
@@ -53,5 +60,8 @@ class UserRegistrationForm(UserCreationForm):
         user.is_active = False
         if commit:
             user.save()
+            user_profile = user.get_profile()
+            user_profile.timezone = self.cleaned_data["timezone2"]
+            user_profile.skype = self.cleaned_data["skype"]
+            user_profile.save()
         return user
-    

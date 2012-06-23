@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -31,7 +31,12 @@ from django.views.generic.simple import direct_to_template
 from django.utils.translation import ugettext as _
 from django.core.mail import send_mail
 from django.core.urlresolvers import reverse
+from django.http import HttpResponseRedirect
+from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
 try:
     from search.core import search
@@ -42,6 +47,7 @@ from piston.models import Consumer, Token
 from django.conf import settings
 from forms import UserForm, UserProfileForm, UserRegistrationForm
 from models import UserActivationCode
+from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
 ACTIVATION_MAIL_SUBJECT = _("Activate your account in Network Administrator")
@@ -115,6 +121,10 @@ def user_private(request):
 
 @login_required
 def user_list(request, page=None):
+    user_status = request.user.is_staff
+    if not user_status:
+        raise Http404
+        
     users_list = User.objects.all()
     paginator = Paginator(list(users_list), 10)
     page = page or request.GET.get('page', 1)
@@ -128,8 +138,8 @@ def user_list(request, page=None):
         'users_list': users_list
     }
     return direct_to_template(request, 'users/user_list.html',
-                              extra_context = extra_context)
-    
+                            extra_context = extra_context)
+                              
 @login_required
 def user_search(request):
     if search != None:
@@ -184,7 +194,6 @@ def user_activation(request, code,
         user = activation.user
         user.is_active = True
         user.save()
-        
         try:
             consumer = Consumer.objects.get(user=user)
         except Consumer.DoesNotExist:
@@ -226,3 +235,42 @@ def remove_inactive_users(request):
             code.delete()
             counter += 1
     return HttpResponse('Removed %i accounts' % counter)
+
+@login_required
+def user_change_password(request, id):
+    user = User.objects.get(pk=id)
+    form = AdminPasswordChangeForm(user, request.POST)
+    if form.is_valid():
+        new_user = form.save()
+        msg = _('Password changed successfully.')
+        request.user.message_set.create(message=msg)
+        return HttpResponseRedirect('../../user/users')
+    else:
+        form = AdminPasswordChangeForm(user)
+    extra_context = {
+        
+        'form': form,
+        'change': True
+        }
+    return direct_to_template(request,"users/user_password_change.html",
+                extra_context = extra_context)
+                
+@login_required
+def user_change_status(request, id):
+    user = User.objects.get(pk=id)
+    if user.is_staff:
+        user.is_staff = False
+    else:
+        user.is_staff = True
+    user.save()
+    return HttpResponseRedirect('../../user/users')
+    
+@login_required        
+def user_block(request, id):
+    user = User.objects.get(pk=id)
+    if user.is_active:
+        user.is_active = False
+    else:
+        user.is_active = True
+    user.save()
+    return HttpResponseRedirect('../../user/users')    

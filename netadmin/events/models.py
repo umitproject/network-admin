@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit pal<amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,8 +28,11 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
+import pytz
+import time
 
 from netadmin.networks.models import Host
+from netadmin.users.models import UserProfile
 
 
 ALERT_LEVELS = (
@@ -105,7 +108,6 @@ class EventType(models.Model):
     def pending_events(self):
         return self.events().filter(checked=False)
 
-
 class Event(models.Model):
     """
     Event model class represents single notification reported to the Network
@@ -139,7 +141,6 @@ class Event(models.Model):
     fields_class = models.CharField(max_length=50, null=True, blank=True)
     fields_data = models.TextField(null=True, blank=True)
     checked = models.BooleanField(default=False)
-    
     def __unicode__(self):
         return "'%s' at %s" % (self.message, self.timestamp)
     
@@ -156,6 +157,19 @@ class Event(models.Model):
             raise EventFieldsNotValid(_("Cannot decode fields data."))
         return fields
     fields = property(get_details)
+    
+    def get_localized_timestamp(self):
+		host_timezone = pytz.timezone(self.source_host.timezone)
+		user = User.objects.get(username = self.source_host.user)
+		user_obj = UserProfile.objects.get(id = user.id)
+		if user_obj.timezone == u'': 
+			user_obj.timezone = self.source_host.timezone
+		user_timezone = pytz.timezone(user_obj.timezone) 
+		localized_datetime_host = host_timezone.localize(self.timestamp)
+		localized_datetime_user = user_timezone.localize(self.timestamp)
+		differ_datetime_event = localized_datetime_host - localized_datetime_user
+		event_time = self.timestamp - differ_datetime_event
+		return event_time
     
     def get_field(self, field_name, default=None):
         try:
@@ -184,8 +198,8 @@ class Event(models.Model):
             'event_id': self.pk,
             'description': self.message,
             'short_description': self.short_message,
-            'timestamp': str(self.timestamp),
             'event_type': self.event_type.name,
+            'timestamp':  str(self.timestamp),
             'protocol': self.protocol,
             'source_host_id': self.source_host.pk,
             'fields_class': self.fields_class,
@@ -197,3 +211,12 @@ class Event(models.Model):
             'id': self.pk,
             'short_description': self.short_message
         }
+
+class EventComment(models.Model):
+    comment = models.TextField()
+    user = models.CharField(max_length=30, null = False, blank=True)
+    timestamp = models.DateTimeField(null=False, blank=True)
+    event = models.ForeignKey(Event, blank=False, null=False)
+    
+    def __unicode__(self):
+        return "'%s' at %s" % (self.comment)

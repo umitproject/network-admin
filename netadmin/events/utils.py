@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,6 +32,7 @@ from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
 
 
+
 class EventParseError(Exception):
     pass
 
@@ -41,7 +42,7 @@ def filter_user_events(user):
     hosts = filter_user_objects(user, Host)
     pks = [host.pk for host in hosts]
     return Event.objects.filter(source_host__pk__in=pks)
-
+    
 def get_event_data(request, event_dict):
     """
     Creates dictionary with parameters for Event's __init__ method. If needed
@@ -118,4 +119,4 @@ def get_event_data(request, event_dict):
     }
     
     return event_data
-    
+ 

@@ -23,33 +23,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}network{% endblock %}
 
 {% block content %}
-<h2>{% trans "Create a Network" %}</h2>
+<h2>{% trans "Add New Subnet Network" %}</h2>
 
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "Networks" %}</a> > {% trans "Select Host to create a New Network" %}</p>
-<table class="objects-list">
-	<thead>
-		<tr>
-			<th>{% trans "IPv4 Addresses" %}</th>
-            <th>{% trans "IPv6 Addresses" %}</th>
-            <th>{% trans "Choose Addresses" %}</th>
-		</tr>
-	</thead>
-	<tbody>
-<form action="update/{{id}}/" method="POST">
-	{% for host in hosts %}
-			<td>{{host.ipv4}}</td>
-            <td>{{host.ipv6}}</td>
-            <td><input type="checkbox" name="host" id = "host.id" value={{host.id}}/></td>
-		</tr>
-	{% endfor %}
-<input type="submit" value="Select" />
+<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "subnet networks" %}</a> > {% trans "new subnet network" %}</p>
+
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="{% trans "Show Host" %}"/>
 </form>
-	</tbody>
-</table>
-{% endblock %}
-{% block meta %}
-<ul>
-	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
-    <li class="add"><a href="{% url subnet_network%}">{%trans "Netmask Network"%}</li>
-</ul>
 {% endblock %}

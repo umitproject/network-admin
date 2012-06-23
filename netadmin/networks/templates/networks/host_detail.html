@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -40,6 +40,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% if object.ipv6 %}
 <p>{% trans "IPv6 address" %}: {{ object.ipv6|action:"host_ipv6" }}</p>
+{% endif %}
+
+{% if object.timezone %}
+<p>{% trans "TimeZone"%}: {{object.timezone}}</p>
 {% endif %}
 
 {% if object.sharing_users and object.user == request.user %}

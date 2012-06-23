@@ -17,36 +17,53 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}happenning
-{% block title %}{% trans "add new network" %}{% endblock %}
+{% load i18n actions %}
+{% block title %}{% trans "networks list" %}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
 
 {% block content %}
-<h2>{% trans "Create a Network" %}</h2>
+<h2>{% trans "Subnet Networks" %}</h2>
 
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "Networks" %}</a> > {% trans "Select Host to create a New Network" %}</p>
 <table class="objects-list">
 	<thead>
 		<tr>
-			<th>{% trans "IPv4 Addresses" %}</th>
-            <th>{% trans "IPv6 Addresses" %}</th>
-            <th>{% trans "Choose Addresses" %}</th>
+			<th>{% trans "Ipv4 Subnet" %}</th>
 		</tr>
 	</thead>
 	<tbody>
-<form action="update/{{id}}/" method="POST">
-	{% for host in hosts %}
-			<td>{{host.ipv4}}</td>
-            <td>{{host.ipv6}}</td>
-            <td><input type="checkbox" name="host" id = "host.id" value={{host.id}}/></td>
+	{% for dict in ipv4_net %}
+        {% for key,value in dict.items %}
+		<tr>
+            <td>
+                {{ value }}</a>
+			</td>
 		</tr>
+         {% endfor %}    
 	{% endfor %}
-<input type="submit" value="Select" />
-</form>
+	</tbody>
+</table>
+
+<table class="objects-list">
+	<thead>
+		<tr>
+			<th>{% trans "Ipv6 Subnet" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for dict in ipv6_net %}
+        {% for key,value in dict.items %}
+		<tr>
+            <td>
+                
+                {{ value }}
+			</td>
+		</tr>
+         {% endfor %}    
+	{% endfor %}
 	</tbody>
 </table>
 {% endblock %}
+
 {% block meta %}
 <ul>
 	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>

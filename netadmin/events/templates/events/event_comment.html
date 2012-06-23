@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -17,32 +17,18 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n events_tags %}
-{% block title %}{% trans "events list" %}{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "Post a new comment" %}{% endblock %}
 
 {% block content_classes %}event{% endblock %}
 
 {% block content %}
-<h2>{% trans "Events" %}</h2>
+<h2>{% trans "Post a new comment" %}</h2>
 
-<form action="{% url event_search %}" method="GET" class="search">
-	{{ search_form.as_p }}
-	<input type="hidden" name="event_type" value="0" />
-	<p><input type="submit" value="{% trans 'Search' %}" /> 
-	</p>
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="{% trans "Post" %}" />
 </form>
-
-{% if alerts %}
-	<h3>{% trans "Alerts" %}</h3>
-	{% for alert_events, alert_name in alerts %}
-		{% events_list request alert_events alert_name %}
-	{% endfor %}
-{% endif %}
-
-{% if events %}
-	{% events_list request events events_header %}
-{% endif %}
-
 {% endblock %}
 
 {% block meta %}

@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,10 +19,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import timedelta
-
 from events.models import Event, EventType
 from networks.models import Host, Network
+from users.models import UserProfile
 
+from django.contrib.auth.models import User
 
 def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
     """
@@ -85,3 +86,14 @@ def get_network(id):
 
 def get_networks(user=None):
     return _get_network_objects(Network, user)
+
+def get_timezone(user=None):
+    user = User.objects.get(username = user)
+    user_object = UserProfile.objects.get(id = user.id)
+    return user_object.timezone
+
+def get_netmask(user=None):
+    host_object = _get_network_objects(Host, user)
+    ipv6_value = host_object.values('ipv6_sub_net').distinct('ipv6_sub_net')
+    ipv4_value = host_object.values('ipv4_sub_net').distinct('ipv4_sub_net')
+    return ipv4_value, ipv6_value

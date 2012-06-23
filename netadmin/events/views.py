@@ -21,22 +21,25 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from django.views.generic.list_detail import object_detail
-from django.views.generic.simple import direct_to_template
+from django.views.generic.simple import direct_to_template,redirect_to
 from django.shortcuts import get_object_or_404,render
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
 try:
     from search.core import search
 except ImportError:
     search = None
 
-from forms import EventSearchForm, EventSearchSimpleForm, \
-    EventTypeFormset, EventCheckForm, EventCategoryFormset
-from models import Event, EventType, ALERT_LEVELS, EventTypeCategory
+from forms import EventSearchForm, EventSearchSimpleForm,EventCommentForm, \
+    EventTypeFormset, EventCheckForm, EventCategoryFormset, EventCommentFormset
+from models import Event, EventType, ALERT_LEVELS, EventTypeCategory, EventComment
 from utils import filter_user_events
+import datetime
+now = datetime.datetime.now()
 
 from netadmin.permissions.utils import user_has_access
 from netadmin.webapi.views import api_ok, api_error
@@ -51,6 +54,7 @@ def events_list(request, events=None, alerts=None, search_form=None,
     try:
         events = events[:]
     except TypeError:
+       
         events = filter_user_events(request.user)
         events = events.order_by('-timestamp')
         
@@ -66,7 +70,7 @@ def events_list(request, events=None, alerts=None, search_form=None,
     
     if extra_context:
         context.update(extra_context)
-    
+    #import pdb;pdb.set_trace()
     return direct_to_template(request, template_name,
                               extra_context=context)
 
@@ -114,12 +118,11 @@ def events_date(request, year, month=None, day=None):
     year, month, day = int(year), int(month), int(day)
     date_begin = datetime.datetime(year, month, day)
     date_end = datetime.datetime(year, month, day+1)
-    
     events = filter_user_events(request.user)
+   
     events = events.filter(timestamp__gte=date_begin, timestamp__lte=date_end)
     
     header = _("Events on %s") % date_begin.date()
-    
     return events_list(request, events, events_header=header)
 
 @login_required
@@ -218,6 +221,7 @@ def eventtype_detail(request, event_type_id=None, event_type_slug=None):
     header = _("%s events") % et.name
     return events_list(request, events, events_header=header)
 
+
 @login_required
 def eventtype_edit(request):
     if request.method == 'POST':
@@ -277,6 +281,21 @@ def categ_delete(request, categ_id):
                          post_delete_redirect=reverse('eventcateg_detail'))
 
 @login_required
+def event_comment(request):
+    if request.method == 'POST':
+        form = EventCommentForm(request.POST)
+        if form.is_valid():
+            comment_form = form.save(commit=False)
+            comment_form.timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+            comment_form.user = request.user.username
+            comment_form.save()
+            return HttpResponseRedirect('/event/list')
+    extra_context = {
+        'form': EventCommentForm()
+    }
+    return direct_to_template(request, 'events/event_comment.html', extra_context)
+
+@login_required
 def events_ajax(request):
     if request.GET.get('check'):
         event_id = request.GET.get('check')
@@ -293,3 +312,12 @@ def events_ajax(request):
         return api_ok(_("Event checked"))
     
     return api_error(_("No action defined"))
+
+@login_required
+def comment_detail(request, object_id):
+    comment_obj = EventComment.objects.filter(event = object_id)
+    comment = comment_obj.values('comment','user','timestamp')
+    extra_context = {
+        'comment': comment
+        }
+    return direct_to_template(request, 'events/comment_detail.html', extra_context)

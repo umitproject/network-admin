@@ -25,6 +25,7 @@ from django.core.urlresolvers import reverse
 from netadmin.events.models import Event, EventType
 from netadmin.networks.models import Host
 from netadmin.utils.testutils import EventBaseTest
+from netadmin.users.models import UserProfile
 
 
 class EventTest(EventBaseTest):
@@ -33,8 +34,10 @@ class EventTest(EventBaseTest):
     
     def setUp(self):
         super(EventTest, self).setUp()
-        self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user)
+        self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user,timezone = 'Asia/Kolkata')
         self.source_host.save()
+        
+       
         
         event_type = EventType(name='INFO', user=self.user)
         event_type.save()

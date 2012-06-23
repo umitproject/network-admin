@@ -73,6 +73,8 @@ NETADMIN_APPS = (
 )
 
 INSTALLED_APPS += NETADMIN_APPS
+SITE_DOMAIN = 'example.com'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',

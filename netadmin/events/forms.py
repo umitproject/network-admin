@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,7 @@ from django.forms.widgets import RadioSelect, Select
 from django.forms.extras.widgets import SelectDateWidget
 from django.utils.translation import ugettext as _
 
-from models import EventType, Event, EventTypeCategory
+from models import EventType, Event, EventTypeCategory, EventComment
 
 
 YEARS_RANGE = range(2000, datetime.datetime.now().year + 1)
@@ -50,7 +50,7 @@ class EventSearchForm(EventSearchSimpleForm):
         choices = [('0', 'any')] + [(et.pk, et.name) for et in event_types]
         self.fields['event_type'] = forms.ChoiceField(choices=choices,
                                                       label=_("Type"))
-    
+
 class EventTypeForm(forms.ModelForm):
     class Meta:
         model = EventType
@@ -76,3 +76,14 @@ class EventCheckForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ('checked', )
+
+class EventCommentForm(forms.ModelForm):
+    class Meta:
+        model = EventComment
+        fields = ('comment', 'user', 'event','timestamp')
+        widgets = {
+            'user': forms.HiddenInput(),
+            'timestamp': forms.HiddenInput()
+            }
+EventCommentFormset = modelformset_factory(EventComment,
+                                            form = EventCommentForm)
