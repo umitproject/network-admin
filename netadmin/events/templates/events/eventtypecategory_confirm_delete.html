@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "Event Categories" %} {{ object.name }}{% endblock %}
+
+{% block content_classes %}Categories{% endblock %}
+
+{% block content %}
+<h2>{% trans "Removing Category" %}</h2>
+
+<p class="breadcrumbs">
+	<a href="{% url eventcateg_detail %}">{% trans "Categories" %}</a> > 
+	<a href="{% url categ_detail object.id %}">{{ object.name }}</a> > 
+	{% trans "delete" %}
+</p>
+
+<p>{% blocktrans with object.name as name %}Do you really want to remove category {{ name }}?{% endblocktrans %}</p>
+
+<form action="" method="POST">
+	<input type="submit" value="{% trans "Remove host" %}" />
+	<p><a href="{% url categ_detail object.id %}">{% trans "Cancel" %}</a></p>
+</form>
+{% endblock %}

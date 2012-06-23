@@ -18,10 +18,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import search
-from search.core import startswith
 from django.contrib.auth.models import User
 
 
-search.register(User, ('username', 'first_name', 'last_name'),
-                indexer=startswith)
+try:
+    import search
+    from search.core import startswith
+
+    search.register(User, ('username', 'first_name', 'last_name'),
+                    indexer=startswith)
+except ImportError:
+    from haystack import indexes
+    from haystack import site
+
+    class UserIndex(indexes.SearchIndex):
+        text = indexes.CharField(document=True, use_template=True)
+
+        def index_queryset(self):
+            return User.objects.all()
+
+    site.register(User, UserIndex)

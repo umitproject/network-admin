@@ -3,7 +3,8 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Authors: Amit Pal <amix.pal@gmail.com>
+#          Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,17 +19,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.contrib import admin
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models import permalink
 from django.utils.translation import ugettext as _
+import datetime
+from django.core.exceptions import ValidationError
 
-from netadmin.permissions.models import ObjectPermission
+from netadmin.permissions.utils import SharedObject
+from utils import IPv6_validation, IPv4_validation
 
 
-class NetworkObject(models.Model):
+
+class NetworkObject(models.Model, SharedObject):
     """
     Abstract model class for objects like host or network.
     Every object belongs to specified user
@@ -36,31 +39,23 @@ class NetworkObject(models.Model):
     name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
+    subnet = models.BooleanField(default= False)
     
     def __unicode__(self):
         return self.name
     
-    def short_description(self, word_limit=15, char_limit=150):
+    def short_description(self, word_limit=15):
         words = self.description.split()
         if len(words) > word_limit:
             return '%s...' % ' '.join(words[:word_limit])
-        elif len(self.description) > char_limit:
-            return '%s...' % self.description[:char_limit]
         else:
             return self.description
-    
-    def sharing_users(self):
-        ct = ContentType.objects.get_for_model(self.__class__)
-        perms = ObjectPermission.objects.filter(content_type=ct,
-                                                object_id=self.pk)
-        return [(perm.user, perm.edit) for perm in perms]
     
     def events(self):
         return self.event_set.all().order_by('-timestamp')
     
     def latest_event(self):
-        events = self.events().order_by('-timestamp')
-        return events[0] if events else None
+        return self.event_set.latest('timestamp')
     
     def api_list(self):
         return {
@@ -70,24 +65,27 @@ class NetworkObject(models.Model):
     
     class Meta:
         abstract = True
-
+        
 class Host(NetworkObject):
     """The single host in the network
     """
-    ipv4 = models.IPAddressField(verbose_name=_("IPv4 address"))
-    time_zone = models.FloatField(verbose_name=_("Time Zone"),blank = True,null=True)
+    timezone = models.CharField(max_length = 30, null=True, blank=True)
+    ipv4 = models.CharField(max_length=39,verbose_name=_("IPv4 address"),
+                            validators=[IPv4_validation])
     ipv6 = models.CharField(max_length=39, verbose_name=_("IPv6 address"), 
-                            blank=True, null=True)
-    
-    def __unicode__(self):
-        return "Host '%s'" % self.name
-                            
+                            blank=True, validators=[IPv6_validation])
+
     @permalink
     def get_absolute_url(self):
+       # import pdb;pdb.set_trace()
         return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
+        #import pdb;pdb.set_trace()
         # delete all events related to this host
+        # TODO
+        # user should be asked if events should be deleted
+        # or assigned to "dummy host"
         events = self.events()
         events.delete()
         
@@ -122,19 +120,16 @@ class Host(NetworkObject):
         return True
     
     def api_detail(self):
+        #import pdb;pdb.set_trace()
         return {
             'host_id': self.pk,
             'host_name': self.name,
             'host_description': self.description,
             'ipv4': self.ipv4,
-            'ipv6': self.ipv6,
-            'time_zone':self.time_zone
+            'ipv6': self.ipv6
         }
 
 class Network(NetworkObject):
-    
-    def __unicode__(self):
-        return "Network '%s'" % self.name
     
     @permalink
     def get_absolute_url(self):
@@ -151,6 +146,23 @@ class Network(NetworkObject):
         related = self.networkhost_set.all()
         hosts_ids = [rel.host.pk for rel in related]
         return Host.objects.filter(pk__in=hosts_ids)
+
+    def add_host(self, host):
+        """Creates relation between host and network
+        """
+        try:
+            self.networkhost_set.get(host=host)
+        except NetworkHost.DoesNotExist:
+            return NetworkHost.objects.create(network=self, host=host)
+
+    def remove_host(self, host):
+        """Removes relation between host and network
+        """
+        try:
+            relation = self.networkhost_set.get(host=host)
+        except NetworkHost.DoesNotExist:
+            return
+        relation.delete()
     
     def has_host(self, host):
         return True if host in self.hosts() else False
@@ -196,13 +208,3 @@ class NetworkHost(models.Model):
     """
     network = models.ForeignKey(Network)
     host = models.ForeignKey(Host)
-
-#class HostAdmin(admin.ModelAdmin):
-#    list_display = ('name', 'ipv4', 'ipv6', 'user')
-#admin.site.register(Host)
-#
-#class NetworkAdmin(admin.ModelAdmin):
-#    list_display = ('name', 'user')
-#admin.site.register(Network, NetworkAdmin)
-#
-#admin.site.register(NetworkHost)

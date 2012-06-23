@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2011 Adriano Monteiro Marques
+# Copyright (C) 2012 Adriano Monteiro Marques
 #
 # Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
@@ -18,23 +18,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
 from django.views.generic.simple import direct_to_template, redirect_to
 from django.views.generic.list_detail import object_list, object_detail
 from django.views.generic.create_update import *
 
-from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType, \
-    ReportNotification
+from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType
 from netadmin.reportmeta.forms import ReportMetaForm, ReportMetaNewForm
 from netadmin.networks.models import Host, Network
-from netadmin.notifier.utils import NotifierSchedule
-from netadmin.events.models import Event, EventType
+from netadmin.notifier import dispatcher, manager
+from netadmin.events.models import EventType
 
 
 @login_required
@@ -110,28 +106,26 @@ def reportmeta_new_from_object(request, object_type, object_id):
 
 @login_required
 def reportmeta_new(request, object_type):
-    if request.method == 'POST':
-        form = ReportMetaForm(request.POST)
-        if form.is_valid():
-            reportmeta = form.save()
-            notif = ReportNotification(report_meta=reportmeta,
-                                       user=reportmeta.user)
-            notif.save()
-            url = reportmeta.get_absolute_url()
-            return redirect_to(request, url=url, permanent=False)
-        
     if object_type == 'host':
         model = Host
     else:
         model = Network
     content_type = ContentType.objects.get_for_model(model)
-    objects_list = model.objects.filter(user=request.user) 
+    objects_list = model.objects.filter(user=request.user)
     
-    initial = {
-        'object_type': content_type.pk,
-        'user': request.user.pk
-    }
-    form = ReportMetaNewForm(initial=initial)
+    if request.method == 'POST':
+        form = ReportMetaNewForm(request.POST)
+        if form.is_valid():
+            reportmeta = form.save()
+            url = reportmeta.get_absolute_url()
+            return redirect_to(request, url=url, permanent=False)
+    else:
+        initial = {
+            'object_type': content_type.pk,
+            'user': request.user.pk,
+            'send_day': 1
+        }
+        form = ReportMetaNewForm(initial=initial)
     
     context = {
         'form': form,
@@ -146,13 +140,8 @@ def reportmeta_new(request, object_type):
 def reportmeta_update(request, object_id):
     report_meta = ReportMeta.objects.get(pk=object_id)
     
-    notif, cr = ReportNotification.objects.get_or_create(report_meta=report_meta,
-                                                         user=report_meta.user)
-    schedule_form_class = report_meta.get_notification_form_class()
-    
     if request.method == 'POST':
         report_form = ReportMetaForm(request.POST, instance=report_meta)
-        schedule_form = schedule_form_class(request.POST)
         if report_form.is_valid():
             report_form.save()
             types_updated = request.POST.getlist('event_types')
@@ -174,25 +163,11 @@ def reportmeta_update(request, object_id):
                                               event_type=event_type)
                     rel.save()
                     
-            # update report notification
-            if schedule_form.is_valid():
-                notif.set(**schedule_form.cleaned_data)
-                notif.save()
-                    
             redirect_url = reverse('reportmeta_update', args=[object_id])
             return redirect_to(request, redirect_url, permanent=False)
-    else:
-        initial = {
-            'hour': notif.hour,
-            'minute': notif.minute,
-            'day_of_week': notif.day_of_week if notif.day_of_week > 0 else 1,
-            'day_of_month': notif.day_of_month if notif.day_of_month > 0 else 1
-        }
-        schedule_form = schedule_form_class(initial)
     
     context = {
-        'event_types': EventType.objects.all(),
-        'schedule_form': schedule_form
+        'event_types': EventType.objects.all()
     }
     return update_object(request, form_class=ReportMetaForm,
                          object_id=object_id, extra_context=context,
@@ -217,13 +192,3 @@ def reportmeta_get_report(request, object_id):
     response = HttpResponse(mimetype='application/pdf')
     report.generate_by(PDFGenerator, filename=response)
     return response
-
-def reportmeta_send_emails(request):
-    notifier = NotifierSchedule(ReportNotification)
-    response = '<p><strong>%s</strong></p>' % datetime.datetime.now()
-    log = notifier.send_emails(_("New report from the Network Administrator"))
-    if log:
-        response += "<p>Emails sent:</p>%s" % '<br />'.join(log)
-    else:
-        response += "<p>No emails to send</p>"
-    return HttpResponse(response)

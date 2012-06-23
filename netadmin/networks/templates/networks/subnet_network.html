@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Amit Pal <amix.pal@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n actions %}
+{% block title %}{% trans "networks list" %}{% endblock %}
+
+
+{% block content %}
+<h2>{% trans "Subnet Networks" %}</h2>
+
+<table class="objects-list">
+	<thead>
+		<tr>
+			<th>{% trans "Ipv4 Subnet" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for dict in ipv4_net %}
+        {% for key,value in dict.items %}
+		<tr>
+            <td>
+                {{ value }}</a>
+			</td>
+		</tr>
+         {% endfor %}    
+	{% endfor %}
+	</tbody>
+</table>
+
+<table class="objects-list">
+	<thead>
+		<tr>
+			<th>{% trans "Ipv6 Subnet" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for dict in ipv6_net %}
+        {% for key,value in dict.items %}
+		<tr>
+            <td>
+                
+                {{ value }}
+			</td>
+		</tr>
+         {% endfor %}    
+	{% endfor %}
+	</tbody>
+</table>
+{% endblock %}
+
+{% block meta %}
+<ul>
+	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
+    <li class="add"><a href="{% url subnet_network%}">{%trans "Netmask Network"%}</li>
+</ul>
+{% endblock %}

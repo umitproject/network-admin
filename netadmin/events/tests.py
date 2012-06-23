@@ -21,27 +21,23 @@
 import datetime
 
 from django.core.urlresolvers import reverse
-from django.contrib.auth.models import User
-from django.test import TestCase
-from django.test.client import Client
 
 from netadmin.events.models import Event, EventType
 from netadmin.networks.models import Host
-from netadmin.permissions.utils import grant_access
+from netadmin.utils.testutils import EventBaseTest
+from netadmin.users.models import UserProfile
 
 
-class EventTest(TestCase):
+class EventTest(EventBaseTest):
     """Tests for hosts
     """
     
     def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_user('user', 'user@something.com', 'userpassword')
-        self.user.save()
-        self.client.login(username='user', password='userpassword')
-        
-        self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user)
+        super(EventTest, self).setUp()
+        self.source_host = Host(name='Host', ipv4='1.2.3.4', user=self.user,timezone = 'Asia/Kolkata')
         self.source_host.save()
+        
+       
         
         event_type = EventType(name='INFO', user=self.user)
         event_type.save()
@@ -53,45 +49,38 @@ class EventTest(TestCase):
             'timestamp': '%s' % str(datetime.datetime.now()),
             'source_host': self.source_host
         }
-        self.event = Event(**event_data)
-        self.event.save()
+        self.event = Event.objects.create(**event_data)
         
     def test_event_detail(self):
         """Get event's details
         """
-        url = '/event/%i/' % self.event.pk
+        url = reverse('event_detail', kwargs={'object_id': self.event.pk})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        self.assertIn('object', response.context)
+        self.assertIn('check_form', response.context)
 
     def test_event_list(self):
         """Get events list
         """
-        url = '/event/list/'
-        response = self.client.get(url)
+        response = self.client.get(reverse('events_list'))
         self.assertEqual(response.status_code, 200)
+        self.assertIn('events', response.context)
         
     def test_shared_event_detail(self):
         """
-        Make Other User the owner of the source host and then:
-        
-            1. Make sure that User hasn't access to the event
-            2. Share source host with User and check if he has access
-               to the event.
+        Only a user that has access to a source host should be able to
+        see event's details
         """
-        other_user =  User.objects.create_user('other', 'other@something.com',
-                                               'otherpassword')
-        other_user.save()
-        
+        other_user =  self.create_user('other', 'otherpassword')
         self.source_host.user = other_user
         self.source_host.save()
-        
-        url = '/event/%i/' % self.event.pk
+        url = reverse('event_detail', kwargs={'object_id': self.event.pk})
+
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
-        
-        grant_access(self.source_host, self.user)
-        
-        url = '/event/%i/' % self.event.pk
+
+        self.source_host.share(self.user)
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         

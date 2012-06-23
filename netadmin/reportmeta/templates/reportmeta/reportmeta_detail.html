@@ -46,7 +46,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <h3>{% trans "Events" %}</h3>
 
-{% if object.get_events %}
+{% if object.has_events %}
 	{% events_list request object.get_events %}
 {% else %}
 	<p>{% trans "No events have been reported yet" %}.</p>

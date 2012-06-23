@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,29 +19,57 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
+from datetime import datetime
+import pytz
+from pytz import timezone
 
+from django.contrib.auth.models import User
 from models import Host, Network
+from netadmin.users.models import UserProfile
 
 
 class HostCreateForm(forms.ModelForm):
     class Meta:
         model = Host
         widgets = {
-            'user': forms.HiddenInput()
+            'user': forms.HiddenInput(),
+            'timezone': forms.HiddenInput(),
+            'subnet': forms.HiddenInput()
         }
+    
         
 class HostUpdateForm(forms.ModelForm):
+    timezone = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label=("TimeZone"))
+    def save(self, commit=True):
+        host1 = super(HostUpdateForm, self).save(commit=False)
+        host1.timezone=self.cleaned_data["timezone"]
+        host1.save()
+        return host1
+    
     class Meta:
         model = Host
-        fields = ('name', 'description')
-        
+        fields = ('name', 'description','timezone')
+        widgets = {
+            'timezone': forms.HiddenInput()
+        }
+    
 class NetworkCreateForm(forms.ModelForm):
     class Meta:
         model = Network
         widgets = {
-            'user': forms.HiddenInput()
+            'user': forms.HiddenInput(),
+            'subnet': forms.HiddenInput()
         }
         
+class SubnetCreateFrom(forms.ModelForm):
+    Subnet_Address = forms.CharField(max_length=40)
+    IP_Address = forms.CharField(max_length=40)
+    class Meta:
+        model = Network
+        widgets = {
+            'user': forms.HiddenInput()
+            }
+    
 class NetworkUpdateForm(forms.ModelForm):
     class Meta:
         model = Network

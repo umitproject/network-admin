@@ -1,7 +1,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -28,6 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				<th>{% trans "Message" %}</th>
 				<th>{% trans "Type" %}</th>
 				<th>{% trans "Protocol" %}</th>
+                <th>{% trans "Comment" %}</th>
 				<th>{% trans "Host" %}</th>
 				<th></th>
 			</tr>
@@ -37,9 +38,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 			<tr>
 				<td>
 					<a href="{% url events_date event.timestamp.year event.timestamp.month event.timestamp.day %}">
-						{{ event.timestamp.date|action:"event_list_timestamp_date" }}
-					</a>,
-					{{ event.timestamp.time|action:"event_list_timestamp_time" }}
+						{{ event.get_localized_timestamp|action:"event_list_timestamp_date" }}
+					</a>
 				</td>
 				<td class="notification-message">
 					<a href="{% url event_detail event.message_slug %}">
@@ -57,6 +57,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				</td>
 				<td>{{ event.protocol|action:"event_list_protocol" }}</td>
 				<td>
+                    <a href = "{% url comment_detail event.pk %}">
+                        Read
+                    </a>
+                       <b>/</b>
+                     <a href = "/event/comment/">
+                     Post</a>
+                <td>
 					<a href="{% url host_detail event.source_host.pk %}">
 						{{ event.source_host.name|action:"event_list_source_host_name" }}
 					</a>

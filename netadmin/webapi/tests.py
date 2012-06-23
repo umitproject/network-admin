@@ -18,13 +18,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import base64
 import time
 import datetime
 import random
-import simplejson as json
 
-from django.http import HttpRequest
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 from django.test import TestCase
 from django.test.client import Client
 from django.core.urlresolvers import reverse
@@ -32,7 +34,6 @@ from django.contrib.auth.models import User
 
 from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
-from netadmin.utils.oauthclient import NetadminOAuthClient
 
 
 class WebAPITest(TestCase):
@@ -128,7 +129,7 @@ class WebAPITest(TestCase):
         self.assertEqual(r_json['status'], 'ok')
         
         try:
-            host = Host.objects.get(ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:102:304')
+            Host.objects.get(ipv4='1.2.3.4', ipv6='2002:0:0:0:0:0:102:304')
         except Host.DoesNotExist:
             self.assertTrue(False)
         
@@ -166,13 +167,12 @@ class WebAPITest(TestCase):
             raise Exception
         for event in Event.objects.all():
             response = self.client.get('/api/event/%s/' % event.pk)
-            print response
             j = json.loads(response.content)
             self.assertIn('event_id', j.keys())
             
     def test_events_list(self):
         """Get events list"""
         url = reverse('api_event_list')
-        response = self.client.get('/api/event/list/')
+        response = self.client.get(url)
         j = json.loads(response.content)
         self.assertIn('events', j.keys())

@@ -240,4 +240,14 @@ class WidgetSettings(models.Model):
         if new_column and new_column != self.column:
             self.column = new_column
             changed = True
+
+        # increment order for all widgets below
+        if changed:
+            col_widgets = WidgetSettings.objects.filter(column=self.column,
+                widgets_area=self.widgets_area, order__gte=self.order)
+            for widget in col_widgets:
+                if widget != self:
+                    widget.order += 1
+                    widget.save()
+
         return changed

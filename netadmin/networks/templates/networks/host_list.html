@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}host{% endblock %}
 
 {% block content %}
-<h2>{% trans "Hosts list" %}</h2>
+<h2>{% trans "Hosts" %}</h2>
 
 <form action="" method="GET" class="search">
 	<p>{% trans "Search for hosts" %}: 
@@ -32,22 +32,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</p>
 </form>
 
-<table>
+<table class="objects-list">
 	<thead>
 		<tr>
 			<th>{% trans "Name" %}</th>
 			<th>{% trans "Description" %}</th>
 			<th>{% trans "IPv4 address" %}</th>
 			<th>{% trans "IPv6 address" %}</th>
+            <th>{% trans "Timezone" %}</th>
 		</tr>
 	</thead>
 	<tbody>
-	{% for host in hosts.object_list %} 
+	{% for host in hosts.object_list %}
 		<tr class="{% cycle 'odd' 'even' %}">
 			<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
 			<td>{{ host.short_description|action:"host_list_short_description" }}</td>
-			<td>{{ host.ipv4|action:"host_list_ipv4" }}</td>
-			<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
+			<td class="monospace">{{ host.ipv4|action:"host_list_ipv4" }}</td>
+			<td class="monospace">{{ host.ipv6|action:"host_list_ipv6" }}</td>
+            <td class="monospace">{{host.timezone}}</td>
 		</tr>
 	{% endfor %}
 	</tbody>
@@ -64,7 +66,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% endif %}
 	</div>
 {% endif %}
-	
+
 {% endblock %}
 
 {% block meta %}

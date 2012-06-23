@@ -33,12 +33,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 <h3>{% trans "API settings" %}</h3>
 
-<p>{% trans "Consumer key" %}: <span class="monospace">{{ api_consumer.key }}</span></p>
-<p>{% trans "Consumer secret" %}: <span class="monospace">{{ api_consumer.secret }}</span></p>
-
-<p>{% trans "Access token key" %}: <span class="monospace">{{ api_access_token.key }}</span></p>
-<p>{% trans "Access token secret" %}: <span class="monospace">{{ api_access_token.secret }}</span></p>
-<p><a href="{% url refresh_access_token %}">{% trans "Refresh access token" %}</a></p>
+<div class="dummy-form">
+    <p>
+        <label>{% trans "Consumer key" %}:</label>
+        <input readonly="readonly" value="{{ api_consumer.key }}" class="monospace" />
+    </p>
+    <p>
+        <label>{% trans "Consumer secret" %}:</label>
+        <input readonly="readonly" value="{{ api_consumer.secret }}" class="monospace" />
+    </p>
+    <p>
+        <label>{% trans "Access token key" %}:</label>
+        <input readonly="readonly" value="{{ api_access_token.key }}" class="monospace" />
+    </p>
+    <p>
+        <label>{% trans "Access token secret" %}:</label>
+        <input readonly="readonly" value="{{ api_access_token.secret }}" class="monospace" />
+    </p>
+    <a href="{% url refresh_access_token %}" class="button">{% trans "Refresh access token" %}</a>
+</div>
 
 {% endblock %}
 

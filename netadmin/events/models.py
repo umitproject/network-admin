@@ -3,7 +3,8 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Authors: Amit pal<amix.pal@gmail.com>
+#          Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,13 +25,15 @@ except ImportError:
     import json
 
 from django.db import models
+
 from django.utils.translation import ugettext as _
-from django.contrib import admin
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
+import pytz
+import time
 
 from netadmin.networks.models import Host
-from netadmin.notifier.models import NotifierQueueItem
+from netadmin.users.models import UserProfile
 
 
 ALERT_LEVELS = (
@@ -39,13 +42,6 @@ ALERT_LEVELS = (
     (2, _('Medium')),
     (3, _('High'))
 )
- 
-TYPE_LEVELS = (
-	('CRITICAL','Critical'),
-	('ERROR','Error'),
-	('INFO','Info'),
-	('WARNING','Warning'),
-)
 
 
 class EventFieldNotFound(Exception):
@@ -53,6 +49,26 @@ class EventFieldNotFound(Exception):
 
 class EventFieldsNotValid(Exception):
     pass
+
+
+class EventTypeCategory(models.Model):
+    """Represents category to which an event type may be assigned
+		
+	"""
+    name = models.CharField(max_length=50, verbose_name=_("Name"))
+    slug = models.SlugField(blank=True, verbose_name=_("Message"))
+    user = models.ForeignKey(User, verbose_name=_("User"))
+    parent = models.OneToOneField('self', verbose_name=_("Parent category"),
+                                  null=True, blank=True, unique=True)
+
+    def __unicode__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.slug = slugify(self.name)
+        super(EventTypeCategory, self).save(*args, **kwargs)
+
 
 class EventType(models.Model):
     """
@@ -65,12 +81,12 @@ class EventType(models.Model):
     only indicates importance of events and is used to distinguish those of
     them which should be treated differently.
     """
-   
-    name = models.CharField(max_length=10,choices=TYPE_LEVELS)
+    name = models.CharField(max_length=50)
     name_slug = models.SlugField(blank=True)
     user = models.ForeignKey(User)
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
     notify = models.BooleanField(default=False)
+    category = models.OneToOneField(EventTypeCategory, unique=True, null=True)
     
     def __unicode__(self):
         return self.name
@@ -81,8 +97,6 @@ class EventType(models.Model):
         super(EventType, self).save(*args, **kwargs)
     
     def delete(self, *args, **kwargs):
-        from netadmin.reports.models import ReportMetaEventType
-        
         # delete relations between event type and reports
         related = self.reportmetaeventtype_set.all()
         related.delete()
@@ -94,7 +108,6 @@ class EventType(models.Model):
     
     def pending_events(self):
         return self.events().filter(checked=False)
-
 
 class Event(models.Model):
     """
@@ -147,6 +160,19 @@ class Event(models.Model):
         return fields
     fields = property(get_details)
     
+    def get_localized_timestamp(self):
+		host_timezone = pytz.timezone(self.source_host.timezone)
+		user = User.objects.get(username = self.source_host.user)
+		user_obj = UserProfile.objects.get(id = user.id)
+		if user_obj.timezone == u'': 
+			user_obj.timezone = self.source_host.timezone
+		user_timezone = pytz.timezone(user_obj.timezone) 
+		localized_datetime_host = host_timezone.localize(self.timestamp)
+		localized_datetime_user = user_timezone.localize(self.timestamp)
+		differ_datetime_event = localized_datetime_host - localized_datetime_user
+		event_time = self.timestamp - differ_datetime_event
+		return event_time
+    
     def get_field(self, field_name, default=None):
         try:
             fields = self.get_details()
@@ -174,8 +200,8 @@ class Event(models.Model):
             'event_id': self.pk,
             'description': self.message,
             'short_description': self.short_message,
-            'timestamp': str(self.timestamp),
             'event_type': self.event_type.name,
+            'timestamp':  str(self.timestamp),
             'protocol': self.protocol,
             'source_host_id': self.source_host.pk,
             'fields_class': self.fields_class,
@@ -188,15 +214,11 @@ class Event(models.Model):
             'short_description': self.short_message
         }
 
-class EventNotification(NotifierQueueItem):
-    event = models.ForeignKey(Event)
+class EventComment(models.Model):
+    comment = models.TextField()
+    user = models.CharField(max_length=30, null = False, blank=True)
+    timestamp = models.DateTimeField(null=False, blank=True)
+    event = models.ForeignKey(Event, blank=False, null=False)
     
     def __unicode__(self):
-        return "Notification for event '%s'" % self.event.short_message
-    
-    def message(self):
-        return self.event.get_html()
-
-admin.site.register(Event)   
-admin.site.register(EventType)
-admin.site.register(EventNotification)
+        return "'%s' at %s" % (self.comment)

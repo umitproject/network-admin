@@ -23,6 +23,112 @@ from django.http import Http404
 
 from netadmin.permissions.models import ObjectPermission
 
+class CannotRevoke(Exception):
+    """Raised in case of revoking user access to his object
+    """
+    pass
+
+class SharedObject(object):
+    """Subclass for every model you want to be shared by users
+    """
+    def has_access(self, user):
+        """Returns True if user has permission to access the object
+        """
+        if hasattr(self, 'user') and self.user == user:
+            return True
+
+        ct = ContentType.objects.get_for_model(self.__class__)
+        try:
+            perm = ObjectPermission.objects.get(user=user, content_type=ct,
+                object_id=self.pk)
+        except ObjectPermission.DoesNotExist:
+            return False
+
+        return True
+
+    def can_edit(self, user):
+        """Returns True if user has permission to edit the object
+        """
+        if hasattr(self, 'user') and self.user == user:
+            return True
+
+        ct = ContentType.objects.get_for_model(self.__class__)
+        try:
+            perm = ObjectPermission.objects.get(user=user, content_type=ct,
+                object_id=self.pk)
+        except ObjectPermission.DoesNotExist:
+            return False
+
+        if perm.edit:
+            return True
+        else:
+            return False
+
+    def share(self, user, edit=False):
+        """
+        Grants user an access to the object and sets edit permission
+        to specified value (by default: False)
+        """
+        # TODO
+        # granting access on a network, it should be also granted on all hosts
+        # in that network
+        if hasattr(self, 'user') and self.user == user:
+            return
+
+        ct = ContentType.objects.get_for_model(self.__class__)
+        try:
+            perm = ObjectPermission.objects.get(user=user, content_type=ct,
+                object_id=self.pk)
+            if perm.edit != edit:
+                perm.edit = edit
+                perm.save()
+        except ObjectPermission.DoesNotExist:
+            perm = ObjectPermission(user=user, content_object=self, edit=edit)
+            perm.save()
+
+        return perm
+
+    def revoke(self, user):
+        """Revokes user an access to the object
+        """
+        # TODO
+        # * when revoking an access on a host, it should be removed from user's
+        #   networks
+        # * when revoking an access on a network, access should be also revoked
+        #   on all hosts in that network
+        if hasattr(self, 'user') and self.user == user:
+            raise CannotRevoke("The user is owner of this host")
+
+        ct = ContentType.objects.get_for_model(self.__class__)
+        try:
+            perm = ObjectPermission.objects.get(user=user, content_type=ct,
+                object_id=self.pk)
+        except ObjectPermission.DoesNotExist:
+            return
+        perm.delete()
+
+    def sharing_users(self):
+        """Returns list of users who share the object
+        """
+        ct = ContentType.objects.get_for_model(self.__class__)
+        perms = ObjectPermission.objects.filter(content_type=ct,
+                                                object_id=self.pk)
+        return [perm.user for perm in perms]
+
+    @classmethod
+    def shared_objects(cls, user):
+        """Returns list of objects owned or shared by the user
+        """
+        owned = cls.objects.filter(user=user)
+        pks = [obj.pk for obj in owned]
+
+        ct = ContentType.objects.get_for_model(cls)
+        access = ObjectPermission.objects.filter(content_type=ct, user=user)
+        for obj in access:
+            if obj.content_object.pk not in pks:
+                pks.append(obj.content_object.pk)
+                
+        return cls.objects.filter(pk__in=pks)
 
 def user_has_access(obj, user):
     """Returns True if user has permission to access the object"""

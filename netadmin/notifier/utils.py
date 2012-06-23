@@ -18,183 +18,108 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
+import inspect
 
-from django.core.mail import EmailMultiAlternatives
-from django.core.mail.message import EmailMessage
-from django.utils.translation import ugettext as _
-from settings import GAE_MAIL_ACCOUNT
+from netadmin.notifier.backends import BaseBackend
+from netadmin.notifier.models import Notification
 
 
-class NotifierEmptyQueue(Exception):
+class BackendError(Exception):
+    pass
+
+class NoBackendsAvailable(BackendError):
+    pass
+
+class UnknownBackend(BackendError):
+    pass
+
+class NotificationBufferEmpty(Exception):
     pass
 
 
-class Notifier(object):
-    
-    _log_buffer = []
-    
-    def __init__(self, model):
-        self.model = model
-    
-    def _log(self, message, timestamp=datetime.datetime.now()):
-        str_message = '%s: %s' % (str(timestamp), message)
-        self._log_buffer.append(str_message) 
-        return str_message
-    
-    def _clear_log(self):
-        self._log_buffer = []
+class Dispatcher(object):
+    _backends = []
 
-class NotifierQueue(Notifier):
-    """
-    First-in first-out notifications queue. To reduce number of database
-    queries, queue items are held in a buffer, which is updated after clearing
-    the queue or when update is forced (e.g. in case of iteration).
-    
-    NOTE: The simplest and safest way of accessing the queue is to
-    iterate through its items:
-    
-        >>> queue = NotifierQueue()
-        >>> for item in queue:
-        ...     print item.user, item.content_object
-    """
-    _buffer = []
-    
-    def __init__(self, model, buffer_size=10):
-        self._buffer_size = buffer_size
-        super(NotifierQueue, self).__init__(model)
-        
-    def __iter__(self):
-        self._update_buffer(force_update=True)
-        for item in self._buffer:
-            yield item
-        
-    def _update_buffer(self, force_update=False):
-        if len(self._buffer) < self._buffer_size or force_update:
-            items = self.model.objects.all().order_by('timestamp')
-            self._buffer = list(items[:self._buffer_size])
-        
-    def clear(self):
+    def __init__(self, manager):
+        self.manager = manager
+
+    def _get_backends(self):
+        from netadmin.notifier import backends
+        backends_list = []
+        for obj_name, obj in inspect.getmembers(backends):
+            if hasattr(obj, '__bases__') and BaseBackend in obj.__bases__:
+                backends_list.append(obj)
+        return backends_list
+
+    def _refresh_backends(self):
+        self._backends = self._get_backends()
+
+    def get_backend(self, identifier):
+        self._refresh_backends()
+        for backend in self._backends:
+            if backend.__identifier__ == identifier:
+                return backend()
+        raise UnknownBackend("Unknown backend: %s" % identifier)
+
+    def iter_backends(self):
+        """Iterates over all available notification back-ends
         """
-        Gets all notifications from the buffer and removes them
-        permanently from database.
+        self._refresh_backends()
+
+        if not self._backends:
+            raise NoBackendsAvailable()
+
+        for backend in self._backends:
+            yield backend()
+
+    def dispatch(self, using_backends=None, clear=True):
+        """Sends all notifications using available back-ends
+        """
+        notifications = self.manager.get_all()
         
-        NOTE: This action cannot be undone so use this method very
-        carefully (e.g. after sending notifications by email, when
-        you're absolutely sure that you don't need them anymore)!
+        if using_backends:
+            backends = [self.get_backend(id) for id in using_backends]
+        else:
+            backends = self.iter_backends()
+
+        for backend in backends:
+            backend.send(notifications)
+
+        if clear:
+            self.manager.clear()
+
+
+class NotificationsManager(object):
+    _buffer = []
+
+    def get_all(self):
+        """Returns all notifications
+        """
+        self._buffer = Notification.objects.all()
+        return self._buffer
+
+    def create(self, title, content, user, related_object=None):
+        """Creates a new notification but DO NOT SAVES that notification
+        """
+        return Notification(title=title, content=content, user=user,
+                            related_object=related_object)
+
+    def add(self, title, content, user, related_object=None):
+        """Creates notification and saves it
+        """
+        notification = self.create(title, content, user, related_object)
+        notification.save()
+        return notification
+
+    def clear(self):
+        """Deletes all notifications that were fetched using get_all() method
         """
         if self._buffer:
-            while self._buffer:
-                item = self._buffer.pop()
-                item.delete()
-        
-    def push(self, *args, **kwargs):
-        """Pushes item to the end of the queue and returns it
-        """
-        item = self.model(*args, **kwargs)
-        item.save()
-        self._update_buffer()
-        return item
-    
-    def get(self):
-        """Returns all items from the queue
-        """
-        self._update_buffer()
-        return self._buffer
-    items = property(get)
-    
-    def send_emails(self, subject, clear_queue=True):
-        self._clear_log()
-        notifications = self.items
-        grouped_by_user = {}
-        for notif in notifications:
-            user = notif.user
-            if user in grouped_by_user:
-                grouped_by_user[user].append(notif)
-            else:
-                grouped_by_user[user] = [notif]
-                
-        for user in grouped_by_user:
-            notifications = grouped_by_user[user]
-            messages = []
-            attachments = []
-            for notif in notifications:
-                messages.append(notif.message())
-                
-                att = notif.attachment()
-                if att:
-                    attachments.append(att)
-            
-            # separate messages with horizontal line
-            text_message = '\n'.join(messages)
-            html_message = '<br /><hr /><br />'.join(messages)
-            email = EmailMultiAlternatives(subject, text_message,
-                                 GAE_MAIL_ACCOUNT, [user.email])
-            email.attach_alternative(html_message, "text/html")
-            for att in attachments:
-                email.attach(att['name'], att['data'], att['mimetype'])   
-            email.send()
-            
-            self._log(_("Message sent to: %s") % user.email)
-        
-        if clear_queue:
-            self.clear()
-        return self._log_buffer
-        
-class NotifierSchedule(Notifier):
-    """
-    Simplified cron-like job scheduler for sending notifications at
-    specified time. For more information about scheduling, go to documentation
-    of NotifierScheduleJob model class.
-    
-    NOTE: The best way of getting all scheduled jobs that should run
-    at the moment is to use iterator, e.g.:
-    
-        >>> schedule = NotifierSchedule()
-        >>> for notif in schedule:
-        ...     print notif.user, notif.content_object
-    """
-    def __iter__(self):
-        for job in self.current_jobs:
-            yield job
-        
-    def get_jobs(self):
-        """Returns all scheduled jobs
-        """
-        jobs = self.model.objects.all()
-        return jobs.order_by('day_of_month', 'hour', 'minute')
-    jobs = property(get_jobs)
-    
-    def jobs_for_timestamp(self, timestamp):
-        """Returns jobs that should be run for specified timestamp
-        """
-        ts = timestamp
-        minute, hour = ts.minute, ts.hour
-        day_of_week, day_of_month = ts.weekday(), ts.day
-        
-        jobs = self.jobs
-        jobs = jobs.filter(day_of_month__in=[-1, day_of_month])
-        jobs = jobs.filter(day_of_week__in=[-1, day_of_week])
-        jobs = jobs.filter(hour__in=[-1, hour])
-        jobs = jobs.filter(minute__in=[-1, minute]) 
-    
-        return jobs
-    
-    def _current_jobs(self):
-        """Returns jobs that should run at the moment
-        """
-        return self.jobs_for_timestamp(datetime.datetime.now())
-    current_jobs = property(_current_jobs)
-    
-    def send_emails(self, subject):
-        self._clear_log()
-        for job in self.current_jobs:
-            user, message, att = job.user, job.message(), job.attachment()
-            email = EmailMessage(subject, message,
-                                 GAE_MAIL_ACCOUNT, [user.email])
-            if att:
-                email.attach(att['name'], att['data'], att['mimetype'])   
-            email.send()
-            
-            self._log(_("Message sent to: %s") % user.email)
-        return self._log_buffer
+            self._buffer.delete()
+            self._buffer = []
+        else:
+            raise NotificationBufferEmpty()
+
+
+manager = NotificationsManager()
+dispatcher = Dispatcher(manager)

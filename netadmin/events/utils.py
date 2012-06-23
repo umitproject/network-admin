@@ -3,7 +3,8 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Authors: Amit Pal <amix.pal@gmail.com>
+#          Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,7 +27,7 @@ except ImportError:
 import datetime
 
 from django.utils.translation import ugettext as _
-from netadmin.shortcuts import  _get_network_objects
+
 from netadmin.permissions.utils import filter_user_objects
 from netadmin.networks.models import Host
 from netadmin.events.models import Event, EventType
@@ -41,29 +42,7 @@ def filter_user_events(user):
     hosts = filter_user_objects(user, Host)
     pks = [host.pk for host in hosts]
     return Event.objects.filter(source_host__pk__in=pks)
-
-############################################################################
-# Un-comment : t the time of event generated automatically using the timezone 
-# difference from "netadmin.networks.host.timezone" 
-############################################################################	
-#	obj = Event.objects.filter(source_host__pk__in=pks)
-#	for i in range(0,len(obj)):
-#		local_time = obj[i].timestamp
-#		obj[i].timestamp = get_local_time(local_time)
-#	return obj
-   
-
-#def get_local_time(get_value):
-#	time_zone_diff =  _get_network_objects(Host, user)
-# 	time_offset = time_zone_diff.time_zone
-#	time_offset = str(time_offset)
-#	time_offset.split('.')
-#	time_hour , time_min = time_zone_diff.time_offset
-#	get_value = get_value + timedelta(hours = time_hour, minutes = (time_min*30))
-#	return get_value
-#############################################################################	
-
-
+    
 def get_event_data(request, event_dict):
     """
     Creates dictionary with parameters for Event's __init__ method. If needed
@@ -140,4 +119,4 @@ def get_event_data(request, event_dict):
     }
     
     return event_data
-    
+ 

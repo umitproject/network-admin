@@ -21,9 +21,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block title %}{% trans "login" %}{% endblock %}
 
 {% block content %}
-<form action="{% url login_page %}?next=/" method="POST">
-	{% csrf_token %}
-	{{ form.as_p }}
-	<input type="submit" value="Log in" />
-</form>
+<div id="login">
+    <h2>{% trans "Login" %}</h2>
+    <form action="{% url login_page %}?next=/" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Log in" /> {% trans "or" %} <a href="{% url user_register %}">{% trans "Register" %}</a>
+    </form>
+</div>
 {% endblock %}

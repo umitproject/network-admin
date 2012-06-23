@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,12 +32,12 @@ class UserTest(TestCase):
     """
     
     def setUp(self):
-        self.user = User.objects.create_user('user', 'user@something.com',
+        self.user = User.objects.create_user('username', 'user@something.com',
             'userpassword')
         self.user.save()
         
         self.client = Client()
-        self.client.login(username='user', password='userpassword')
+        self.client.login(username='username', password='userpassword')
         
         self.consumer = Consumer(name=self.user.username, status='accepted',
                                  user=self.user)
@@ -88,3 +88,23 @@ class UserTest(TestCase):
         
         self.assertNotEqual(token.key, token_key)
         self.assertNotEqual(token.secret, token_secret)
+        
+    def test_is_staffStatus(self):
+        self.user.is_staff = True
+        self.user.save()
+        self.user.is_staff = False
+        self.user.save()
+    
+    def test_is_activeStatus(self):
+        self.user.is_active = True
+        self.user.save()
+        self.user.is_acive = False
+        self.user.save()
+        
+    def test_is_authorize(self):
+        self.user.is_staff = False
+        response = self.client.get('/user/users/')
+        self.assertEqual(response.status_code, 404)
+        
+            
+        

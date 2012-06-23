@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -17,83 +17,39 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n actions %}
-{% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
+{% load i18n %}happenning
+{% block title %}{% trans "add new network" %}{% endblock %}
 
 {% block content_classes %}network{% endblock %}
 
 {% block content %}
-<h2>{{ object.name|action:"network_name" }}</h2>
+<h2>{% trans "Create a Network" %}</h2>
 
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "networks" %}</a> > {% trans "network details" %}</p>
-
-{% if object.user != request.user %}
-<p><strong>{% trans "Owned by" %} {{ object.user.username|action:"network_user" }}</strong></p>
-{% endif %}
-
-<h3>{% trans "About this network" %}</h3>
-<p>{{ object.description|action:"network_description" }}</p>
-
-{% if object.sharing_users and object.user == request.user %}
-<h3>{% trans "Sharing" %}</h3>
-<p>You are sharing this network with:
-{% for user, edit in object.sharing_users %}
-	{% if not forloop.first %}, {% endif %}<a href="{% url user_profile_public user.username %}">{{ user.username }}</a>
-{% endfor %}
-</p>
-
-{% endif %}
-
-<h3>{% trans "Hosts" %}</h3>
-	
-{% if object.hosts %}
-<form action="" method="POST">
-<table>
+<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "Networks" %}</a> > {% trans "Select Host to create a New Network" %}</p>
+<table class="objects-list">
 	<thead>
-		<tr><th>{% trans "Host name" %}</th><th>{% trans "IPv4 address" %}</th><th>{% trans "IPv6 address" %}</th></tr>
+		<tr>
+			<th>{% trans "IPv4 Addresses" %}</th>
+            <th>{% trans "IPv6 Addresses" %}</th>
+            <th>{% trans "Choose Addresses" %}</th>
+		</tr>
 	</thead>
 	<tbody>
-	{% for host in object.hosts %}
-		<tr class="{% cycle 'odd' 'even' %}">
-			<td>
-				<input type="checkbox" name="remove_host" value="{{ host.pk }}" /> 
-				<a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a>
-			</td>
-			<td>{{ host.ipv4|action:"host_list_ipv4" }}</a></td>
-			<td>{{ host.ipv6|action:"host_list_ipv6" }}</td>
+<form action="update/{{id}}/" method="POST">
+	{% for host in hosts %}
+			<td>{{host.ipv4}}</td>
+            <td>{{host.ipv6}}</td>
+            <td><input type="checkbox" name="host" id = "host.id" value={{host.id}}/></td>
 		</tr>
 	{% endfor %}
+<input type="submit" value="Select" />
+</form>
 	</tbody>
 </table>
-<input type="submit" value="{% trans 'Remove selected host(s)' %}" />
-</form>
-{% endif %}
-
-{% if hosts_other %}
-<form action="" method="POST">
-<p>
-	{% trans "Add host to network" %}: 
-	<select name="add_host">
-	{% for host in hosts_other %}
-		<option value="{{ host.pk }}">{{ host.name|action:"host_select_name" }}</option>
-	{% endfor %}
-	</select>
-	<input type="submit" value="{% trans 'Add' %}" />
-</p>
-</form>
-{% endif %}
-
 {% endblock %}
-
 {% block meta %}
 <ul>
-	{% if object.user == request.user %}
-	<li class="delete"><a href="{% url network_delete object.pk %}">{% trans "Delete network" %}</a></li>
-	<li class="share"><a href="{% url share_list 'network' object.pk %}">{% trans "Share" %}</a></li>
-	{% endif %}
-	<li class="event"><a href="{% url network_events object.pk %}">{% trans "Network events" %}</a></li>
-	{% if can_edit %}
-	<li class="settings"><a href="{% url network_update object.pk %}"><span>{% trans "Settings" %}</span></a></li>
-	{% endif %}
+	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
+    <li class="add"><a href="{% url subnet_network%}">{%trans "Netmask Network"%}</li>
 </ul>
 {% endblock %}

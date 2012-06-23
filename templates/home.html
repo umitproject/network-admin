@@ -25,16 +25,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content %}
 {% if request.user.is_authenticated %}
 	{% widgets_area request.user "Dashboard" 3 %}
-{% else %}
-<h2>Welcome to the Network Administrator!</h2>
-
-<p>Network Administrator is a part of <a href="http://www.umitproject.org/">the Umit Project</a> and it's the web monitoring
-tool designed to work in cloud. The project is now developed as a part of
-<a href="http://www.umitproject.org/?active=gsoc&mode=ideas#2">the GSoC 2011 program</a>. For more information please contact:</p>
-<ul>
-	<li><a href="http://www.umitproject.org/?active=contacts">Umit Project Team</a>,</li>
-	<li>Piotrek Wasilewski &lt;wasilewski.piotrek@gmail.com&gt; - GSoC student working on Network Administrator.</li>
-</ul>
 {% endif %}
 {% endblock %}
 

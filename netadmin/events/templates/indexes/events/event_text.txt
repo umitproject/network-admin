@@ -1,0 +1,4 @@
+{{ object.message }}
+{{ object.short_message }}
+{{ object.protocol }}
+{{ object.event_type.name }}

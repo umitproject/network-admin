@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -33,6 +33,8 @@ class UserProfile(models.Model):
         help_text=_('Show my profile in search results'))
     is_public = models.BooleanField(default=True,
         help_text=_('Let others to see my public profile'))
+    timezone = models.CharField(max_length = 30, help_text = "Select the local timezone")
+    skype = models.CharField(max_length = 20, blank= True)
     
     def __unicode__(self):
         return 'Profile for user %s' % self.user.username
@@ -40,6 +42,13 @@ class UserProfile(models.Model):
     @permalink
     def get_absolute_url(self):
         return ('user_profile_public', [str(self.user.username)])
+
+    @property
+    def full_name(self):
+        f_name, l_name = self.user.first_name, self.user.last_name
+        if f_name and l_name:
+            return '%s %s' % (f_name, l_name)
+        return f_name or l_name or self.user.username
     
 def create_user_profile(sender, instance, created, **kwargs):
     if created:

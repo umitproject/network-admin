@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2011 Adriano Monteiro Marques
+# Copyright (C) 2012 Adriano Monteiro Marques
 #
 # Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
@@ -34,12 +34,6 @@ DAYS_OF_WEEK = (
     (7, _("Sunday"))
 )
 
-DAYS_OF_MONTH = [(day, day) for day in xrange(1, 32)]
-
-MINUTES = [(minute, minute) for minute in xrange(0, 60)]
-
-HOURS = [(hour, hour) for hour in xrange(0, 24)]
-
 
 class ReportMetaForm(forms.ModelForm):
     class Meta:
@@ -49,23 +43,16 @@ class ReportMetaForm(forms.ModelForm):
             'object_type': forms.HiddenInput(),
             'user': forms.HiddenInput()
         }
+
         
 class ReportMetaNewForm(forms.ModelForm):
     class Meta:
         model = ReportMeta
-        fields = ('name', 'description', 'object_type', 'user',
-                  'report_period')
         widgets = {
             'object_type': forms.HiddenInput(),
-            'user': forms.HiddenInput()
+            'user': forms.HiddenInput(),
+            'object_id': forms.HiddenInput(),
+            'send_day_week': forms.HiddenInput(),
+            'send_day_month': forms.HiddenInput(),
+            'send_hour': forms.HiddenInput(),
         }
-        
-class ReportDailyForm(forms.Form):
-    hour = forms.ChoiceField(choices=HOURS, initial=0)
-    minute = forms.ChoiceField(choices=MINUTES, initial=0)
-    
-class ReportWeeklyForm(ReportDailyForm):
-    day_of_week = forms.ChoiceField(choices=DAYS_OF_WEEK, initial=1)
-
-class ReportMonthlyForm(ReportDailyForm):
-    day_of_month = forms.ChoiceField(choices=DAYS_OF_MONTH, initial=1)

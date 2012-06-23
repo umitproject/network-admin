@@ -18,13 +18,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from django.core.urlresolvers import reverse
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.test import TestCase
 from django.test.client import Client
 
-from netadmin.reportmeta.models import ReportMeta, ReportMetaEventType
+from netadmin.reportmeta.models import ReportMeta
 from netadmin.networks.models import Network, Host, NetworkHost
 
 
@@ -51,7 +50,7 @@ class ReportMetaTest(TestCase):
     def test_reportmeta_host_list(self):
         for i in xrange(10):
             report_meta = ReportMeta(name='report %i' % i, description='description',
-                                     report_period=1,
+                                     period=1,
                                      object_type=ContentType.objects.get_for_model(Host),
                                      object_id=self.host.pk, user=self.user)
             report_meta.save()
@@ -61,7 +60,7 @@ class ReportMetaTest(TestCase):
     def test_reportmeta_network_list(self):
         for i in xrange(10):
             report_meta = ReportMeta(name='report %i' % i, description='description',
-                                     report_period=1,
+                                     period=1,
                                      object_type=ContentType.objects.get_for_model(Network),
                                      object_id=self.network.pk, user=self.user)
             report_meta.save()
@@ -70,7 +69,7 @@ class ReportMetaTest(TestCase):
     
     def test_reportmeta_detail(self):
         report_meta = ReportMeta(name='host report', description='description',
-                                 report_period=1,
+                                 period=1,
                                  object_type=ContentType.objects.get_for_model(Host),
                                  object_id=self.host.pk, user=self.user)
         report_meta.save()
@@ -78,7 +77,7 @@ class ReportMetaTest(TestCase):
         self.assertEqual(response.status_code, 200)
         
         report_meta = ReportMeta(name='network report', description='description',
-                                 report_period=1,
+                                 period=1,
                                  object_type=ContentType.objects.get_for_model(Network),
                                  object_id=self.network.pk, user=self.user)
         report_meta.save()
@@ -89,7 +88,10 @@ class ReportMetaTest(TestCase):
         reportmeta_host_data = {
             'name': 'New host report',
             'description': 'New host report description',
-            'report_period': 1,
+            'period': 1,
+            'send_hour': 12,
+            'send_day_week': 1,
+            'send_day_month': 20,
             'object_type': ContentType.objects.get_for_model(Host).pk,
             'object_id': self.host.pk,
             'user': self.user.pk
@@ -98,7 +100,10 @@ class ReportMetaTest(TestCase):
         reportmeta_network_data = {
             'name': 'New network report',
             'description': 'New network report description',
-            'report_period': 1,
+            'period': 1,
+            'send_hour': 12,
+            'send_day_week': 1,
+            'send_day_month': 20,
             'object_type': ContentType.objects.get_for_model(Network).pk,
             'object_id': self.network.pk,
             'user': self.user.pk
@@ -112,13 +117,13 @@ class ReportMetaTest(TestCase):
     
     def test_reportmeta_update(self):
         reportmeta_host = ReportMeta(name='host report', description='description',
-                                     report_period=1,
+                                     period=1,
                                  object_type=ContentType.objects.get_for_model(Host),
                                  object_id=self.host.pk, user=self.user)
         reportmeta_host.save()
         
         reportmeta_net = ReportMeta(name='network report', description='description',
-                            report_period=1,
+                            period=1,
                             object_type=ContentType.objects.get_for_model(Network),
                             object_id=self.network.pk, user=self.user)
         reportmeta_net.save()
@@ -126,7 +131,10 @@ class ReportMetaTest(TestCase):
         reportmeta_host_data = {
             'name': 'Updated host report',
             'description': 'Updated host report description',
-            'report_period': 1,
+            'period': 1,
+            'send_hour': 12,
+            'send_day_week': 1,
+            'send_day_month': 20,
             'object_type': ContentType.objects.get_for_model(Host).pk,
             'object_id': self.host.pk,
             'user': self.user.pk
@@ -135,7 +143,10 @@ class ReportMetaTest(TestCase):
         reportmeta_network_data = {
             'name': 'Updated network report',
             'description': 'Updated network report description',
-            'report_period': 1,
+            'period': 1,
+            'send_hour': 12,
+            'send_day_week': 1,
+            'send_day_month': 20,
             'object_type': ContentType.objects.get_for_model(Network).pk,
             'object_id': self.network.pk,
             'user': self.user.pk
@@ -147,19 +158,28 @@ class ReportMetaTest(TestCase):
         self.assertEqual(response.status_code, 302)
     
     def test_reportmeta_delete(self):
+        ct_host = ContentType.objects.get_for_model(Host)
+        ct_network = ContentType.objects.get_for_model(Network)
         reportmeta_host = ReportMeta(name='host report', description='description',
-                                     report_period=1,
-                                 object_type=ContentType.objects.get_for_model(Host),
-                                 object_id=self.host.pk, user=self.user)
+                                     period=1, object_type=ct_host,
+                                     object_id=self.host.pk, user=self.user)
         reportmeta_host.save()
+        reportmeta_host_pk = reportmeta_host.pk
         
         reportmeta_net = ReportMeta(name='network report', description='description',
-                                    report_period=1,
-                                 object_type=ContentType.objects.get_for_model(Network),
-                                 object_id=self.network.pk, user=self.user)
+                                    period=1, object_type=ct_network,
+                                    object_id=self.network.pk, user=self.user)
         reportmeta_net.save()
+        reportmeta_net_pk = reportmeta_net.pk
         
         response = self.client.post('/report/delete/%i/' % reportmeta_host.pk)
         self.assertEqual(response.status_code, 302)
+        self.assertRaises(ReportMeta.DoesNotExist, ReportMeta.objects.get,
+                          **{'object_id': reportmeta_host_pk,
+                             'object_type': ct_host})
+
         response = self.client.post('/report/delete/%i/' % reportmeta_net.pk)
         self.assertEqual(response.status_code, 302)
+        self.assertRaises(ReportMeta.DoesNotExist, ReportMeta.objects.get,
+                          **{'object_id': reportmeta_net_pk,
+                             'object_type': ct_network})

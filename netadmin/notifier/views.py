@@ -20,17 +20,11 @@
 
 from django.http import HttpResponse
 
-from netadmin.notifier.utils import Notifier
+from netadmin.notifier.utils import dispatcher
 
 
-def send_emails(request):
-    notifier = Notifier()
-    try:
-        log = notifier.send_emails(clear_queue=True)
-    except NotifierEmptyQueue:
-        log = []
-    if log:
-        response = "<p>Emails sent:</p>%s" % '<br />'.join(log)
-    else:
-        response = "<p>No emails to send</p>"
-    return HttpResponse(response)
+def dispatch_all(request):
+    """Sends all notifications using Dispatcher
+    """
+    dispatcher.dispatch()
+    return HttpResponse("<p>Done</p>")

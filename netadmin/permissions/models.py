@@ -26,11 +26,15 @@ from django.db import models
 
 class ObjectPermission(models.Model):
     """
-    Simple relation between a user and object, describing
-    permission for access to this object by user
+    Simple relation between a user and object, representing permission
+    for access to an object that was granted to a single user
     """
     user = models.ForeignKey(User)
     content_type = models.ForeignKey(ContentType)
     object_id = models.PositiveIntegerField()
     content_object = generic.GenericForeignKey('content_type', 'object_id')
     edit = models.BooleanField(default=True)
+
+    def __unicode__(self):
+        return "for %s on %s" % \
+            (self.user.username, self.content_object.__unicode__())

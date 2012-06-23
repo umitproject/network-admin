@@ -25,9 +25,101 @@ from netadmin.networks.models import Host
 from utils import user_has_access, grant_access, revoke_access, \
     user_can_edit, grant_edit, revoke_edit
 
+class ShareTest(TestCase):
+    """Tests for class-based permissions system
+    """
+    def setUp(self):
+        self.owner = self.create_user('owner', 'pass')
+        self.friend = self.create_user('friend', 'pass')
+
+        self.host = Host(name='Host', ipv4='1.2.3.4', user=self.owner)
+        self.host.save()
+
+    def create_user(self, username, password, email=None):
+        """Creates and returns User object
+        """
+        if not email:
+            email = '%s@something.com' % username
+        user = User.objects.create_user(username, email, password)
+        user.save()
+        return user
+
+    def test_has_access(self):
+        """By default only the owner should has an access to the object
+        """
+        self.assertEqual(self.host.has_access(self.owner), True)
+        self.assertEqual(self.host.has_access(self.friend), False)
+
+    def test_share(self):
+        """The share() method grants user an access to the object
+        """
+        self.assertEqual(self.host.has_access(self.friend), False)
+
+        self.host.share(self.friend)
+        self.assertEqual(self.host.has_access(self.friend), True)
+
+    def test_revoke(self):
+        """The revoke() method revokes user an access to the object
+        """
+        self.host.share(self.friend)
+        self.assertEqual(self.host.has_access(self.friend), True)
+
+        self.host.revoke(self.friend)
+        self.assertEqual(self.host.has_access(self.friend), False)
+
+    def test_can_edit(self):
+        """
+        The can_edit() method should return True if user has permission
+        to edit the object; otherwise it should return False
+        """
+        self.assertEqual(self.host.can_edit(self.owner), True)
+        self.assertEqual(self.host.can_edit(self.friend), False)
+
+    def test_grant_edit(self):
+        """
+        The share() method grants permission to edit if the 'edit'
+        parameter was set to True
+        """
+        self.host.share(self.friend)
+        self.assertEqual(self.host.can_edit(self.friend), False)
+
+        self.host.share(self.friend, edit=True)
+        self.assertEqual(self.host.can_edit(self.friend), True)
+
+    def test_revoke_edit(self):
+        """
+        The share() method revokes permission to edit if the 'edit'
+        parameter was set to False
+        """
+        self.host.share(self.friend, edit=True)
+        self.assertEqual(self.host.can_edit(self.friend), True)
+
+        self.host.share(self.friend, edit=False)
+        self.assertEqual(self.host.can_edit(self.friend), False)
+
+    def test_shared_objects(self):
+        """
+        The shared_objects() method should return list of objects
+        owned or shared by the user
+        """
+        self.assertIn(self.host, Host.shared_objects(self.owner))
+        self.assertNotIn(self.host, Host.shared_objects(self.friend))
+
+        self.host.share(self.friend)
+        self.assertIn(self.host, Host.shared_objects(self.friend))
+
+    def test_sharing_users(self):
+        """
+        The sharing_users() method should return list of users who
+        share the object
+        """
+        self.assertNotIn(self.friend, self.host.sharing_users())
+
+        self.host.share(self.friend)
+        self.assertIn(self.friend, self.host.sharing_users())
 
 class PermissionsTest(TestCase):
-    """Tests for permissions
+    """Tests for permissions system
     """
     
     def setUp(self):

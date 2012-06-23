@@ -23,16 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}network{% endblock %}
 
 {% block content %}
-<h2>{% trans "Networks list" %}</h2>
+<h2>{% trans "Networks" %}</h2>
 
-<form action="" method="GET" class="search">
-	<p>{% trans "Search for networks" %}: 
-		<input type="text" name="s" value="{{ request.GET.s }}"/>
-		<input type="submit" value="{% trans "Search" %}" />
-	</p>
-</form>
-
-<table>
+<table class="objects-list">
 	<thead>
 		<tr>
 			<th>{% trans "Name" %}</th>
@@ -70,5 +63,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block meta %}
 <ul>
 	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
+	<li class="add"><a href="{% url subnet_network %}">{% trans "Netmask network" %}</a></li>
 </ul>
 {% endblock %}

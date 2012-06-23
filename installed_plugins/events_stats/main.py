@@ -28,13 +28,14 @@ class EventsStatsWidget(Widget):
     name = _("Latest events")
     description = _("Shows information about latest events")
     template_name = "latest_events.html"
-    
+    username = []
+		
     def get_title(self, widget):
-        title = self.get_option('latest_events_widget_title', widget)
-        return title
+		title = self.get_option('latest_events_widget_title', widget)
+		return title
     
     def options(self, widget):
-        hosts = get_hosts(widget.user)
+        hosts = get_hosts(self.user)
         hosts_choices = [(-1, '-- all --')] + \
             [(h.pk, h.name) for h in hosts]
             
@@ -77,17 +78,17 @@ class EventsStatsWidget(Widget):
         
         if host:
             if alert_level > 0:
-                event_types = get_eventtypes(widget.user, alert=alert_level)
+                event_types = get_eventtypes(self.user, alert=alert_level)
                 events = get_events(source_hosts=[host],
                                     event_types=event_types)
             else:
                 events = host.events()
         else:
             if alert_level > 0:
-                event_types = get_eventtypes(widget.user, alert=alert_level)
+                event_types = get_eventtypes(self.user, alert=alert_level)
                 events = get_events(event_types=event_types)
             else:
-                events = get_user_events(widget.user)
+                events = get_user_events(self.user)
         
         checked = self.get_option('latest_events_widget_checked', widget)
         if checked:

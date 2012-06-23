@@ -24,15 +24,17 @@ from django.template import Context
 
 from netadmin.plugins.models import WidgetsArea
 from netadmin.plugins.forms import DashboardWidgetForm
+from netadmin.plugins.models import WidgetSettings
 
 
 register = template.Library()
 
 
 @register.simple_tag
-def render_widget(widget_settings):
+def render_widget(object_id):
     """Renders widget's template with context returned by context() method
     """
+    widget_settings = WidgetSettings.objects.get(id = object_id)
     widget = widget_settings.get_widget()
     template_name = widget.template_name
     context = widget.context(widget=widget_settings)

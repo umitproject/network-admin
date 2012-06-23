@@ -1,0 +1,138 @@
+/*
+Copyright (C) 2012 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+@bg_color: #efefef;
+@meta_bg: #f9f9f9;
+@border_color: #ddd;
+@font_color: #000;
+@nav_highlight_color: #f9f9f9;
+@nav_light_color: #888;
+
+#header {
+    min-width: 1024px;
+    width: 100%;
+    height: 51px;
+    padding: 0 50px;
+    border-bottom: 1px solid @border_color;
+
+    background: @bg_color;
+    color: @font_color;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    a {
+        color: @font_color;
+        font-weight: normal;
+    }
+
+    h1 {
+        display: inline-block;
+        font-size: 15px;
+        width: 280px;
+        padding: 0;
+        margin: 15px 5px 0 0;
+        
+        a {
+            font-weight: bold;
+            color: @nav_light_color;
+        }
+    }
+
+    ul.navigation {
+        list-style-type: none;
+        display: inline-block;
+        padding: 0;
+        margin: 0;
+        font-size: 16px;
+
+        li {
+            display: inline-block;
+            padding: 15px 0;
+
+            a {
+                width: 100%;
+                height: 100%;
+                padding: 15px 10px;
+
+                font-weight: bold;
+            }
+
+            a:hover {
+                text-decoration: none;
+                background: @nav_highlight_color;
+            }
+        }
+    }
+
+    #toolbar {
+        position: absolute;
+        top: 0;
+        right: 150px;
+
+        ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+
+            font-size: 14px;
+
+            li {
+                padding: 17px 0;
+
+                color: @nav_light_color;
+
+                a {
+                    color: @nav_light_color;
+                    text-decoration: underline;
+                }
+
+                a:hover {
+                    color: #000;
+                }
+            }
+        }
+    }
+
+    #meta {
+        margin-left: -50px;
+        padding: 0 45px;
+
+        background: #ac4747;
+        color: #fff;
+
+        ul {
+            margin: 0 0 0 295px;
+            padding: 7px 0;
+            
+            list-style-type: none;
+            font-size: 14px;
+
+            li {
+                padding: 5px 10px;
+                display: inline;
+
+                a {
+                    color: #fff;
+                }
+            }
+        }
+    }
+}

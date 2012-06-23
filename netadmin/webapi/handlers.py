@@ -40,13 +40,12 @@ except ImportError:
     import json
 import datetime
 
-from django.http import HttpResponse
 from django.utils.translation import ugettext as _
 from piston.handler import BaseHandler
 
 from netadmin.networks.models import Host, Network
-from netadmin.notifier.utils import NotifierQueue
-from netadmin.events.models import Event, EventType, EventNotification
+from netadmin import notifier
+from netadmin.events.models import Event
 from netadmin.events.utils import get_event_data, EventParseError
 
 from views import api_error, api_ok, api_response
@@ -240,9 +239,6 @@ class EventHandler(BaseHandler):
             * message - details of the result
         
         """
-        
-        notifier = NotifierQueue(EventNotification)
-        
         if request.POST.get('events'):
             try:
                 events = json.loads(request.POST.get('events', ''))
@@ -259,7 +255,8 @@ class EventHandler(BaseHandler):
                 event.save()
                 
                 if event.event_type.notify:
-                    notifier.push(user=request.user, event=event)
+                    notifier.manager.add(event.short_message, event.message,
+                                         event.user(), event)
             
             return api_ok(_('Events reported successfully'))
         
@@ -272,7 +269,8 @@ class EventHandler(BaseHandler):
         event.save()
         
         if event.event_type.notify:
-            notifier.push(user=request.user, event=event)
+            notifier.manager.add(event.short_message, event.message,
+                                 event.user(), event)
         
         return api_ok(_('Event reported successfully'))
     
@@ -308,7 +306,6 @@ class EventHandler(BaseHandler):
             * module_id - identifier of monitoring module
             * module_fields - fields defined by monitoring module
         """
-        
         if not event_id:
             events = Event.objects.all().order_by('-timestamp')
             if not events:

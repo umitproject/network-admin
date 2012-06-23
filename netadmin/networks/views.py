@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,36 +18,39 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.core.urlresolvers import reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.views.generic.create_update import create_object, update_object, \
-    delete_object
-from django.views.generic.list_detail import object_list, object_detail
+from django.views.generic.create_update import update_object, delete_object
+from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template, redirect_to
-from django.http import Http404
-from search.core import search
+from django.shortcuts import render_to_response
+from django.http import Http404, HttpResponse,HttpResponseRedirect
+try:
+    from search.core import search
+except ImportError:
+    search = None
 
 from netadmin.events.models import Event
+from netadmin.shortcuts import get_timezone, get_netmask
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
 
 from models import Host, Network, NetworkHost
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
-    NetworkUpdateForm
+    NetworkUpdateForm, SubnetCreateFrom
+from utils import get_subnet
+from netadmin.shortcuts import get_hosts
 
 @login_required
 def host_list(request, page=None):
     search_phrase = request.GET.get('s')
-    if search_phrase:
+    if search_phrase and search != None:
         hosts = search(Host, search_phrase)
     else:
-        hosts = filter_user_objects(request.user, Host)
+        hosts = Host.shared_objects(request.user)
         
     paginator = Paginator(list(hosts), 10)
     
@@ -84,9 +87,11 @@ def host_create(request):
     if request.method == 'POST':
         form = HostCreateForm(request.POST)
         if form.is_valid():
-            host = form.save()
-            return redirect_to(request, url=host.get_absolute_url())
-    
+            my_inst = form.save(commit=False)
+            zone_data = get_timezone(user=request.user.username)
+            my_inst.timezone = zone_data
+            my_inst.save()
+            return redirect_to(request, url=my_inst.get_absolute_url())
     extra_context = {
         'form': HostCreateForm(initial={'user': request.user.pk})
     }
@@ -111,17 +116,19 @@ def host_delete(request, object_id):
     
     if host.user != request.user:
         raise Http404()
-    
+
     return delete_object(request, object_id=object_id, model=Host,
                          post_delete_redirect=reverse('host_list'))
 
 @login_required
 def network_list(request, page=None):
     search_phrase = request.GET.get('s')
-    if search_phrase:
+    if search_phrase and search != None:
         nets = search(Network, search_phrase)
+        # TODO
+        # filter search results by user access
     else:
-        nets = filter_user_objects(request.user, Network)
+        nets = Network.shared_objects(request.user)
         
     paginator = Paginator(list(nets), 10)
     
@@ -141,45 +148,6 @@ def network_list(request, page=None):
                               extra_context=extra_context)
 
 @login_required
-def network_detail(request, object_id):
-    """
-    Network detail page has the following features:
-        * displaying basic network info (name, description, etc.)
-        * listing hosts related to network
-        * creating relations between network and host
-        * removing relations between network and host(s)
-    """
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
-    
-    # remove relation between the network and selected host(s)
-    if request.POST.getlist('remove_host'):
-        if edit:
-            hosts_pk = request.POST.getlist('remove_host')
-            network_host = NetworkHost.objects.filter(network=network,
-                                                      host__pk__in=hosts_pk)
-            network_host.delete()
-    
-    # create relation between the network and selected host
-    if request.POST.get('add_host'):
-        if edit:
-            host = Host.objects.get(pk=request.POST.get('add_host'))
-            network_host = NetworkHost(network=network, host=host)
-            network_host.save()
-    
-    queryset = Network.objects.filter(user=request.user)
-    if network.hosts():
-        hosts_ids = [host.pk for host in network.hosts()]
-        hosts_other = Host.objects.exclude(pk__in=hosts_ids).filter(user=request.user)
-    else:
-        hosts_other = Host.objects.filter(user=request.user)
-    extra_context = {
-        'hosts_other': hosts_other,
-        'can_edit': edit
-    }
-    return object_detail(request, queryset, object_id,
-                         extra_context=extra_context)
-
-@login_required
 def network_create(request):
     
     if request.method == 'POST':
@@ -197,9 +165,9 @@ def network_create(request):
 @login_required
 def network_update(request, object_id):
     
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    network = Network.objects.get(pk=object_id)
     
-    if not edit:
+    if not network.can_edit(request.user):
         raise Http404()
     
     return update_object(request, object_id=object_id,
@@ -209,7 +177,7 @@ def network_update(request, object_id):
 @login_required
 def network_delete(request, object_id):
     
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    network = Network.objects.get(pk=object_id)
     
     if network.user != request.user:
         raise Http404()
@@ -219,16 +187,19 @@ def network_delete(request, object_id):
 
 @login_required
 def network_events(request, object_id):
-    """Display events related to network"""
-    
-    network, edit = get_object_or_forbidden(Network, object_id, request.user)
+    """Display events related to a network
+    """
+    network = Network.objects.get(pk=object_id)
 
-    queryset = Network.objects.all()
+    if not network.has_access(request.user):
+        return Http404()
+
+    queryset = Network.shared_objects(request.user)
     related_hosts = [nh.host.pk for nh in NetworkHost.objects.filter(network=network)]
     events = Event.objects.filter(source_host__pk__in=related_hosts)
     extra_context = {
         'events': events,
-        'can_edit': edit
+        'can_edit': network.can_edit(request.user)
     }
     return object_detail(request, queryset, object_id,
                          extra_context=extra_context,
@@ -278,3 +249,58 @@ def share_list(request, object_type, object_id):
         'other_users': other_users
     }
     return direct_to_template(request, 'networks/share.html', extra_context)
+
+@login_required
+def subnet_network(request):
+    if request.method == 'POST':
+        form = SubnetCreateFrom(request.POST)
+        if form.is_valid():
+            subnet = form.cleaned_data['Subnet_Address']
+            ip = form.cleaned_data['IP_Address']
+            user_host = get_hosts(user=request.user)
+            hosts_list = get_subnet(user_host, subnet,ip)
+            subnet_network = form.save()
+            network_obj = Network.objects.get(name__exact = form.cleaned_data['name'])
+            for hosts in hosts_list:
+                network_entry = NetworkHost(network_id = network_obj.id, host_id = hosts.id)
+                network_entry.save()
+            extra_context = {
+                'form': SubnetCreateFrom(initial={'user': request.user.pk}),
+                'host_list': hosts_list
+                }
+            return redirect_to(request, url=subnet_network.get_absolute_url())
+    else:
+        form = SubnetCreateFrom()
+    extra_context = {
+        'form':SubnetCreateFrom(initial={'user': request.user.pk})
+        }
+    return direct_to_template(request,'networks/subnet_form.html',extra_context)
+
+@login_required
+def network_detail(request, object_id):
+    network_obj = Network.objects.get(id = object_id)
+    host_list = []
+    if network_obj.subnet:
+        hosts = NetworkHost.objects.filter(network = object_id)
+        host_id = hosts.values('host')
+        for h_id in host_id:
+            for key,value in h_id.items():
+                host_obj = Host.objects.get(pk= value)
+                host_list.append(host_obj)
+    else:
+        host_list = Host.objects.filter(user=request.user)
+    extra_context = {
+        'hosts': host_list,
+        'id':object_id
+        }
+    return direct_to_template(request,'networks/network_detail.html',extra_context)
+
+@login_required
+def network_select(request,object_id):
+    if request.method == 'POST':
+        host = request.POST.getlist('host')
+        NetworkHost.objects.filter(network = object_id).delete()
+        for hosts in host:
+            network_entry = NetworkHost(network_id = object_id, host_id = hosts.replace("/",""))
+            network_entry.save()
+    return HttpResponseRedirect('../.././../list')

@@ -21,23 +21,30 @@
 import datetime
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpResponse
-from django.views.generic.list_detail import object_list, object_detail
-from django.views.generic.simple import direct_to_template
-from django.shortcuts import get_object_or_404
+from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.core.urlresolvers import reverse
+from django.views.generic.list_detail import object_detail
+from django.views.generic.simple import direct_to_template,redirect_to
+from django.shortcuts import get_object_or_404,render
 from django.utils.translation import ugettext as _
+from django.contrib.auth.models import User
 
-from search.core import search
+try:
+    from search.core import search
+except ImportError:
+    search = None
 
-from forms import EventSearchForm, EventSearchSimpleForm, \
-    EventTypeFormset, EventCheckForm
-from models import Event, EventType, EventNotification, ALERT_LEVELS
+from forms import EventSearchForm, EventSearchSimpleForm,EventCommentForm, \
+    EventTypeFormset, EventCheckForm, EventCategoryFormset, EventCommentFormset
+from models import Event, EventType, ALERT_LEVELS, EventTypeCategory, EventComment
 from utils import filter_user_events
+import datetime
+now = datetime.datetime.now()
 
-from netadmin.notifier.utils import NotifierQueue, NotifierEmptyQueue
-from netadmin.permissions.utils import user_has_access, \
-    get_object_or_forbidden
+from netadmin.permissions.utils import user_has_access
 from netadmin.webapi.views import api_ok, api_error
+from django.views.generic.create_update import update_object, delete_object
+
 
 
 @login_required
@@ -47,6 +54,7 @@ def events_list(request, events=None, alerts=None, search_form=None,
     try:
         events = events[:]
     except TypeError:
+       
         events = filter_user_events(request.user)
         events = events.order_by('-timestamp')
         
@@ -62,7 +70,7 @@ def events_list(request, events=None, alerts=None, search_form=None,
     
     if extra_context:
         context.update(extra_context)
-    
+    #import pdb;pdb.set_trace()
     return direct_to_template(request, template_name,
                               extra_context=context)
 
@@ -110,12 +118,11 @@ def events_date(request, year, month=None, day=None):
     year, month, day = int(year), int(month), int(day)
     date_begin = datetime.datetime(year, month, day)
     date_end = datetime.datetime(year, month, day+1)
-    
     events = filter_user_events(request.user)
+   
     events = events.filter(timestamp__gte=date_begin, timestamp__lte=date_end)
     
     header = _("Events on %s") % date_begin.date()
-    
     return events_list(request, events, events_header=header)
 
 @login_required
@@ -124,7 +131,8 @@ def events_search(request):
     
     events = None
     
-    if search_form.is_valid() and search_form.cleaned_data['message']:
+    if search_form.is_valid() and search_form.cleaned_data['message'] and \
+        search != None:
         cleaned_data = search_form.cleaned_data
         
         search_phrase = cleaned_data.get('message')
@@ -213,6 +221,7 @@ def eventtype_detail(request, event_type_id=None, event_type_slug=None):
     header = _("%s events") % et.name
     return events_list(request, events, events_header=header)
 
+
 @login_required
 def eventtype_edit(request):
     if request.method == 'POST':
@@ -229,19 +238,62 @@ def eventtype_edit(request):
     return direct_to_template(request, 'events/eventtype_edit.html',
                               extra_context=extra_context)
 
-def events_notify(request):
-    notifier = NotifierQueue(EventNotification)
-    try:
-        log = notifier.send_emails(_("You have new alert(s) "
-                                     "in Network Administrator"),
-                                   clear_queue=True)
-    except NotifierEmptyQueue:
-        log = []
-    if log:
-        response = "<p>Emails sent:</p>%s" % '<br />'.join(log)
-    else:
-        response = "<p>No emails to send</p>"
-    return HttpResponse(response)
+@login_required
+def eventcateg_detail(request):
+    ca = EventTypeCategory.objects.values()
+    categories =[]
+    for i in range(0, len(ca)):
+        pk_sub = ca[i]['sub_categ_id']
+        if (pk_sub!=None):
+            category = EventTypeCategory.objects.get(id = pk_sub)
+            category = category.name
+            categories.append(category)
+        else:
+            categories.append('None')
+    iterator = 0
+    new_dict_list = []
+    temp_dict = {}
+    for obj in ca:
+        temp_dict['Message_slug'] = ca[iterator]['Message_slug']
+        temp_dict['name'] = ca[iterator]['name']
+        temp_dict['category'] = categories[iterator]
+        temp_dict['id'] = ca[iterator]['id']
+        new_dict_list.append(temp_dict)
+        temp_dict={}
+        iterator = iterator + 1
+    return render(request,"events/eventtypecategory.html",{
+		'obj': new_dict_list
+		})
+		
+@login_required
+def categ_detail(request, categ_id):
+    et = EventTypeCategory.objects.get(id = categ_id)
+    return render(request, "events/eventtypecategory_detail.html",{
+        'object': et
+    })
+		
+@login_required
+def categ_delete(request, categ_id):
+    et = EventTypeCategory.objects.get(id = categ_id)
+    if et.user != request.user:
+        raise Http404()
+    return delete_object(request, object_id=categ_id, model=EventTypeCategory,
+                         post_delete_redirect=reverse('eventcateg_detail'))
+
+@login_required
+def event_comment(request):
+    if request.method == 'POST':
+        form = EventCommentForm(request.POST)
+        if form.is_valid():
+            comment_form = form.save(commit=False)
+            comment_form.timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
+            comment_form.user = request.user.username
+            comment_form.save()
+            return HttpResponseRedirect('/event/list')
+    extra_context = {
+        'form': EventCommentForm()
+    }
+    return direct_to_template(request, 'events/event_comment.html', extra_context)
 
 @login_required
 def events_ajax(request):
@@ -260,3 +312,12 @@ def events_ajax(request):
         return api_ok(_("Event checked"))
     
     return api_error(_("No action defined"))
+
+@login_required
+def comment_detail(request, object_id):
+    comment_obj = EventComment.objects.filter(event = object_id)
+    comment = comment_obj.values('comment','user','timestamp')
+    extra_context = {
+        'comment': comment
+        }
+    return direct_to_template(request, 'events/comment_detail.html', extra_context)

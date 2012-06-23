@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 {% block content %}
 <h2>
-{{ object.timestamp|action:"event_timestamp" }}
+{{ object.get_localized_timestamp|action:"event_timestamp" }}
 {% if object.short_message %}: {{ object.short_message|action:"event_short_message" }}{% endif %}
 </h2>
 

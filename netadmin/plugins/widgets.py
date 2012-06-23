@@ -20,6 +20,7 @@
 
 from django.utils.translation import ugettext as _
 
+from netadmin.plugins.utils import get_user_objects
 
 class UnknownWidgetName(Exception):
     """Raised when widget's author didn't override name field
@@ -51,6 +52,8 @@ class Widget(object):
     description = ""
     
     template_name = ""
+    user = ""
+    user_list = []
     
     def __init__(self, user=None):
         self._user = user
@@ -91,13 +94,18 @@ class Widget(object):
               be returned by get_option method (NOT plugins.options.get_option function!)
         """
         return {}
-
+		
     def get_option(self, name, widget):
         """
         Returns value of the option with specified name or returns result
         of the return_func function declared for widget's option with this name.
         """
         from options import get_option
+        self.user = get_user_objects(None,widget)
+        if self.username:
+			for user in self.username:
+				user_name = get_user_objects(user, widget)
+				self.user_list.append(user_name)
         option = self.options(widget).get(name)
         if option:
             if not option.has_key('default'):

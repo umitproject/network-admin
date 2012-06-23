@@ -49,7 +49,13 @@ urlpatterns = patterns('netadmin.networks.views',
         'network_delete', name="network_delete"),
     url(r'^network/events/(?P<object_id>\d+)/$',
         'network_events', name='network_events'),
-                       
+    
+    url(r'^network/netmask-create/$',
+        'subnet_network', name='subnet_network'),
+    url(r'/update/(?P<object_id>\d+)/$',
+        'network_select', name='network_select'),
+    
+                           
     url(r'share/list/(?P<object_type>host|network)/(?P<object_id>\d+)/',
         'share_list', name="share_list"),
     url(r'share/(?P<object_type>host|network)/(?P<object_id>\d+)/',

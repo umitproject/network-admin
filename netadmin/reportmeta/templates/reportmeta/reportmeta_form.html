@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
 Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
@@ -38,12 +38,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{{ form.errors }}
 	{{ form.as_p }}
 	{% if objects_list %}
-	<p>{{ object_type_name|capfirst }}: 
-	<select name="object_id">
-	{% for object in objects_list %}
-		<option value="{{ object.pk }}">{{ object.name }}</option>
-	{% endfor %}
-	</select>
+	<p>
+        <label>{{ object_type_name|capfirst }}:</label>
+        <select name="object_id">
+        {% for object in objects_list %}
+            <option value="{{ object.pk }}">{{ object.name }}</option>
+        {% endfor %}
+        </select>
 	</p>
 	{% endif %}
 	<input type="submit" value="{% trans "Add report" %}" />

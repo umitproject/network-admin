@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Amit Pal <amix.pal@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "manage users" %}{% endblock %}
+
+{% block content_classes %}users{% endblock %}
+
+{% block content %}
+<h2>{% trans "Users List" %}</h2>
+
+
+<form action="" method="POST">
+	<table>
+		<thead>
+			<tr><th>{% trans "Users" %}</th>
+            <th>{% trans "First Name" %}</th>
+            <th>{% trans "Last Name" %}</th>
+            <th>{%trans "Email" %}</th>
+            <th>{%trans "Staff status"%}</th>
+            <th>{%trans "Active status"%}</th></tr>
+		</thead>
+		<tbody>
+					{% for obj in users_list.object_list %}
+					
+			<tr class="{% cycle 'odd' 'even' %}">
+				<td><a href="{% url user_change_password obj.pk %}">{{obj}}</a></td>
+                <td>{{obj.first_name}}</td>
+                <td>{{obj.last_name}}</td>
+                <td>{{obj.email}}</td>
+                <td><a href="{% url user_change_status obj.pk %}">{{obj.is_staff}}</a></td>
+                <td><a href="{% url user_block obj.pk %}">{{obj.is_active}}</a></td>
+                
+				
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+</form>
+{% if users_list.paginator.num_pages > 1 %}
+	<div class="pagination">
+	{% if users_list.has_previous %}
+		<span class="prev"><a href="{% url users_list_page users_list.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
+	{% endif %}
+		<span>{% trans "Page" %} {{ users_list.number }} {% trans "of" %} {{ users_list.paginator.num_pages }}</span>
+	{% if users_list.has_next %}
+		<span class="next"><a href="{% url users_list_page users_list.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
+	{% endif %}
+	</div>
+{% endif %}
+{% endblock %}

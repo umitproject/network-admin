@@ -1,0 +1,9 @@
+django==1.3.1
+django-piston==0.2.2
+reportlab==2.3
+geraldo==0.4.14
+Whoosh==2.4.0
+django-haystack==1.2.7
+netaddr==0.7.7
+pytz==2012c
+Skype4Py==1.0.32.0
