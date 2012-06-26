@@ -70,7 +70,6 @@ def events_list(request, events=None, alerts=None, search_form=None,
     
     if extra_context:
         context.update(extra_context)
-    #import pdb;pdb.set_trace()
     return direct_to_template(request, template_name,
                               extra_context=context)
 
@@ -176,7 +175,6 @@ def events_stats(request):
         'eventtypes_chart': eventtypes_chart,
         'eventtypescount_chart': eventtypescount_chart
     }
-    
     return direct_to_template(request, "events/event_stats.html",
                               extra_context=context)
 
@@ -188,12 +186,15 @@ def event_detail(request, object_id=None, message_slug=None):
         event = Event.objects.get(message_slug=message_slug)
     else:
         return events_list(request)
+    
     if not user_has_access(event.source_host, request.user):
         raise Http404()
+    
     if request.method == 'POST':
         check_form = EventCheckForm(request.POST, instance=event)
         if check_form.is_valid():
             check_form.save()
+    
     check_form = EventCheckForm(instance=event)
     extra_context = {
         'check_form': check_form
@@ -217,6 +218,7 @@ def eventtype_detail(request, event_type_id=None, event_type_slug=None):
         et = EventType.objects.get(name_slug=event_type_slug)
     else:
         return events_list(request)
+    
     events = Event.objects.filter(event_type__pk=et.pk)
     header = _("%s events") % et.name
     return events_list(request, events, events_header=header)
@@ -242,6 +244,7 @@ def eventtype_edit(request):
 def eventcateg_detail(request):
     ca = EventTypeCategory.objects.values()
     categories =[]
+    
     for i in range(0, len(ca)):
         pk_sub = ca[i]['sub_categ_id']
         if (pk_sub!=None):
@@ -250,6 +253,7 @@ def eventcateg_detail(request):
             categories.append(category)
         else:
             categories.append('None')
+    
     iterator = 0
     new_dict_list = []
     temp_dict = {}
@@ -267,14 +271,14 @@ def eventcateg_detail(request):
 		
 @login_required
 def categ_detail(request, categ_id):
-	et = EventTypeCategory.objects.get(id = categ_id)
+	event_type_categ = EventTypeCategory.objects.get(id=categ_id)
 	return render(request, "events/eventtypecategory_detail.html",{
-		'object': et
+		'object': event_type_categ
 		})
 		
 @login_required
 def categ_delete(request, categ_id):
-    et = EventTypeCategory.objects.get(id = categ_id)
+    et = EventTypeCategory.objects.get(id=categ_id)
     if et.user != request.user:
         raise Http404()
     return delete_object(request, object_id=categ_id, model=EventTypeCategory,
@@ -283,6 +287,7 @@ def categ_delete(request, categ_id):
 	
 def events_notify(request):
     notifier = NotifierQueue(EventNotification)
+    
     try:
 		
         log = notifier.send_emails(_("You have new alert(s) "
@@ -309,7 +314,8 @@ def event_comment(request):
     extra_context = {
         'form': EventCommentForm()
     }
-    return direct_to_template(request, 'events/event_comment.html', extra_context)
+    return direct_to_template(request, 'events/event_comment.html', 
+							  extra_context)
 
 @login_required
 def events_ajax(request):
@@ -331,9 +337,10 @@ def events_ajax(request):
 
 @login_required
 def comment_detail(request, object_id):
-    comment_obj = EventComment.objects.filter(event = object_id)
+    comment_obj = EventComment.objects.filter(event=object_id)
     comment = comment_obj.values('comment','user','timestamp')
     extra_context = {
         'comment': comment
-        }
-    return direct_to_template(request, 'events/comment_detail.html', extra_context)
+    }
+    return direct_to_template(request, 'events/comment_detail.html', 
+                              extra_context)
