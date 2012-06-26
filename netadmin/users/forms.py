@@ -43,7 +43,8 @@ class UserProfileForm(forms.ModelForm):
         
 class UserRegistrationForm(UserCreationForm):
     email2 = forms.EmailField(label=_("E-mail"))
-    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], label = _("TimeZone"))
+    timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], 
+                                 label = _("TimeZone"))
     skype = forms.CharField(max_length=20)
     
     def clean_email2(self):
