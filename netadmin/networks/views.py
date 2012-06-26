@@ -43,6 +43,7 @@ from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
     NetworkUpdateForm, SubnetCreateFrom
 from utils import get_subnet
 from netadmin.shortcuts import get_hosts
+from netadmin.permissions.models import ObjectPermission
 
 @login_required
 def host_list(request, page=None):
@@ -95,7 +96,8 @@ def host_create(request):
     extra_context = {
         'form': HostCreateForm(initial={'user': request.user.pk})
     }
-    return direct_to_template(request, 'networks/host_form.html', extra_context)
+    return direct_to_template(request, 'networks/host_form.html', 
+						      extra_context)
 
 @login_required
 def host_update(request, object_id):
@@ -228,8 +230,13 @@ def share_edit(request, object_type, object_id, user_id):
     model = Network if object_type == 'network' else Host
     obj, edit = get_object_or_forbidden(model, object_id, request.user)
     user = User.objects.get(pk=user_id)
-    if edit:
-        revoke_edit(obj, user)
+    
+    permission_obj = ObjectPermission.objects.filter(object_id=object_id)
+    for perm in permission_obj:
+		edit_status = perm.edit
+		
+    if edit_status:
+		revoke_edit(obj, user)
     else:
         grant_edit(obj, user)
     return share_list(request, object_type, object_id)
@@ -240,18 +247,30 @@ def share_list(request, object_type, object_id):
     obj, edit = get_object_or_forbidden(model, object_id, request.user)
     all_users = User.objects.exclude(pk=request.user.pk)
     other_users = []
+    share_object = []
+    
     for user in all_users:
         if not user_has_access(obj, user):
             other_users.append(user)
+    
+    permission_obj = ObjectPermission.objects.filter(object_id=object_id)
+    
+    for perm in permission_obj:
+		share_object.append({'user': perm.user, 'edit': perm.edit,
+							'id':perm.user.id })
+		
     extra_context = {
-        'object': obj,
-        'object_type': object_type,
-        'other_users': other_users
-    }
-    return direct_to_template(request, 'networks/share.html', extra_context)
+	'object': obj,
+	'object_type': object_type,
+	'other_users': other_users,
+	'objects_detail': share_object
+	}
+    return direct_to_template(request, 'networks/share.html', 
+							  extra_context)
 
 @login_required
 def subnet_network(request):
+    
     if request.method == 'POST':
         form = SubnetCreateFrom(request.POST)
         if form.is_valid():
@@ -261,25 +280,33 @@ def subnet_network(request):
             hosts_list = get_subnet(user_host, subnet,ip)
             subnet_network = form.save()
             network_obj = Network.objects.get(name__exact = form.cleaned_data['name'])
+    
             for hosts in hosts_list:
-                network_entry = NetworkHost(network_id = network_obj.id, host_id = hosts.id)
+                network_entry = NetworkHost(network_id = network_obj.id, 
+											host_id = hosts.id)
                 network_entry.save()
+    
             extra_context = {
                 'form': SubnetCreateFrom(initial={'user': request.user.pk}),
                 'host_list': hosts_list
                 }
+    
             return redirect_to(request, url=subnet_network.get_absolute_url())
     else:
         form = SubnetCreateFrom()
+    
     extra_context = {
         'form':SubnetCreateFrom(initial={'user': request.user.pk})
         }
-    return direct_to_template(request,'networks/subnet_form.html',extra_context)
+    return direct_to_template(request,'networks/subnet_form.html',
+							  extra_context)
 
 @login_required
 def network_detail(request, object_id):
+    
     network_obj = Network.objects.get(id = object_id)
     host_list = []
+    
     if network_obj.subnet:
         hosts = NetworkHost.objects.filter(network = object_id)
         host_id = hosts.values('host')
@@ -289,18 +316,24 @@ def network_detail(request, object_id):
                 host_list.append(host_obj)
     else:
         host_list = Host.objects.filter(user=request.user)
+    
     extra_context = {
         'hosts': host_list,
         'id':object_id
         }
-    return direct_to_template(request,'networks/network_detail.html',extra_context)
+    
+    return direct_to_template(request,'networks/network_detail.html',
+							  extra_context)
 
 @login_required
 def network_select(request,object_id):
+    
     if request.method == 'POST':
         host = request.POST.getlist('host')
         NetworkHost.objects.filter(network = object_id).delete()
         for hosts in host:
-            network_entry = NetworkHost(network_id = object_id, host_id = hosts.replace("/",""))
+            network_entry = NetworkHost(network_id = object_id, 
+										host_id = hosts.replace("/",""))
             network_entry.save()
+    
     return HttpResponseRedirect('../.././../list')
