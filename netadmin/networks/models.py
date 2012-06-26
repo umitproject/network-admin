@@ -39,7 +39,6 @@ class NetworkObject(models.Model, SharedObject):
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
     subnet = models.BooleanField(default= False)
-    
     def __unicode__(self):
         return self.name
     
