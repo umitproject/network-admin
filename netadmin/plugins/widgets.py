@@ -106,7 +106,9 @@ class Widget(object):
 			for user in self.username:
 				user_name = get_user_objects(user, widget)
 				self.user_list.append(user_name)
+        
         option = self.options(widget).get(name)
+        
         if option:
             if not option.has_key('default'):
                 raise DefaultValueNotFound(_("Default value for option '%s' "
