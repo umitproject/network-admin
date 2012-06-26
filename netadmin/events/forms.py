@@ -85,5 +85,6 @@ class EventCommentForm(forms.ModelForm):
             'user': forms.HiddenInput(),
             'timestamp': forms.HiddenInput()
             }
+            
 EventCommentFormset = modelformset_factory(EventComment,
                                             form = EventCommentForm)
