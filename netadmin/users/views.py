@@ -247,11 +247,12 @@ def user_change_password(request, id):
         return HttpResponseRedirect('../../user/users')
     else:
         form = AdminPasswordChangeForm(user)
+    
     extra_context = {
         
         'form': form,
         'change': True
-        }
+    }
     return direct_to_template(request,"users/user_password_change.html",
                 extra_context = extra_context)
                 
@@ -260,8 +261,8 @@ def user_change_status(request, id):
     user = User.objects.get(pk=id)
     if user.is_staff:
         user.is_staff = False
-    else:
-        user.is_staff = True
+    else: user.is_staff = True
+    
     user.save()
     return HttpResponseRedirect('../../user/users')
     
@@ -270,7 +271,7 @@ def user_block(request, id):
     user = User.objects.get(pk=id)
     if user.is_active:
         user.is_active = False
-    else:
-        user.is_active = True
+    else: user.is_active = True
+    
     user.save()
     return HttpResponseRedirect('../../user/users')    
