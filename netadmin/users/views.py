@@ -45,8 +45,10 @@ except ImportError:
 from piston.models import Consumer, Token
 
 from django.conf import settings
-from forms import UserForm, UserProfileForm, UserRegistrationForm
-from models import UserActivationCode
+from forms import UserForm, UserProfileForm, UserRegistrationForm, \
+					AlertCountForm, NotifierForm
+		
+from models import UserActivationCode, UserProfile
 from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
@@ -65,11 +67,15 @@ ACTIVATION_MAIL_CONTENT = _("""
 @login_required
 def user_public(request, slug):
     user = get_object_or_404(User, username=slug)
+    user_profile = get_object_or_404(UserProfile, user=request.user.pk)
     if not user.get_profile().is_public:
         return HttpResponseForbidden()
     
+    extra_context = {
+		'profile': user_profile
+	}
     return object_detail(request, slug=slug, queryset=User.objects.all(),
-                         slug_field='username',
+                         slug_field='username',extra_context=extra_context,
                          template_name='users/user_public.html')
 
 @login_required
@@ -113,7 +119,6 @@ def user_private(request):
         'api_consumer': api_consumer,
         'api_access_token': api_access_token
     }
-    
     return object_detail(request, object_id=request.user.pk,
                          queryset=User.objects.all(),
                          template_name='users/user_private.html',
@@ -244,7 +249,7 @@ def user_change_password(request, id):
         new_user = form.save()
         msg = _('Password changed successfully.')
         request.user.message_set.create(message=msg)
-        return HttpResponseRedirect('../../user/users')
+        return HttpResponseRedirect(reverse('user_list'))
     else:
         form = AdminPasswordChangeForm(user)
     
@@ -264,7 +269,7 @@ def user_change_status(request, id):
     else: user.is_staff = True
     
     user.save()
-    return HttpResponseRedirect('../../user/users')
+    return HttpResponseRedirect(reverse('user_list'))
     
 @login_required        
 def user_block(request, id):
@@ -274,4 +279,25 @@ def user_block(request, id):
     else: user.is_active = True
     
     user.save()
-    return HttpResponseRedirect('../../user/users')    
+    return HttpResponseRedirect(reverse('user_list'))   
+
+@login_required
+def profile_setting(request, slug):
+	if request.method == 'POST':
+		alert_form = AlertCountForm(request.POST)
+		notifier_form = NotifierForm(request.POST)
+		if alert_form.is_valid() and notifier_form.is_valid():
+			alert = alert_form.save(commit=False)
+			notifier = notifier_form.save(commit=False) 
+			alert.user = request.user.username
+			notifier.user = request.user.username
+			notifier.save()
+			alert.save()
+			return HttpResponseRedirect(reverse('profile_setting', args=[slug]))
+			
+	extra_context = {
+		'alert_form': AlertCountForm(),
+		'notifier_form': NotifierForm()
+	}
+	return direct_to_template(request,'users/user_profile_setting.html',
+	                          extra_context)
