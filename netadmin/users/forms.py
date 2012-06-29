@@ -19,6 +19,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django import forms
+from django.forms.models import modelformset_factory
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth.models import User
@@ -26,10 +27,16 @@ from django.utils.translation import ugettext as _
 from datetime import datetime
 import pytz
 from pytz import timezone
-import pdb
 
-from netadmin.users.models import UserProfile
+from models import UserProfile
+from netadmin.events.models import AlertCount
+from netadmin.notifier.models import Notifier
 
+NOTIFIER_TYPE = (
+    (0, _('E-mail')),
+    (1, _('Skype')),
+    (2, _('IRC'))
+)
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -39,13 +46,12 @@ class UserForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ('is_public', 'in_search')
+        fields = ('is_public', 'in_search','website','skype','irc')
         
 class UserRegistrationForm(UserCreationForm):
     email2 = forms.EmailField(label=_("E-mail"))
     timezone2 = forms.ChoiceField(choices=[(x, x) for x in pytz.common_timezones], 
                                  label = _("TimeZone"))
-    skype = forms.CharField(max_length=20)
     
     def clean_email2(self):
         email2 = self.cleaned_data['email2']
@@ -63,6 +69,39 @@ class UserRegistrationForm(UserCreationForm):
             user.save()
             user_profile = user.get_profile()
             user_profile.timezone = self.cleaned_data["timezone2"]
-            user_profile.skype = self.cleaned_data["skype"]
             user_profile.save()
         return user
+
+class AlertCountForm(forms.ModelForm):
+	class Meta:
+		model=AlertCount
+		fields = ('high','medium','low', 'user')
+		widgets = {
+			'user':  forms.HiddenInput()
+		}
+		
+AlertCountFormset = modelformset_factory(AlertCount,
+                                            form = AlertCountForm)
+
+class NotifierForm(forms.ModelForm):
+	high = forms.ChoiceField(choices=NOTIFIER_TYPE)
+	medium = forms.ChoiceField(choices=NOTIFIER_TYPE)
+	low = forms.ChoiceField(choices=NOTIFIER_TYPE)	
+	
+	def save(self, commit=True):
+		alert = super(NotifierForm, self).save(commit=False)
+		alert.high = self.cleaned_data["high"]
+		alert.medium = self.cleaned_data["medium"]
+		alert.low = self.cleaned_data["low"]
+		alert.save()
+		return alert
+	
+	class Meta:
+		model=Notifier
+		fields = ('high','medium', 'low', 'user')
+		widgets = {
+			'user': forms.HiddenInput()
+		}
+	
+NotifierFormset = modelformset_factory(Notifier,
+										form = NotifierForm)
