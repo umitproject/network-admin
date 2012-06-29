@@ -3,7 +3,7 @@
 
 # Copyright (C) 2012 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -37,3 +37,12 @@ class Notification(models.Model):
 
     def __unicode__(self):
         return self.title
+
+class Notifier(models.Model):
+	"""Give option, a user to chooses the notifier for each type
+	of Alerts
+	"""
+	user = models.CharField(max_length=30, null=True, blank=True)
+	high = models.CharField(max_length=30, null=True, blank=True)
+	medium = models.CharField(max_length=30, null=True, blank=True)
+	low = models.CharField(max_length=30, null=True, blank=True)
