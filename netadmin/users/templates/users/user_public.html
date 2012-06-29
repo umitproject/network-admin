@@ -32,11 +32,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</p>
 {% endif %}
 
-<p>{% trans "E-mail" %}: {{ object.email }}</p>
+<p><b> {% trans "E-mail" %}: </b> {{ object.email }} </p>
+<p><b> {% trans "Skype" %}:  </b> {{ profile.skype }} </p>
+<p><b> {% trans "IRC" %}:    </b> {{ profile.irc }} </p>
+<p><b> {% trans "Website/Blog link" %}:  </b> <a>{{profile.website}}</a> </p>
 {% endblock %}
 
 {% block meta %}
 <ul>
 	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
+	<li class="search"><a href="{% url profile_setting object.username %}">{% trans "Profile setting" %}</a></li>
 </ul>
 {% endblock %}
