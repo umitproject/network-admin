@@ -160,8 +160,8 @@ class Event(models.Model):
     
     def get_localized_timestamp(self):
 		host_timezone = pytz.timezone(self.source_host.timezone)
-		user = User.objects.get(username=self.source_host.user)
-		user_obj = UserProfile.objects.get(id=user.id)
+		user = User.objects.get(username = self.source_host.user)
+		user_obj = UserProfile.objects.get(id = user.id)
 		if user_obj.timezone == u'': 
 			user_obj.timezone = self.source_host.timezone
 		user_timezone = pytz.timezone(user_obj.timezone) 
@@ -213,10 +213,20 @@ class Event(models.Model):
         }
 
 class EventComment(models.Model):
-	
-    comment = models.TextField()
-    user = models.CharField(max_length=30, null=False, blank=True)
-    timestamp = models.DateTimeField(null=False, blank=True)
-    event = models.ForeignKey(Event, blank=False, null=False)
-    def __unicode__(self):
-        return "'%s' at %s" % (self.comment)
+	""" Required to Post a comment for events
+	"""
+	comment = models.TextField()
+	user = models.CharField(max_length=30, null=False, blank=True)
+	timestamp = models.DateTimeField(null=False, blank=True)
+	event = models.ForeignKey(Event, blank=False, null=False)
+	def __unicode__(self):
+		return "'%s' at %s" % (self.comment)
+
+class AlertCount(models.Model):
+	""" Required to set the limit for each type 
+	of Alert
+	"""
+	user = models.CharField(max_length=30, blank=True)
+	low = models.IntegerField(blank=True, null=True)
+	medium = models.IntegerField(blank=True, null=True)
+	high = models.IntegerField(blank=True, null=True)
