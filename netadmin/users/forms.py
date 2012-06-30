@@ -32,11 +32,6 @@ from models import UserProfile
 from netadmin.events.models import AlertCount
 from netadmin.notifier.models import Notifier
 
-NOTIFIER_TYPE = (
-    (0, _('E-mail')),
-    (1, _('Skype')),
-    (2, _('IRC'))
-)
 
 class UserForm(forms.ModelForm):
     class Meta:
@@ -72,36 +67,25 @@ class UserRegistrationForm(UserCreationForm):
             user_profile.save()
         return user
 
+                                            
+class NotifierForm(forms.ModelForm):
+	class Meta:
+		model = Notifier
+		fields = ('high_notify', 'medium_notify', 'low_notify', 'user_notify')
+		widgets = {
+			'user_notify': forms.HiddenInput()
+		}
+		
+NotifierFormset = modelformset_factory(Notifier,
+						               form=NotifierForm)
+						               
 class AlertCountForm(forms.ModelForm):
 	class Meta:
-		model=AlertCount
+		model = AlertCount
 		fields = ('high','medium','low', 'user')
 		widgets = {
 			'user':  forms.HiddenInput()
 		}
 		
 AlertCountFormset = modelformset_factory(AlertCount,
-                                            form = AlertCountForm)
-
-class NotifierForm(forms.ModelForm):
-	high = forms.ChoiceField(choices=NOTIFIER_TYPE)
-	medium = forms.ChoiceField(choices=NOTIFIER_TYPE)
-	low = forms.ChoiceField(choices=NOTIFIER_TYPE)	
-	
-	def save(self, commit=True):
-		alert = super(NotifierForm, self).save(commit=False)
-		alert.high = self.cleaned_data["high"]
-		alert.medium = self.cleaned_data["medium"]
-		alert.low = self.cleaned_data["low"]
-		alert.save()
-		return alert
-	
-	class Meta:
-		model=Notifier
-		fields = ('high','medium', 'low', 'user')
-		widgets = {
-			'user': forms.HiddenInput()
-		}
-	
-NotifierFormset = modelformset_factory(Notifier,
-										form = NotifierForm)
+                                            form=AlertCountForm)
