@@ -49,6 +49,8 @@ from forms import UserForm, UserProfileForm, UserRegistrationForm, \
 					AlertCountForm, NotifierForm
 		
 from models import UserActivationCode, UserProfile
+from netadmin.events.models import AlertCount
+from netadmin.notifier.models import Notifier
 from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
@@ -283,21 +285,31 @@ def user_block(request, id):
 
 @login_required
 def profile_setting(request, slug):
+	
+	try:
+		model_instance = AlertCount.objects.get(user=request.user.username)
+	except:
+		model_ins = AlertCount.objects.create(user=request.user.username,
+		                                           low=0, high=0, medium=0)
+		AlertCount.save(model_ins)
+		model_instance = AlertCount.objects.get(user=request.user.username)
 	if request.method == 'POST':
-		alert_form = AlertCountForm(request.POST)
-		notifier_form = NotifierForm(request.POST)
-		if alert_form.is_valid() and notifier_form.is_valid():
+		alert_form = AlertCountForm(request.POST, prefix='alert')
+		notify_form = NotifierForm(request.POST, prefix='notifier')
+		if alert_form.is_valid() and notify_form.is_valid():
 			alert = alert_form.save(commit=False)
-			notifier = notifier_form.save(commit=False) 
+			notify = notify_form.save(commit=False)
 			alert.user = request.user.username
-			notifier.user = request.user.username
-			notifier.save()
+			notify.user_notify = request.user.username
+			AlertCount.objects.filter(user=alert.user).delete()
+			Notifier.objects.filter(user_notify=notify.user_notify).delete()
 			alert.save()
+			notify.save()
 			return HttpResponseRedirect(reverse('profile_setting', args=[slug]))
-			
+	
 	extra_context = {
-		'alert_form': AlertCountForm(),
-		'notifier_form': NotifierForm()
+		'alert_form': AlertCountForm(prefix='alert', instance=model_instance),
+		'notify_form': NotifierForm(prefix='notifier')
 	}
 	return direct_to_template(request,'users/user_profile_setting.html',
-	                          extra_context)
+					          extra_context)
