@@ -23,6 +23,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.db import models
 
+NOTIFIER_TYPE = (
+	('0', 'E-mail'),
+	('1', 'Skype'),
+	('2', 'IRC')
+)
 
 class Notification(models.Model):
     """Represents notification that has to be sent as soon as possible
@@ -42,7 +47,7 @@ class Notifier(models.Model):
 	"""Give option, a user to chooses the notifier for each type
 	of Alerts
 	"""
-	user = models.CharField(max_length=30, null=True, blank=True)
-	high = models.CharField(max_length=30, null=True, blank=True)
-	medium = models.CharField(max_length=30, null=True, blank=True)
-	low = models.CharField(max_length=30, null=True, blank=True)
+	user_notify = models.CharField(max_length=30, null=True, blank=True)
+	high_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True)
+	medium_notify = models.IntegerField(choices=NOTIFIER_TYPE, max_length=30, null=True, blank=True)
+	low_notify = models.IntegerField(choices=NOTIFIER_TYPE, max_length=30, null=True, blank=True)
