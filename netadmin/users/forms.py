@@ -71,13 +71,13 @@ class UserRegistrationForm(UserCreationForm):
 class NotifierForm(forms.ModelForm):
 	class Meta:
 		model = Notifier
-		fields = ('high_notify', 'medium_notify', 'low_notify', 'user_notify')
+		fields = ('high_notify', 'medium_notify', 'low_notify', 
+				  'user_notify')
 		widgets = {
 			'user_notify': forms.HiddenInput()
 		}
 		
-NotifierFormset = modelformset_factory(Notifier,
-						               form=NotifierForm)
+NotifierFormset = modelformset_factory(Notifier, form=NotifierForm)
 						               
 class AlertCountForm(forms.ModelForm):
 	class Meta:
@@ -87,5 +87,4 @@ class AlertCountForm(forms.ModelForm):
 			'user':  forms.HiddenInput()
 		}
 		
-AlertCountFormset = modelformset_factory(AlertCount,
-                                            form=AlertCountForm)
+AlertCountFormset = modelformset_factory(AlertCount, form=AlertCountForm)
