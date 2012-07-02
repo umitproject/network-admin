@@ -22,6 +22,7 @@ from datetime import timedelta
 from events.models import Event, EventType
 from networks.models import Host, Network
 from users.models import UserProfile
+from netadmin.permissions.utils import filter_user_objects
 
 from django.contrib.auth.models import User
 
@@ -72,14 +73,14 @@ def get_alerts(user=None):
 def _get_network_objects(subclass, user=None):
     objects = subclass.objects.all()
     if user:
-        objects = objects.filter(user=user)
-    return objects
+		objects = filter_user_objects(user, subclass)
+    return objects 
 
 def get_host(id):
     return Host.objects.get(pk=id)
 
 def get_hosts(user=None):
-    return _get_network_objects(Host, user)
+	return _get_network_objects(Host, user)
 
 def get_network(id):
     return Network.objects.get(pk=id)
