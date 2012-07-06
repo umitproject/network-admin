@@ -68,7 +68,8 @@ urlpatterns = patterns('netadmin.events.views',
         'event_comment', name=" event_comment"),
      
         
-    
+    url(r'^map/public/$',
+        'map_public', name="map_public"),
     
     
     url(r'^ajax/$',
