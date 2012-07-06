@@ -3,7 +3,7 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Author: Amit Pal <amix.pal@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +26,8 @@ from django.core.urlresolvers import reverse
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template,redirect_to
 from django.shortcuts import get_object_or_404,render
+from utils import range_check, get_latlng
+
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
@@ -37,6 +39,7 @@ except ImportError:
 from forms import EventSearchForm, EventSearchSimpleForm,EventCommentForm, \
     EventTypeFormset, EventCheckForm, EventCategoryFormset, EventCommentFormset
 from models import Event, EventType, ALERT_LEVELS, EventTypeCategory, EventComment
+from netadmin.networks.models import Host
 from utils import filter_user_events
 import datetime
 now = datetime.datetime.now()
@@ -311,6 +314,7 @@ def event_comment(request):
             comment_form.user = request.user.username
             comment_form.save()
             return HttpResponseRedirect('/event/list')
+    
     extra_context = {
         'form': EventCommentForm()
     }
@@ -344,3 +348,28 @@ def comment_detail(request, object_id):
     }
     return direct_to_template(request, 'events/comment_detail.html', 
                               extra_context)
+
+def map_public(request):
+	events = Event.objects.all()
+	listofobs = []
+	geoIP = []
+	
+	for event in events:
+		timestamp = event.timestamp
+		host = Host.objects.get(id=event.source_host_id).ipv4
+		geo_range = range_check(host)
+		geoIP.append( '%s' % (geo_range[0][0]))
+		eventtype_obj = EventType.objects.get(id=event.event_type_id) 
+		user = eventtype_obj.user.username
+		d = {
+			'timestamp':timestamp,
+			'host': host,
+			'user': user,
+		}
+		listofobs.append(d)
+	geo_latlng = get_latlng(geoIP)
+	extra_context = {
+		'object': listofobs,
+		'latlng': geo_latlng
+	}
+	return direct_to_template(request, 'events/event_public_map.html', extra_context)
