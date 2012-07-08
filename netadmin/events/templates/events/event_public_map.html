@@ -44,8 +44,10 @@ src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCVSS35Ufsv0aEf0lV4qTIWnWg5
     map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
      
     var flightPlanCoordinates = [ {% for ip in latlng %}{{ ip }}{% endfor %}];
+    var user = [{% for i in user_list %}"{{ i }}"{% if forloop.last %}{%else%},{%endif%}{% endfor %}];
     for(var i in flightPlanCoordinates){
-		var marker = add_marker(flightPlanCoordinates[i][0], flightPlanCoordinates[i][1],"Some title!","html for info box");
+		var myHtml = "<table><tr><td> Username &nbsp <b>" + user[i] + "</b></td></th></table>"
+		var marker = add_marker(flightPlanCoordinates[i][0], flightPlanCoordinates[i][1],"Some title!",myHtml);
 		marker.setMap(map);
 		}
 	}
