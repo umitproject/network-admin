@@ -353,23 +353,21 @@ def map_public(request):
 	events = Event.objects.all()
 	listofobs = []
 	geoIP = []
+	user_list = []
+	timestamp_list = []
 	
 	for event in events:
-		timestamp = event.timestamp
+		timestamp_list.append(event.timestamp)
 		host = Host.objects.get(id=event.source_host_id).ipv4
 		geo_range = range_check(host)
 		geoIP.append( '%s' % (geo_range[0][0]))
 		eventtype_obj = EventType.objects.get(id=event.event_type_id) 
-		user = eventtype_obj.user.username
-		d = {
-			'timestamp':timestamp,
-			'host': host,
-			'user': user,
-		}
-		listofobs.append(d)
+		user_list.append(eventtype_obj.user.username)
 	geo_latlng = get_latlng(geoIP)
+
 	extra_context = {
-		'object': listofobs,
+		'user_list': user_list,
+		'timestamp_list': str(timestamp_list),
 		'latlng': geo_latlng
 	}
 	return direct_to_template(request, 'events/event_public_map.html', extra_context)
