@@ -31,6 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 <th>{% trans "Comment" %}</th>
 				<th>{% trans "Host" %}</th>
 				<th></th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -74,6 +75,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				{% else %}
 					<a href="{% url event_ajax %}" id="pending-{{ event.pk }}" class="icon-25 pending"><span>{% trans "Mark as checked" %}</span></a>
 				{% endif %}
+				</td>
+				<td>
+					<a href="{% url map_public %}">
+						{% trans "See on Map" %}
+					</a>
 				</td>
 			</tr>
 		{% endfor %}

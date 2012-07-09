@@ -2,7 +2,7 @@
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
-Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+Author: Amit Pal <amix.pal@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -23,24 +23,24 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}user{% endblock %}
 
 {% block content %}
-<h2>{% if object.get_full_name %}{{ object.get_full_name }} ({{ object.username }}){% else %}{{ object.username }}{% endif %}</h2>
 
-{% if request.GET.s %}
-	<p class="breadcrumbs">
-		<a href="{% url user_search %}">{% trans "search" %}</a> > 
-		"{{ request.GET.s }}"
-	</p>
-{% endif %}
+<h3>{% trans "Alert settings" %}</h3>
 
-<p><b> {% trans "E-mail" %}: </b> {{ object.email }} </p>
-<p><b> {% trans "Skype" %}:  </b> {{ profile.skype }} </p>
-<p><b> {% trans "IRC" %}:    </b> {{ profile.irc }} </p>
-<p><b> {% trans "Website/Blog link" %}:  </b> <a>{{profile.website}}</a> </p>
+<form action="" method="POST">{% csrf_token %}
+	{{ alert_form.as_p }}
+	
+<h3>{% trans "Notify settings" %}</h3>
+
+	{{ notify_form.as_p }}
+	<input type="submit" value="{% trans 'Update' %}" />
+</form>
+
 {% endblock %}
 
 {% block meta %}
 <ul>
 	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-	<li class="search"><a href="{% url profile_setting object.username %}">{% trans "Profile setting" %}</a></li>
 </ul>
 {% endblock %}
+
+

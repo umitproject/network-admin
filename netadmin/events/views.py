@@ -3,7 +3,8 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Authors: Amit Pal <amix.pal@gmail.com>
+#          Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,6 +27,8 @@ from django.core.urlresolvers import reverse
 from django.views.generic.list_detail import object_detail
 from django.views.generic.simple import direct_to_template,redirect_to
 from django.shortcuts import get_object_or_404,render
+from utils import range_check, get_latlng
+
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 
@@ -37,6 +40,7 @@ except ImportError:
 from forms import EventSearchForm, EventSearchSimpleForm,EventCommentForm, \
     EventTypeFormset, EventCheckForm, EventCategoryFormset, EventCommentFormset
 from models import Event, EventType, ALERT_LEVELS, EventTypeCategory, EventComment
+from netadmin.networks.models import Host
 from utils import filter_user_events
 import datetime
 now = datetime.datetime.now()
@@ -70,7 +74,6 @@ def events_list(request, events=None, alerts=None, search_form=None,
     
     if extra_context:
         context.update(extra_context)
-    #import pdb;pdb.set_trace()
     return direct_to_template(request, template_name,
                               extra_context=context)
 
@@ -176,7 +179,6 @@ def events_stats(request):
         'eventtypes_chart': eventtypes_chart,
         'eventtypescount_chart': eventtypescount_chart
     }
-    
     return direct_to_template(request, "events/event_stats.html",
                               extra_context=context)
 
@@ -188,12 +190,15 @@ def event_detail(request, object_id=None, message_slug=None):
         event = Event.objects.get(message_slug=message_slug)
     else:
         return events_list(request)
+    
     if not user_has_access(event.source_host, request.user):
         raise Http404()
+    
     if request.method == 'POST':
         check_form = EventCheckForm(request.POST, instance=event)
         if check_form.is_valid():
             check_form.save()
+    
     check_form = EventCheckForm(instance=event)
     extra_context = {
         'check_form': check_form
@@ -217,6 +222,7 @@ def eventtype_detail(request, event_type_id=None, event_type_slug=None):
         et = EventType.objects.get(name_slug=event_type_slug)
     else:
         return events_list(request)
+    
     events = Event.objects.filter(event_type__pk=et.pk)
     header = _("%s events") % et.name
     return events_list(request, events, events_header=header)
@@ -242,6 +248,7 @@ def eventtype_edit(request):
 def eventcateg_detail(request):
     ca = EventTypeCategory.objects.values()
     categories =[]
+    
     for i in range(0, len(ca)):
         pk_sub = ca[i]['sub_categ_id']
         if (pk_sub!=None):
@@ -250,6 +257,7 @@ def eventcateg_detail(request):
             categories.append(category)
         else:
             categories.append('None')
+    
     iterator = 0
     new_dict_list = []
     temp_dict = {}
@@ -267,18 +275,35 @@ def eventcateg_detail(request):
 		
 @login_required
 def categ_detail(request, categ_id):
-    et = EventTypeCategory.objects.get(id = categ_id)
-    return render(request, "events/eventtypecategory_detail.html",{
-        'object': et
-    })
+	event_type_categ = EventTypeCategory.objects.get(id=categ_id)
+	return render(request, "events/eventtypecategory_detail.html",{
+		'object': event_type_categ
+		})
 		
 @login_required
 def categ_delete(request, categ_id):
-    et = EventTypeCategory.objects.get(id = categ_id)
+    et = EventTypeCategory.objects.get(id=categ_id)
     if et.user != request.user:
         raise Http404()
     return delete_object(request, object_id=categ_id, model=EventTypeCategory,
                          post_delete_redirect=reverse('eventcateg_detail'))
+
+	
+def events_notify(request):
+    notifier = NotifierQueue(EventNotification)
+    
+    try:
+		
+        log = notifier.send_emails(_("You have new alert(s) "
+                                     "in Network Administrator"),
+                                   clear_queue=True)
+    except NotifierEmptyQueue:
+        log = []
+    if log:
+        response = "<p>Emails sent:</p>%s" % '<br />'.join(log)
+    else:
+        response = "<p>No emails to send</p>"
+    return HttpResponse(response)
 
 @login_required
 def event_comment(request):
@@ -290,10 +315,12 @@ def event_comment(request):
             comment_form.user = request.user.username
             comment_form.save()
             return HttpResponseRedirect('/event/list')
+    
     extra_context = {
         'form': EventCommentForm()
     }
-    return direct_to_template(request, 'events/event_comment.html', extra_context)
+    return direct_to_template(request, 'events/event_comment.html', 
+							  extra_context)
 
 @login_required
 def events_ajax(request):
@@ -315,9 +342,33 @@ def events_ajax(request):
 
 @login_required
 def comment_detail(request, object_id):
-    comment_obj = EventComment.objects.filter(event = object_id)
+    comment_obj = EventComment.objects.filter(event=object_id)
     comment = comment_obj.values('comment','user','timestamp')
     extra_context = {
         'comment': comment
-        }
-    return direct_to_template(request, 'events/comment_detail.html', extra_context)
+    }
+    return direct_to_template(request, 'events/comment_detail.html', 
+                              extra_context)
+
+def map_public(request):
+	events = Event.objects.all()
+	listofobs = []
+	geoIP = []
+	user_list = []
+	timestamp_list = []
+	
+	for event in events:
+		timestamp_list.append(event.timestamp)
+		host = Host.objects.get(id=event.source_host_id).ipv4
+		geo_range = range_check(host)
+		geoIP.append( '%s' % (geo_range[0][0]))
+		eventtype_obj = EventType.objects.get(id=event.event_type_id) 
+		user_list.append(eventtype_obj.user.username)
+	geo_latlng = get_latlng(geoIP)
+
+	extra_context = {
+		'user_list': user_list,
+		'timestamp_list': str(timestamp_list),
+		'latlng': geo_latlng
+	}
+	return direct_to_template(request, 'events/event_public_map.html', extra_context)

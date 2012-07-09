@@ -33,9 +33,11 @@ class UserProfile(models.Model):
         help_text=_('Show my profile in search results'))
     is_public = models.BooleanField(default=True,
         help_text=_('Let others to see my public profile'))
-    timezone = models.CharField(max_length = 30, help_text=_("Local timezone"))
-    skype = models.CharField(max_length = 20, blank= True)
-    
+    timezone = models.CharField(max_length = 30, 
+                               help_text = "Select the local timezone")
+    skype = models.CharField(max_length=20, blank=True)
+    irc = models.CharField(max_length=20,blank=True)
+    website = models.CharField(max_length=30,blank=True)
     def __unicode__(self):
         return 'Profile for user %s' % self.user.username
     

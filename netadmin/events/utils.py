@@ -25,8 +25,11 @@ except ImportError:
     import json
 
 import datetime
+import csv
+import os
 
 from django.utils.translation import ugettext as _
+from django.conf import settings
 
 from netadmin.permissions.utils import filter_user_objects
 from netadmin.networks.models import Host
@@ -119,4 +122,29 @@ def get_event_data(request, event_dict):
     }
     
     return event_data
+
+def range_check(ipv4_address):
+	rowx = []
+	f = open(os.path.join(settings.PROJECT_ROOT, 'static', 'csv ', 
+	                      'GeoIPCountryWhois.csv'))
+	for num,row in enumerate(csv.reader(f)):
+		if row[0] <= ipv4_address <= row[1]:
+			rowx.append([row[4]])
+			return rowx
+		else:
+			continue
+	return rowx
+
+def get_latlng(country_name):
+	rowy = []
+	geo_final = []
+	for x in range(0,len(country_name)):
+		d = open(os.path.join(settings.PROJECT_ROOT, 'static', 'csv ', 
+							  'GeoLiteCity-Location.csv'))
+		for num,row in enumerate(csv.reader(d)):
+			if row[1]== country_name[x].strip():
+				rowy.append([row[5],row[6]])
+		geo_final.append( '[%s,%s], ' % (rowy[x][0], rowy[x][1]))
+	return geo_final
+	
  

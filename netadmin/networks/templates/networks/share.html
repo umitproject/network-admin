@@ -39,11 +39,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 		</tr>
 	</thead>
 	<tbody>
-	{% for user, edit in object.sharing_users %}
+	{% for share_user in objects_detail %}
 		<tr>
-			<td>{{ user.username|action:"share_list_user" }}</td>
-			<td><a href="{% url share_edit object_type object.pk user.pk %}">{% if edit %}yes{% else %}no{% endif %}</a></td>
-			<td><a href="{% url share_not object_type object.pk user.pk %}">{% trans "remove" %}</a></td>
+			<td>{{ share_user.user }}</td> 
+			<td><a href="{% url share_edit object_type object.pk share_user.id %}">{{share_user.edit}}</a></td>
+			<td><a href="{% url share_not object_type object.pk share_user.id %}">{% trans "remove" %}</a></td>
 		</tr>	
 	{% endfor %}
 	</tbody>

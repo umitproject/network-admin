@@ -45,8 +45,12 @@ except ImportError:
 from piston.models import Consumer, Token
 
 from django.conf import settings
-from forms import UserForm, UserProfileForm, UserRegistrationForm
-from models import UserActivationCode
+from forms import UserForm, UserProfileForm, UserRegistrationForm, \
+					AlertCountForm, NotifierForm
+		
+from models import UserActivationCode, UserProfile
+from netadmin.events.models import AlertCount
+from netadmin.notifier.models import Notifier
 from django.contrib.auth.forms import AdminPasswordChangeForm
 
 
@@ -65,11 +69,15 @@ ACTIVATION_MAIL_CONTENT = _("""
 @login_required
 def user_public(request, slug):
     user = get_object_or_404(User, username=slug)
+    user_profile = get_object_or_404(UserProfile, user=request.user.pk)
     if not user.get_profile().is_public:
         return HttpResponseForbidden()
     
+    extra_context = {
+		'profile': user_profile
+	}
     return object_detail(request, slug=slug, queryset=User.objects.all(),
-                         slug_field='username',
+                         slug_field='username',extra_context=extra_context,
                          template_name='users/user_public.html')
 
 @login_required
@@ -113,7 +121,6 @@ def user_private(request):
         'api_consumer': api_consumer,
         'api_access_token': api_access_token
     }
-    
     return object_detail(request, object_id=request.user.pk,
                          queryset=User.objects.all(),
                          template_name='users/user_private.html',
@@ -244,14 +251,15 @@ def user_change_password(request, id):
         new_user = form.save()
         msg = _('Password changed successfully.')
         request.user.message_set.create(message=msg)
-        return HttpResponseRedirect('../../user/users')
+        return HttpResponseRedirect(reverse('user_list'))
     else:
         form = AdminPasswordChangeForm(user)
+    
     extra_context = {
         
         'form': form,
         'change': True
-        }
+    }
     return direct_to_template(request,"users/user_password_change.html",
                 extra_context = extra_context)
                 
@@ -260,17 +268,48 @@ def user_change_status(request, id):
     user = User.objects.get(pk=id)
     if user.is_staff:
         user.is_staff = False
-    else:
-        user.is_staff = True
+    else: user.is_staff = True
+    
     user.save()
-    return HttpResponseRedirect('../../user/users')
+    return HttpResponseRedirect(reverse('user_list'))
     
 @login_required        
 def user_block(request, id):
     user = User.objects.get(pk=id)
     if user.is_active:
         user.is_active = False
-    else:
-        user.is_active = True
+    else: user.is_active = True
+    
     user.save()
-    return HttpResponseRedirect('../../user/users')    
+    return HttpResponseRedirect(reverse('user_list'))   
+
+@login_required
+def profile_setting(request, slug):
+	
+	try:
+		model_instance = AlertCount.objects.get(user=request.user.username)
+	except:
+		model_ins = AlertCount.objects.create(user=request.user.username,
+		                                           low=0, high=0, medium=0)
+		AlertCount.save(model_ins)
+		model_instance = AlertCount.objects.get(user=request.user.username)
+	if request.method == 'POST':
+		alert_form = AlertCountForm(request.POST, prefix='alert')
+		notify_form = NotifierForm(request.POST, prefix='notifier')
+		if alert_form.is_valid() and notify_form.is_valid():
+			alert = alert_form.save(commit=False)
+			notify = notify_form.save(commit=False)
+			alert.user = request.user.username
+			notify.user_notify = request.user.username
+			AlertCount.objects.filter(user=alert.user).delete()
+			Notifier.objects.filter(user_notify=notify.user_notify).delete()
+			alert.save()
+			notify.save()
+			return HttpResponseRedirect(reverse('profile_setting', args=[slug]))
+	
+	extra_context = {
+		'alert_form': AlertCountForm(prefix='alert', instance=model_instance),
+		'notify_form': NotifierForm(prefix='notifier')
+	}
+	return direct_to_template(request,'users/user_profile_setting.html',
+					          extra_context)
