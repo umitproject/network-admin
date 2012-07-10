@@ -94,8 +94,11 @@ def user_private(request):
             profile =  profile_form.save(commit=False)
             profile.user = request.user
             profile.save()
-    
-    user_profile = request.user.get_profile()
+
+    try:
+        user_profile = request.user.get_profile()
+    except UserProfile.DoesNotExist:
+        user_profile = UserProfile.objects.create(user=request.user)
     profile_form = UserProfileForm(instance=user_profile)
     user_form = UserForm(instance=request.user)
 
