@@ -53,7 +53,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                     </div>
 					<ul class="sub-nav">
 						<li>
-							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{{ request.user.get_profile.full_name }}</a>!
+							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{% firstof request.user.get_profile.full_name request.user.username %}</a>!
 							<a href="{% url logout %}">{% trans "Log out" %}</a>
 						</li>
 					</ul>
