@@ -41,9 +41,7 @@ def IPv4_validation(value):
         raise ValidationError(u'%s is not a correct IPv4 address' % value)
 
 def get_subnet(host_list,sub,add):
-    subnet_ip = []
-    render_hosts = []
-    find_host = []
+    subnet_ip, render_hosts, find_host = ([] for i in range(3))
     subnet_ip  = [add,sub]
     subnet_ip = "/".join(subnet_ip)
     ip = IPNetwork(subnet_ip)
