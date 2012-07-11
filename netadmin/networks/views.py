@@ -32,8 +32,8 @@ try:
 except ImportError:
     search = None
 
-from netadmin.events.models import Event
-from netadmin.shortcuts import get_timezone, get_netmask
+from netadmin.events.models import Event, EventType
+from netadmin.shortcuts import get_timezone, get_netmask, get_user_events
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
@@ -42,6 +42,8 @@ from models import Host, Network, NetworkHost
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
     NetworkUpdateForm, SubnetCreateFrom
 from utils import get_subnet
+from netadmin.events.utils import filter_user_events, range_check, \
+	get_latlng
 from netadmin.shortcuts import get_hosts
 from netadmin.permissions.models import ObjectPermission
 
@@ -62,7 +64,6 @@ def host_list(request, page=None):
         hosts = paginator.page(1)
     except EmptyPage:
         hosts = paginator.page(paginator.num_pages)
-
     extra_context = {
         'hosts': hosts,
         'url': reverse('host_list')
@@ -151,7 +152,6 @@ def network_list(request, page=None):
 
 @login_required
 def network_create(request):
-    
     if request.method == 'POST':
         form = NetworkCreateForm(request.POST)
         if form.is_valid():
@@ -166,7 +166,6 @@ def network_create(request):
 
 @login_required
 def network_update(request, object_id):
-    
     network = Network.objects.get(pk=object_id)
     
     if not network.can_edit(request.user):
@@ -270,7 +269,6 @@ def share_list(request, object_type, object_id):
 
 @login_required
 def subnet_network(request):
-    
     if request.method == 'POST':
         form = SubnetCreateFrom(request.POST)
         if form.is_valid():
@@ -297,13 +295,12 @@ def subnet_network(request):
     
     extra_context = {
         'form':SubnetCreateFrom(initial={'user': request.user.pk})
-        }
+    }
     return direct_to_template(request,'networks/subnet_form.html',
 							  extra_context)
 
 @login_required
 def network_detail(request, object_id):
-    
     network_obj = Network.objects.get(id = object_id)
     host_list = []
     
@@ -320,14 +317,12 @@ def network_detail(request, object_id):
     extra_context = {
         'hosts': host_list,
         'id':object_id
-        }
-    
+    }
     return direct_to_template(request,'networks/network_detail.html',
 							  extra_context)
 
 @login_required
 def network_select(request,object_id):
-    
     if request.method == 'POST':
         host = request.POST.getlist('host')
         NetworkHost.objects.filter(network = object_id).delete()
@@ -336,4 +331,30 @@ def network_select(request,object_id):
 										host_id = hosts.replace("/",""))
             network_entry.save()
     
-    return HttpResponseRedirect('../.././../list')
+    return HttpResponseRedirect(reverse('network_list'))
+
+def trace_route(request, object_id):
+	if object_id == str(request.user.id):
+		geoIP, event_type, event_time, event_mesg, hosts = ([] for i in range(5))
+		for host in get_hosts(user=request.user):
+			geo_range = range_check(host.ipv4)
+			hosts.append(host.ipv4)
+			geoIP.append( '%s' % (geo_range[0][0]))
+		
+		geo_latlng = get_latlng(geoIP)
+		events = get_user_events(user=request.user)
+		for obj in events:
+			event_time.append(str(obj.timestamp))
+			event_mesg.append(obj.message)
+			event_types = EventType.objects.get(pk=obj.event_type_id)
+			event_type.append(event_types.name)
+			
+		extra_context = {
+			'latlng': geo_latlng,
+			'message': event_mesg,
+			'timestamp': event_time,
+			'event_type':event_type,
+			'host':hosts
+		}
+		return direct_to_template(request, 'networks/private_map.html',
+							  extra_context)
