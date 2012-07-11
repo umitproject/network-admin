@@ -55,6 +55,9 @@ urlpatterns = patterns('netadmin.networks.views',
     url(r'/update/(?P<object_id>\d+)/$',
         'network_select', name='network_select'),
     
+     url(r'^host/trace/route/(?P<object_id>\d+)/$',
+        'trace_route', name="trace_route"),
+    
                            
     url(r'share/list/(?P<object_type>host|network)/(?P<object_id>\d+)/',
         'share_list', name="share_list"),
