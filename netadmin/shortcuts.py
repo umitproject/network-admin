@@ -23,6 +23,7 @@ from events.models import Event, EventType
 from networks.models import Host, Network
 from users.models import UserProfile
 from netadmin.permissions.utils import filter_user_objects
+from netadmin.notifier.models import Notifier
 
 from django.contrib.auth.models import User
 
@@ -70,6 +71,16 @@ def get_alerts(user=None):
     ets = [et.pk for et in get_eventtypes(user, 1)]
     return Event.objects.filter(event_type__pk__in=ets, checked=False)
 
+def get_alert_events(alert_type):
+	event_type = EventType.objects.filter(alert_level=alert_type)
+	if event_type: events = get_events(event_types = [et for et in event_type])
+	else: events = []
+	return events
+
+def get_notifier(user=None):
+	notify = Notifier.objects.get(user_notify=user)
+	return notify
+		
 def _get_network_objects(subclass, user=None):
     objects = subclass.objects.all()
     if user:
