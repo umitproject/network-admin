@@ -76,9 +76,11 @@ src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCVSS35Ufsv0aEf0lV4qTIWnWg5
 	}
    
   function add_marker(lat,lng,title,box_html) {
-    var infowindow = new google.maps.InfoWindow({
-        content: box_html
-    });
+	  if(!window.infowindow)
+	  {
+		  
+		window.infowindow = new google.maps.InfoWindow();
+      }
  
     var marker = new google.maps.Marker({
           position: new google.maps.LatLng(lat,lng),
@@ -87,6 +89,9 @@ src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCVSS35Ufsv0aEf0lV4qTIWnWg5
     });
        
     google.maps.event.addListener(marker, 'click', function() {
+      
+      infowindow.close();
+      infowindow.setContent(box_html)
       infowindow.open(map,this);
     });   
        
