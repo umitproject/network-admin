@@ -24,9 +24,9 @@ from django.contrib.contenttypes import generic
 from django.db import models
 
 NOTIFIER_TYPE = (
-	('0', 'E-mail'),
-	('1', 'Skype'),
-	('2', 'IRC')
+    (0, ('E-mail')),
+    (1, ('Skype')),
+    (2, ('IRC'))
 )
 
 class Notification(models.Model):
@@ -48,6 +48,6 @@ class Notifier(models.Model):
 	of Alerts
 	"""
 	user_notify = models.CharField(max_length=30, null=True, blank=True)
-	high_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True)
-	medium_notify = models.IntegerField(choices=NOTIFIER_TYPE, max_length=30, null=True, blank=True)
-	low_notify = models.IntegerField(choices=NOTIFIER_TYPE, max_length=30, null=True, blank=True)
+	high_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
+	medium_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
+	low_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
