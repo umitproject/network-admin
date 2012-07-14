@@ -61,23 +61,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				{% block meta %}{% endblock %}
 				</div>
 			</div>
-			<div>
-				{% init_charts 'corechart' %}
-				<div id="content" class="{% block content_classes %}{% endblock %}">
-					{% block content %}{% endblock %}
-                    <div id="column-left">
-                        {% block column_left %}{% endblock %}
-                    </div>
-                    <div id="column-right">
-                        {% block column_right %}{% endblock %}
-                    </div>
-				</div>
-				{% show_charts %}
-				<div id="footer">
-                    <p>Network Administrator to the Cloud Land &copy; Copyright 2012 Adriano Monteiro Marques</p>
-                    <p class="align-right"><a href="/about/">{% trans "About" %}</a></p>
-				</div>
-			</div>
+            {% init_charts 'corechart' %}
+            <div id="content" class="{% block content_classes %}{% endblock %}">
+                {% block content %}{% endblock %}
+                <div id="column-left">
+                    {% block column_left %}{% endblock %}
+                </div>
+                <div id="column-right">
+                    {% block column_right %}{% endblock %}
+                </div>
+            </div>
+            {% show_charts %}
+            <div id="footer">
+                <p>Network Administrator to the Cloud Land &copy; Copyright 2012 Adriano Monteiro Marques</p>
+                <p class="align-right"><a href="/about/">{% trans "About" %}</a></p>
+            </div>
 		</div>
 	</body>
 </html>
