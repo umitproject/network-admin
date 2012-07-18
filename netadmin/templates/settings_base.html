@@ -24,4 +24,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <ul>
 	<li><a href="{% url message_list %}"><span>{% trans "Messages" %}</span></a></li>
 </ul>
+{% if request.user.is_superuser %}
+    <h3>{% trans "Administration" %}</h3>
+    <ul>
+        <li><a href="{% url plugins_settings %}">{% trans "Plugins" %}</a></li>
+        <li><a href="{% url user_list %}">{% trans "Users" %}</a></li>
+    </ul>
+{% endif %}
 {% endblock %}
