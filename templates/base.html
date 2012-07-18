@@ -20,10 +20,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}" xml:lang="en" lang="en">	
 	<head>
-		<title>Network Administrator &#8211; {% block title %}{% endblock %}</title>
+		<title>Network Administrator {% block title %}{% endblock %}</title>
         <link rel="stylesheet/less" type="text/css" href="{{ STATIC_URL }}less/base.less">
-		<script type="text/javascript" src="https://www.google.com/jsapi"></script>
-		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.15/jquery-ui.min.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/search.js"></script>
         <script type="text/javascript" src="{{ STATIC_URL }}js/less-1.3.0.min.js"></script>
@@ -48,34 +48,34 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 </ul>
                     
 				<div id="toolbar">
-					<ul class="sub-nav">
+					<ul class="user-actions">
 						<li>
 							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{% firstof request.user.get_profile.full_name request.user.username %}</a>!
+                        </li>
+                        <li>
 							<a href="{% url logout %}">{% trans "Log out" %}</a>
 						</li>
 					</ul>
 				</div>
                 {% endif %}
-
-                <div id="meta">
-				{% block meta %}{% endblock %}
-				</div>
 			</div>
+
+            <h2>{% block header %}{% endblock %}</h2>
+
+            <div id="sidebar">
+                <div class="navigation">
+                    {% block navigation %}{% endblock %}
+                </div>
+            </div>
+
             {% init_charts 'corechart' %}
+
             <div id="content" class="{% block content_classes %}{% endblock %}">
                 {% block content %}{% endblock %}
-                <div id="column-left">
-                    {% block column_left %}{% endblock %}
-                </div>
-                <div id="column-right">
-                    {% block column_right %}{% endblock %}
-                </div>
             </div>
+
             {% show_charts %}
-            <div id="footer">
-                <p>Network Administrator to the Cloud Land &copy; Copyright 2012 Adriano Monteiro Marques</p>
-                <p class="align-right"><a href="/about/">{% trans "About" %}</a></p>
-            </div>
+
 		</div>
 	</body>
 </html>
