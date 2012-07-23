@@ -22,4 +22,33 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     padding: 41px 0 0 0;
 
     height: 100%;
+
+    table {
+        border-collapse: collapse;
+        font-size: 13px;
+        width: 100%;
+
+        thead {
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+
+            tr {
+                th {
+                    padding: 7px 10px;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                td {
+                    padding: 7px 10px;
+                }
+
+                &:hover {
+                    background: #f9f9f9;
+                }
+            }
+        }
+    }
 }
