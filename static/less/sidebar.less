@@ -1,0 +1,61 @@
+/*
+Copyright (C) 2012 Adriano Monteiro Marques
+
+Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#sidebar {
+    width: 200px;
+    margin-top: 108px;
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    div.navigation {
+
+        h3 {
+            border: none;
+            padding: 0 0 0 20px;
+            margin: 0 0 5px 0;
+            font-weight: normal;
+            color: #c33;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+
+            li {
+                padding: 5px 5px 5px 20px;
+
+                &:hover {
+                    background: #f9f9f9;
+                }
+
+                a {
+                    color: #000;
+                    width: 100%;
+                    display: block;
+
+                    &:hover {
+                        text-decoration: none;
+                    }
+                }
+            }
+        }
+    }
+}
