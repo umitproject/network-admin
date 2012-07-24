@@ -61,7 +61,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                 {% endif %}
 
                 <div id="meta">
-				{% block meta %}{% endblock %}
+				{% block meta %}
+				 <ul>	
+					<li class="alert"><a href = "{% url graph_analysis %}">{% trans "visual Info" %}</a></li>
+					<li class="alert"><a href="{% url map_public %}">{% trans "Public Map" %}</a></li>
+					
+				</ul>
+				{% endblock %}
 				</div>
 			</div>
 			<div>
