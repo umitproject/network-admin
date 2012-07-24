@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Amit Pal <amix.pal@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n events_tags %}
+{% block title %}{% trans "events list" %}{% endblock %}
+
+{% block content_classes %}event{% endblock %}
+
+{% block content %}
+
+<html>
+  <head>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Alert Level', 'Event per User'],
+          ['High Alert',     {{high}}],
+          ['Medium Alert',   {{medium}}],
+          ['Low Alert',      {{low}}]
+        ]);
+        var options = {
+          title: 'Number of Alerts per user'
+        };
+
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+      }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>
+
+<input type=button value="Previous Graph" onClick="javascript:history.go(-1);"></input>
+{% endblock %}
+
+{% block meta %}
+<ul>
+	<li class="host">{% trans "Add new" %}</li>
+	
+</ul>
+{% endblock %}
