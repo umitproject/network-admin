@@ -66,7 +66,8 @@ NETADMIN_APPS = (
     'netadmin.permissions',
     'netadmin.notifier',
     'netadmin.utils.charts',
-    'netadmin.plugins'
+    'netadmin.plugins',
+    'netadmin.analytics'
 )
 
 INSTALLED_APPS += NETADMIN_APPS
@@ -87,6 +88,8 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 AUTH_PROFILE_MODULE = 'users.UserProfile'
+
+PROJECT_ROOT = os.path.dirname(__file__)
 
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__), 'templates'),
