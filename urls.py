@@ -35,7 +35,9 @@ urlpatterns = patterns('',
     (r'^report/', include('netadmin.reportmeta.urls')),
     (r'^user/', include('netadmin.users.urls')),
     (r'^plugins/', include('netadmin.plugins.urls')),
+    (r'^analytic/', include('netadmin.analytics.urls')),
     (r'^admin/', include(admin.site.urls)),
+    
     url(r'^search/', 'netadmin.views.search', name='search'),
     
     url(r'login/', 'django.contrib.auth.views.login',
