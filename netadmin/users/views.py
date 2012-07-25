@@ -288,11 +288,9 @@ def profile_setting(request, slug):
 	
 	try:
 		model_instance = AlertCount.objects.get(user=request.user.username)
-	except:
-		model_ins = AlertCount.objects.create(user=request.user.username,
+	except Exception:
+		model_instance = AlertCount.objects.create(user=request.user.username,
 		                                           low=0, high=0, medium=0)
-		AlertCount.save(model_ins)
-		model_instance = AlertCount.objects.get(user=request.user.username)
 	if request.method == 'POST':
 		alert_form = AlertCountForm(request.POST, prefix='alert')
 		notify_form = NotifierForm(request.POST, prefix='notifier')
