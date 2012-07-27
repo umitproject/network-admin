@@ -29,7 +29,6 @@ import pytz
 from pytz import timezone
 
 from models import UserProfile
-from netadmin.events.models import AlertCount
 from netadmin.notifier.models import Notifier
 
 
@@ -68,23 +67,13 @@ class UserRegistrationForm(UserCreationForm):
         return user
 
                                             
-class NotifierForm(forms.ModelForm):
+class EventNotifierForm(forms.ModelForm):
 	class Meta:
 		model = Notifier
-		fields = ('high_notify', 'medium_notify', 'low_notify', 
-				  'user_notify')
+		fields = ('high', 'medium', 'low', 
+				  'user')
 		widgets = {
-			'user_notify': forms.HiddenInput()
+			'user': forms.HiddenInput()
 		}
 		
-NotifierFormset = modelformset_factory(Notifier, form=NotifierForm)
-						               
-class AlertCountForm(forms.ModelForm):
-	class Meta:
-		model = AlertCount
-		fields = ('high','medium','low', 'user')
-		widgets = {
-			'user':  forms.HiddenInput()
-		}
-		
-AlertCountFormset = modelformset_factory(AlertCount, form=AlertCountForm)
+NotifierFormset = modelformset_factory(Notifier, form=EventNotifierForm)						               
