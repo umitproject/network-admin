@@ -72,7 +72,7 @@ class Dispatcher(object):
         for backend in self._backends:
             yield backend()
 
-    def dispatch(self, using_backends=None, clear=True):
+    def dispatch(self, notification_type, using_backends=None, clear=True):
         """Sends all notifications using available back-ends
         """
         notifications = self.manager.get_all()
@@ -123,3 +123,11 @@ class NotificationsManager(object):
 
 manager = NotificationsManager()
 dispatcher = Dispatcher(manager)
+
+def get_notifier(notifier):
+	if notifier == 0:
+		return 'e-mail'
+	elif notifier == 1:
+		return 'skype'
+	elif notifier == 2:
+		return 'irc'
