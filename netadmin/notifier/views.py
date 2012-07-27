@@ -19,44 +19,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.http import HttpResponse
-from Skype4Py import Skype
-import sys
 
-
-from netadmin.events.models import EventType, AlertCount
-from netadmin.shortcuts import get_alert_events, get_notifier
-
-def send_notification(request):
-	high, low, medium = ([] for i in range(3))
-	low,medium, high = ([get_alert_events(x) for x in (1,2,3)])
-	alert_count = AlertCount.objects.get(user=request.user.username)
-	l_al,m_al,h_al = alert_count.low, alert_count.medium, alert_count.high
-	if len(low)>=l_al:
-		low_notifier = get_notifier(request.user.username).low_notify
-		notify(request, low_notifier)
-	elif len(medium)>=m_al:
-		medium_notifier = get_notifier(request.user.username).medium_notify
-		notify(request, medium_notifier)
-	elif len(high)>=h_al:
-		high_notifier = get_notifier(request.user.username).high_notify
-		notify(request, high_notifier)
-	return HttpResponse()
+from utils import Dispatcher, manager
+from models import Notifier
 	
-def notify(request,notify_type):
-	if notify_type == 0:
-		send_emails(request)
-	elif notify_type == 1:
-		send_skype(request)
+def dispatch_notify(request, user, notification_type, notify_type):
+	send = Dispatcher(manager)	
+	if notify_type == 0 and 1:
+		notifier = Notifier.objects.get(user=user.username).low
 	elif notify_type == 2:
-		send_irc(request)
-
-def send_emails(request):
-	return
-
-def send_skype(request):
-	return
-
-def send_irc(request):
-	return
-	
-	
+		notifier = Notifier.objects.get(user=user.username).medium
+	elif notify_type == 3:
+		notifier = Notifier.objects.get(user=user.username).high
+	notifier_type = get_notifier(notifier)
+	send.dispatch(notifier_type, notification_type, clear=True, user)
+	return HttpResponse("<p>Done</p>")
