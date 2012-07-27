@@ -47,7 +47,7 @@ class Notifier(models.Model):
 	"""Give option, a user to chooses the notifier for each type
 	of Alerts
 	"""
-	user_notify = models.CharField(max_length=30, null=True, blank=True)
-	high_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
-	medium_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
-	low_notify = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
+	user = models.CharField(max_length=30, null=True, blank=True)
+	high = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
+	medium = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
+	low = models.IntegerField(choices=NOTIFIER_TYPE, null=True, blank=True, default="0")
