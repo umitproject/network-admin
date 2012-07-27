@@ -23,14 +23,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block content_classes %}user{% endblock %}
 
 {% block content %}
+<form action = "" method="POST">{% csrf_token %}
 
-<h3>{% trans "Alert settings" %}</h3>
-
-<form action="" method="POST">{% csrf_token %}
-	{{ alert_form.as_p }}
-	
-<h3>{% trans "Notify settings" %}</h3>
-
+<h3>{% trans "Event Notify settings" %}</h3>
 	{{ notify_form.as_p }}
 	<input type="submit" value="{% trans 'Update' %}" />
 </form>
