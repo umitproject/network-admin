@@ -221,12 +221,3 @@ class EventComment(models.Model):
 	event = models.ForeignKey(Event, blank=False, null=False)
 	def __unicode__(self):
 		return "'%s' at %s" % (self.comment)
-
-class AlertCount(models.Model):
-	""" Required to set the limit for each type 
-	of Alert
-	"""
-	user = models.CharField(max_length=30, blank=True)
-	low = models.IntegerField(blank=True, null=True)
-	medium = models.IntegerField(blank=True, null=True)
-	high = models.IntegerField(blank=True, null=True)
