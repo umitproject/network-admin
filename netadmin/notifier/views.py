@@ -32,5 +32,5 @@ def dispatch_notify(request, user, notification_type, notify_type):
 	elif notify_type == 3:
 		notifier = Notifier.objects.get(user=user.username).high
 	notifier_type = get_notifier(notifier)
-	send.dispatch(notifier_type, notification_type, clear=True, user)
+	send.dispatch(notification_type, notifier_type, clear=True)
 	return HttpResponse("<p>Done</p>")
