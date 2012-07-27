@@ -256,7 +256,9 @@ class EventHandler(BaseHandler):
                 
                 if event.event_type.notify:
                     notifier.manager.add(event.short_message, event.message,
-                                         event.user(), event)
+                                         event.user(), event) 
+                    dispatch_notify(event.user(), "Event", 
+                                    event.event_type.alert_level)
             
             return api_ok(_('Events reported successfully'))
         
@@ -271,6 +273,8 @@ class EventHandler(BaseHandler):
         if event.event_type.notify:
             notifier.manager.add(event.short_message, event.message,
                                  event.user(), event)
+            dispatch_notify(event.user(), "Event", event.event_type.alert_level)
+            
         
         return api_ok(_('Event reported successfully'))
     
