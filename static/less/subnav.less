@@ -17,37 +17,31 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#content {
-    margin-left: 230px;
-    margin-top: 55px;
-    padding: 0;
+div#sub-navigation {
+    position: fixed;
+    top: 10px;
+    right: 15px;
+    font-size: 13px;
 
-    height: 100%;
+    ul {
+        margin: 0;
+        padding: 0;
 
-    table {
-        border-collapse: collapse;
-        font-size: 13px;
-        width: 100%;
+        li {
+            margin-left: 15px;
+            padding: 0;
+            border: 1px solid #ddd;
+            display: inline-block;
+            background: #efefef;
 
-        thead {
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-
-            tr {
-                th {
-                    padding: 5px 0 5px 15px;
-                }
-            }
-        }
-
-        tbody {
-            tr {
-                td {
-                    padding: 5px 15px;
-                }
+            a {
+                color: #000;
+                padding: 7px 12px;
+                display: block;
 
                 &:hover {
-                    background: #f9f9f9;
+                    text-decoration: none;
+                    color: #c33;
                 }
             }
         }

@@ -18,21 +18,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #header {
-    @font_color: #000;
+    @FONT_COLOR: #000;
+    @BORDER_COLOR: #ddd;
 
-    min-width: 1024px;
-    width: 100%;
-    height: 40px;
     padding: 0;
     background: #efefef;
-    border-bottom: 1px solid #ddd;
-    color: @font_color;
+    color: @FONT_COLOR;
     position: fixed;
     top: 0;
     left: 0;
+    width: 230px;
+    min-width: 0;
+    height: 100%;
+    border-bottom: none;
+    border-right: 1px solid @BORDER_COLOR;
 
     a {
-        color: @font_color;
+        color: @FONT_COLOR;
         font-weight: normal;
 
         &:hover {
@@ -42,32 +44,29 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     }
 
     h1 {
-        display: inline-block;
-        font-size: 13px;
-        width: 180px;
-        padding: 11px 0 0 20px;
+        font-size: 18px;
+        padding: 10px 0 0 15px;
         margin: 0;
-        
+        font-weight: normal;
+
         a {
-            font-weight: bold;
-            color: #999;
+            color: #c33;
+
+            &:hover {
+                color: #000;
+            }
         }
     }
 
     ul.navigation {
         list-style-type: none;
-        display: inline-block;
-        padding: 0 0 0 5px;
-        margin: 0;
-        font-size: 13px;
-        position: absolute;
-        left: 185px;
-        height: 100%;
+        padding: 15px 0 0 0;
+        margin: 15px 0 0 0;
+        font-size: 14px;
+        border-top: 1px solid @BORDER_COLOR;
 
         li {
-            float: left;
-            height: 100%;
-            text-transform: uppercase;
+            padding: 5px 15px;
 
             &.selected {
                 background: #c33;
@@ -75,30 +74,30 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
             a {
                 display: block;
-                height: 29px;
-                padding: 11px 10px 0 10px;
-                font-weight: bold;
+                font-weight: normal;
             }
         }
     }
 
     #toolbar {
-        position: absolute;
-        top: 0;
-        right: 20px;
-
         ul {
             list-style-type: none;
-            margin: 0;
+            margin: 5px 15px;
             padding: 0;
             font-size: 13px;
+            color: #999;
 
             li {
-                padding: 11px 0;
+                padding: 0;
                 display: inline-block;
 
                 a {
+                    color: #999;
                     font-weight: bold;
+
+                    &:hover {
+                        color: #c33;
+                    }
                 }
             }
         }
