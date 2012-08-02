@@ -31,8 +31,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	</head>
 	<body>
 		<div id="container">
-			<div id="header">
+			<div id="header" class="wide">
                 <h1><span><a href="/">Network Administrator</a></span></h1>
+
+                <div id="toolbar">
+                    <ul class="user-actions">
+                        <li>
+                            {% trans "Logged in as" %} <a href="{% url user_profile_private %}">{% firstof request.user.get_profile.full_name request.user.username %}</a>!
+                        </li>
+                        <li>
+                            <a href="{% url logout %}">{% trans "Log out" %}</a>
+                        </li>
+                    </ul>
+                </div>
 
                 {% if request.user.is_authenticated %}
                 <ul class="navigation">
@@ -46,27 +57,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
                         <li><a href="{% url user_list %}">{% trans "Admin" %}</a></li>
                     {% endif %}
                 </ul>
-                    
-				<div id="toolbar">
-					<ul class="user-actions">
-						<li>
-							{% trans "Logged in as" %} <a href="{% url user_profile_private %}">{% firstof request.user.get_profile.full_name request.user.username %}</a>!
-                        </li>
-                        <li>
-							<a href="{% url logout %}">{% trans "Log out" %}</a>
-						</li>
-					</ul>
-				</div>
                 {% endif %}
 			</div>
 
             <h2>{% block header %}{% endblock %}</h2>
 
-            <div id="sidebar">
-                <div class="navigation">
-                    {% block navigation %}{% endblock %}
-                </div>
-            </div>
+            <div id="sub-navigation">{% block navigation %}{% endblock %}</div>
 
             {% init_charts 'corechart' %}
 
