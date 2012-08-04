@@ -92,6 +92,11 @@ def get_event_data(request, event_dict):
                 source_host = Host.objects.get(ipv6=ipv6, user=request.user)
             else:
                 source_host = None
+        if source_host.latest_event():
+			latest_event = source_host.latest_event() 
+		else:
+			latest_event = None
+
     except Host.DoesNotExist:
         source_host = Host(name=hostname, ipv4=ipv4, ipv6=ipv6,
                            user=request.user)
@@ -118,7 +123,8 @@ def get_event_data(request, event_dict):
         'fields_class': fields_class,
         'fields_data': fields_data,
         'source_host': source_host,
-        'event_type': event_type
+        'event_type': event_type,
+        'latest_event': latest_event
     }
     
     return event_data
