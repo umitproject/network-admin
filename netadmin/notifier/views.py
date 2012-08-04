@@ -20,11 +20,10 @@
 
 from django.http import HttpResponse
 
-from utils import Dispatcher, manager
+from utils import dispatcher
 from models import Notifier
 	
-def dispatch_notify(request, user, notification_type, notify_type):
-	send = Dispatcher(manager)	
+def dispatch_notify(request, user, notification_type, notify_type):	
 	if notify_type == 0 and 1:
 		notifier = Notifier.objects.get(user=user.username).low
 	elif notify_type == 2:
@@ -32,5 +31,7 @@ def dispatch_notify(request, user, notification_type, notify_type):
 	elif notify_type == 3:
 		notifier = Notifier.objects.get(user=user.username).high
 	notifier_type = get_notifier(notifier)
-	send.dispatch(notification_type, notifier_type, clear=True)
+	dispatcher.dispatch(notifier_type, notification_type, clear=True, user)
 	return HttpResponse("<p>Done</p>")
+
+
