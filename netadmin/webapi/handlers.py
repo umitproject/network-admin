@@ -251,6 +251,10 @@ class EventHandler(BaseHandler):
                 except EventParseError, e:
                     message = str(e)
                     return api_error(_(message))
+                if latest_event.event_type.alert_level != event_data['latest_event']:
+					dispatch_notify(event.user(), "Event",
+									event_data['event_type'].alert_level)
+        
                 event = Event(**event_data)
                 event.save()
                 
@@ -267,6 +271,11 @@ class EventHandler(BaseHandler):
         except EventParseError, e:
             message = str(e)
             return api_error(_(message))
+        
+        if latest_event.event_type.alert_level != event_data['latest_event']:
+			dispatch_notify(event.user(), "Event",
+						    event_data['latest_event'].alert_level)
+        
         event = Event(**event_data)
         event.save()
         
