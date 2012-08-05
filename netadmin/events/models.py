@@ -161,18 +161,17 @@ class Event(models.Model):
     fields = property(get_details)
     
     def get_localized_timestamp(self):
-		host_timezone = pytz.timezone(self.source_host.timezone)
-		user = User.objects.get(username = self.source_host.user)
-		user_obj = UserProfile.objects.get(id = user.id)
-		if user_obj.timezone == u'': 
-			user_obj.timezone = self.source_host.timezone
-		user_timezone = pytz.timezone(user_obj.timezone) 
-		localized_datetime_host = host_timezone.localize(self.timestamp)
-		localized_datetime_user = user_timezone.localize(self.timestamp)
-		differ_datetime_event = localized_datetime_host - localized_datetime_user
-		event_time = self.timestamp - differ_datetime_event
-		return event_time
-    
+        """Returns event's timestamp localized according to user's time zone
+        """
+        user_tz = self.source_host.user.get_profile().timezone
+        host_tz = self.source_host.timezone
+        # We need both user's and host's timezones to localize timestamp
+        if not host_tz or not user_tz or host_tz == user_tz:
+            return self.timestamp
+        host_datetime = pytz.timezone(host_tz).localize(self.timestamp)
+        user_datetime = pytz.timezone(user_tz).localize(self.timestamp)
+        return self.timestamp - (user_datetime - host_datetime)
+
     def get_field(self, field_name, default=None):
         try:
             fields = self.get_details()
