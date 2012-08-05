@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "networks/host_base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
-Author: Amit Pal <amix.pal@gmail.com>
+Authors: Amit Pal <amix.pal@gmail.com>
+         Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -18,61 +19,44 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n actions %}
+
 {% block title %}{% trans "hosts list" %}{% endblock %}
 
-{% block content_classes %}host{% endblock %}
+{% block header %}{% trans "Hosts list" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Hosts" %}</h2>
+    <table class="objects-list">
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Description" %}</th>
+                <th>{% trans "IPv4 address" %}</th>
+                <th>{% trans "IPv6 address" %}</th>
+                <th>{% trans "Timezone" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for host in hosts.object_list %}
+            <tr class="{% cycle 'odd' 'even' %}">
+                <td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
+                <td>{{ host.short_description|action:"host_list_short_description" }}</td>
+                <td class="monospace">{{ host.ipv4|action:"host_list_ipv4" }}</td>
+                <td class="monospace">{{ host.ipv6|action:"host_list_ipv6" }}</td>
+                <td class="monospace">{{host.timezone}}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-<form action="" method="GET" class="search">
-	<p>{% trans "Search for hosts" %}: 
-		<input type="text" name="s" value="{{ request.GET.s }}"/>
-		<input type="submit" value="{% trans 'Search' %}" />
-	</p>
-</form>
-
-<table class="objects-list">
-	<thead>
-		<tr>
-			<th>{% trans "Name" %}</th>
-			<th>{% trans "Description" %}</th>
-			<th>{% trans "IPv4 address" %}</th>
-			<th>{% trans "IPv6 address" %}</th>
-            <th>{% trans "Timezone" %}</th>
-		</tr>
-	</thead>
-	<tbody>
-	{% for host in hosts.object_list %}
-		<tr class="{% cycle 'odd' 'even' %}">
-			<td><a href="{% url host_detail host.pk %}">{{ host.name|action:"host_list_name" }}</a></td>
-			<td>{{ host.short_description|action:"host_list_short_description" }}</td>
-			<td class="monospace">{{ host.ipv4|action:"host_list_ipv4" }}</td>
-			<td class="monospace">{{ host.ipv6|action:"host_list_ipv6" }}</td>
-            <td class="monospace">{{host.timezone}}</td>
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
-
-{% if hosts.paginator.num_pages > 1 %}
-	<div class="pagination">
-	{% if hosts.has_previous %}
-		<span class="prev"><a href="{% url host_list_page hosts.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
-	{% endif %}
-		<span>{% trans "Page" %} {{ hosts.number }} {% trans "of" %} {{ hosts.paginator.num_pages }}</span>
-	{% if hosts.has_next %}
-		<span class="next"><a href="{% url host_list_page hosts.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
-	{% endif %}
-	</div>
-{% endif %}
-
+    {% if hosts.paginator.num_pages > 1 %}
+        <div class="pagination">
+        {% if hosts.has_previous %}
+            <span class="prev"><a href="{% url host_list_page hosts.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
+        {% endif %}
+            <span>{% trans "Page" %} {{ hosts.number }} {% trans "of" %} {{ hosts.paginator.num_pages }}</span>
+        {% if hosts.has_next %}
+            <span class="next"><a href="{% url host_list_page hosts.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
+        {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}
-
-{% block meta %}
-<ul>
-	<li class="add"><a href="{% url host_new %}"><span>{% trans "Add new host" %}</span></a></li>
-</ul>
-{% endblock %}
-
-{% block sidebar %}{% endblock %}

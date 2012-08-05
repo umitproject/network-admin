@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "networks/host_base.html" %}
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
@@ -20,19 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "edit host" %}{% endblock %}
 
-{% block content_classes %}host-settings{% endblock %}
+{% block header %}<small>{{ object.name }}</small>{% trans "Settings" %}{% endblock %}
 
 {% block content %}
-<h2>{{ object.name }} {% trans "settings" %}</h2>
-
-<p class="breadcrumbs">
-	<a href="{% url host_list %}">{% trans "hosts" %}</a> > 
-	<a href="{% url host_detail object.pk %}">{{ object.name }}</a> > 
-	{% trans "settings" %}
-</p>
-
-<form action="" method="POST">
-	{{ form.as_p }}
-	<input type="submit" value="{% trans "Update host" %}" /> <a href="{% url host_detail object.pk %}">{% trans "Cancel" %}</a>
-</form>
+    <form action="" method="POST">
+        {{ form.as_p }}
+        <input type="submit" value="{% trans "Update host" %}" /> <a href="{% url host_detail object.pk %}" class="button">{% trans "Cancel" %}</a>
+    </form>
 {% endblock %}

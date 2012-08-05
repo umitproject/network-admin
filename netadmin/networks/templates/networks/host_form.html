@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "networks/base.html" %}
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
@@ -18,18 +18,12 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
+
 {% block title %}{% trans "add new host" %}{% endblock %}
 
-{% block content_classes %}host{% endblock %}
+{% block header %}{% trans "New host" %}{% endblock %}
 
 {% block content %}
-<h2 class="host-new">{% trans "Add new host" %}</h2>
-
-<p class="breadcrumbs">
-	<a href="{% url host_list %}">{% trans "hosts" %}</a> > 
-	{% trans "new host" %}
-</p>
-
 <script type="text/javascript">
 	var d = new Date()
 	var gmtHours = -d.getTimezoneOffset()/60;
