@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "networks/network_base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
 Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
@@ -20,15 +20,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "edit network" %}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
+{% block header %}{% blocktrans with object.name as name %}Edit network "{{ name }}"{% endblocktrans %}{% endblock %}
 
 {% block content %}
-<h2>{% blocktrans with object.name as name %}Edit network "{{ name }}"{% endblocktrans %}</h2>
+    <div class="text">
+        <form action="" method="POST">
+            {{ form.as_p }}
+            <input type="submit" value="{% trans "Update network" %}" />
+        </form>
+    </div>
+{% endblock %}
 
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "networks" %}</a> > <a href="{% url network_detail object.pk %}">{{ object.name }}</a> > {% trans "edit" %}</p>
-
-<form action="" method="POST">
-	{{ form.as_p }}
-	<input type="submit" value="{% trans "Update network" %}" />
-</form>
+{% block navigation %}
+    <ul>
+        <li><a href="{% url network_detail object.pk %}">{% trans "Back to details" %}</a></li>
+    </ul>
 {% endblock %}

@@ -1,4 +1,4 @@
-{% extends "networks/network_base.html" %}
+{% extends "base.html" %}
 {% comment %}
 Copyright (C) 2012 Adriano Monteiro Marques
 
@@ -17,20 +17,13 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}
-{% block title %}{% trans "create network" %}{% endblock %}
+{% load i18n  %}
 
-{% block header %}{% trans "Create network" %}{% endblock %}
-
-{% block content %}
-<form action="" method="POST">
-	{{ form.as_p }}
-	<input type="submit" value="{% trans "Add network" %}" />
-</form>
-{% endblock %}
+{% block header %}{% trans "Network" %}{% endblock %}
 
 {% block navigation %}
     <ul>
-        <li><a href="{% url network_list %}">{% trans "Back to list" %}</a></li>
+        <li><a href="{% url network_new %}">{% trans "New network" %}</a></li>
+        <li><a href="{% url subnet_network %}">{% trans "New netmask network" %}</a></li>
     </ul>
 {% endblock %}

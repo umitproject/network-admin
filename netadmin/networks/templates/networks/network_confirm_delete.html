@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "networks/network_base.html" %}
 {% comment %}
 Copyright (C) 2011 Adriano Monteiro Marques
 
@@ -20,20 +20,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
+{% block header %}<small>{{ object.name }}</small>{% trans "Remove" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Removing network" %}</h2>
-
-<p class="breadcrumbs">
-	<a href="{% url network_list %}">{% trans "networks" %}</a> > 
-	<a href="{% url network_detail object.pk %}">{{ object.name }}</a> > 
-	{% trans "delete network" %}
-</p>
-
-<p>{% blocktrans with object.name as name %}Do you really want to remove network {{ name }}?{% endblocktrans %}</p>
-<form action="" method="POST">
-	<input type="submit" value="{% trans "Remove network" %}" />
-	<p><a href="{% url network_detail object.pk %}">{% trans "Cancel" %}</a></p>
-</form>
+    <div class="text">
+        <p>{% blocktrans with object.name as name %}Do you really want to remove network {{ name }}?{% endblocktrans %}</p>
+        <form action="" method="POST">
+            <input type="submit" value="{% trans "Remove network" %}" />
+            <a href="{% url network_detail object.pk %}" class="button">{% trans "Cancel" %}</a>
+        </form>
+    </div>
 {% endblock %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "networks/network_detail.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
 Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
@@ -20,22 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n events_tags %}
 {% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
+{% block header %}<small>{% trans "Network"%}</small>{{ object.name }}{% endblock %}
 
 {% block content %}
-<h2>{{ object.name }}</h2>
-
-<p class="breadcrumbs">
-	<a href="{% url network_list %}">{% trans "networks" %}</a> > 
-	<a href="{% url network_detail object.pk %}">{{ object.name }}</a> > 
-	{% trans "events" %}
-</p>
-
-<h3>{% trans "Basic info" %}</h3>
-<p>{{ object.description }}</p>
-
-<h3>{% trans "Events" %}</h3>
-	
+    <div class="info">
+        <h3>{% trans "Basic info" %}</h3>
+        <p>{{ object.description }}</p>
+    </div>
 {% if events %}
 	{% events_list request events %}
 {% endif %}

@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+{% extends "networks/network_base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
 Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
@@ -20,49 +20,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% load i18n actions %}
 {% block title %}{% trans "networks list" %}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
-
 {% block content %}
-<h2>{% trans "Networks" %}</h2>
+    <table class="objects-list">
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                {% action_extend "network_list_table_head" "th" %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for network in networks.object_list %}
+            <tr>
+                <td>
+                    <a href="{% url network_detail network.pk %}">
+                        {{ network.name|action:"network_list_name" }}
+                    </a>
+                </td>
+                {% action_extend "network_list_table_cell" "td" network %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
-<table class="objects-list">
-	<thead>
-		<tr>
-			<th>{% trans "Name" %}</th>
-			{% action_extend "network_list_table_head" "th" %}
-		</tr>
-	</thead>
-	<tbody>
-	{% for network in networks.object_list %}
-		<tr>
-			<td>
-				<a href="{% url network_detail network.pk %}">
-					{{ network.name|action:"network_list_name" }}
-				</a>
-			</td>
-			{% action_extend "network_list_table_cell" "td" network %}
-		</tr>
-	{% endfor %}
-	</tbody>
-</table>
-
-{% if networks.paginator.num_pages > 1 %}
-	<div class="pagination">
-	{% if networks.has_previous %}
-		<span class="prev"><a href="{% url network_list_page networks.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
-	{% endif %}
-		<span>{% trans "Page" %} {{ networks.number }} {% trans "of" %} {{ networks.paginator.num_pages }}</span>
-	{% if networks.has_next %}
-		<span class="next"><a href="{% url network_list_page networks.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
-	{% endif %}
-	</div>
-{% endif %}
-
-{% endblock %}
-
-{% block meta %}
-<ul>
-	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
-	<li class="add"><a href="{% url subnet_network %}">{% trans "New netmask network" %}</a></li>
-</ul>
+    {% if networks.paginator.num_pages > 1 %}
+        <div class="pagination">
+        {% if networks.has_previous %}
+            <span class="prev"><a href="{% url network_list_page networks.previous_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Previous" %}</a></span>
+        {% endif %}
+            <span>{% trans "Page" %} {{ networks.number }} {% trans "of" %} {{ networks.paginator.num_pages }}</span>
+        {% if networks.has_next %}
+            <span class="next"><a href="{% url network_list_page networks.next_page_number %}{% if request.GET.s %}?s={{ request.GET.s }}{% endif %}">{% trans "Next" %}</a></span>
+        {% endif %}
+        </div>
+    {% endif %}
 {% endblock %}

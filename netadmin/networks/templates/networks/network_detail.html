@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "networks/network_base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
-Author: Amit Pal <amix.pal@gmail.com>
+Authors: Amit Pal <amix.pal@gmail.com>
+         Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -17,39 +18,37 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}happenning
-{% block title %}{% trans "add new network" %}{% endblock %}
-
-{% block content_classes %}network{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "network" %} {{ object.name }}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Create a Network" %}</h2>
-
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "Networks" %}</a> > {% trans "Select Host to create a New Network" %}</p>
-<table class="objects-list">
-	<thead>
-		<tr>
-			<th>{% trans "IPv4 Addresses" %}</th>
-            <th>{% trans "IPv6 Addresses" %}</th>
-            <th>{% trans "Choose Addresses" %}</th>
-		</tr>
-	</thead>
-	<tbody>
-<form action="update/{{id}}/" method="POST">
-	{% for host in hosts %}
-			<td>{{host.ipv4}}</td>
-            <td>{{host.ipv6}}</td>
-            <td><input type="checkbox" name="host" id = "host.id" value={{host.id}}/></td>
-		</tr>
-	{% endfor %}
-<input type="submit" value="Select" />
-</form>
-	</tbody>
-</table>
+    <form action="update/{{ id }}/" method="POST">
+        <table class="objects-list">
+            <thead>
+                <tr>
+                    <th>{% trans "IPv4 Addresses" %}</th>
+                    <th>{% trans "IPv6 Addresses" %}</th>
+                    <th>{% trans "Choose Addresses" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for host in hosts %}
+                <tr>
+                    <td>{{ host.ipv4 }}</td>
+                    <td>{{ host.ipv6 }}</td>
+                    <td><input type="checkbox" name="host" value="{{ host.id }}" /></td>
+                </tr>
+            {% endfor %}
+            <input type="submit" value="{% trans "Select" %}" />
+            </tbody>
+        </table>
+    </form>
 {% endblock %}
-{% block meta %}
-<ul>
-	<li class="add"><a href="{% url network_new %}">{% trans "New network" %}</a></li>
-    <li class="add"><a href="{% url subnet_network%}">{%trans "New netmask Network"%}</li>
-</ul>
+
+{% block navigation %}
+    <ul>
+        <li><a href="{% url network_list %}">{% trans "Back to list" %}</a></li>
+        <li><a href="{% url network_update object.pk %}">{% trans "Settings" %}</a></li>
+        <li><a href="{% url network_events object.pk %}">{% trans "Events" %}</a></li>
+    </ul>
 {% endblock %}
