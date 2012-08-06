@@ -40,7 +40,7 @@ def graph_analysis(request):
 	                           extra_context=extra_context)
 	                      
 def alert_analysis(request):
-	low,medium, high = ([get_eventtypes(x) for x in (1,2,3)])
+	low,medium, high = ([get_eventtypes(request.user, x) for x in (1,2,3)])
 	extra_context = {
 	'low':len(low),
 	'medium':len(medium),
