@@ -76,7 +76,6 @@ class Host(NetworkObject):
 
     @permalink
     def get_absolute_url(self):
-       # import pdb;pdb.set_trace()
         return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
@@ -118,7 +117,6 @@ class Host(NetworkObject):
         return True
     
     def api_detail(self):
-        #import pdb;pdb.set_trace()
         return {
             'host_id': self.pk,
             'host_name': self.name,
