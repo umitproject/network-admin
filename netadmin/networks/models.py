@@ -80,7 +80,6 @@ class Host(NetworkObject):
         return ('host_detail', [str(self.pk)])
     
     def delete(self, *args, **kwargs):
-        #import pdb;pdb.set_trace()
         # delete all events related to this host
         # TODO
         # user should be asked if events should be deleted
