@@ -86,16 +86,16 @@ def get_event_data(request, event_dict):
             if ipv4 and ipv6:
                 source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6,
                                                user=request.user)
+                latest_event = source_host.latest_event()
             elif ipv4:
                 source_host = Host.objects.get(ipv4=ipv4, user=request.user)
+                latest_event = source_host.latest_event()
             elif ipv6:
                 source_host = Host.objects.get(ipv6=ipv6, user=request.user)
+                latest_event = source_host.latest_event()
             else:
                 source_host = None
-        if source_host.latest_event():
-			latest_event = source_host.latest_event() 
-		else:
-			latest_event = None
+                latest_even = None
 
     except Host.DoesNotExist:
         source_host = Host(name=hostname, ipv4=ipv4, ipv6=ipv6,
