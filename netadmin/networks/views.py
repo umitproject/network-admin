@@ -304,10 +304,10 @@ def subnet_network(request):
 @login_required
 def network_detail(request, object_id):
     
-    network_obj = Network.objects.get(id = object_id)
+    network = Network.objects.get(id = object_id)
     host_list = []
     
-    if network_obj.subnet:
+    if network.subnet:
         hosts = NetworkHost.objects.filter(network = object_id)
         host_id = hosts.values('host')
         for h_id in host_id:
@@ -319,8 +319,9 @@ def network_detail(request, object_id):
     
     extra_context = {
         'hosts': host_list,
-        'id':object_id
-        }
+        'id':object_id,
+        'object': network
+    }
     
     return direct_to_template(request,'networks/network_detail.html',
 							  extra_context)
