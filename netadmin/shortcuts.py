@@ -47,7 +47,7 @@ def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
         events = events.filter(timestamp__lt=time_to)
     return events
 
-def get_eventtypes(user=None, alert=0):
+def get_eventtypes(user=None, alert=None):
     """
     get_eventtypes(...) -> QuerySet
     
@@ -59,6 +59,9 @@ def get_eventtypes(user=None, alert=0):
         eventtypes = eventtypes.filter(user=user)
     if alert:
         eventtypes = eventtypes.filter(alert_level__gte=alert)
+    if alert and user:
+		eventtypes = eventtypes.filter(user=user)
+		eventtypes = eventtypes.filter(alert_level=alert)
     return eventtypes
 
 def get_user_events(user):
