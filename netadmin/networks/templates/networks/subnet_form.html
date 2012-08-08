@@ -1,8 +1,9 @@
 {% extends "base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
-Author: Amit Pal <amix.pal@gmail.com>
+Authors: Amit Pal <amix.pal@gmail.com>
+         Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -17,18 +18,14 @@ GNU Affero General Public License for more details.
 You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
-{% load i18n %}happenning
-{% block title %}{% trans "add new network" %}{% endblock %}
+{% load i18n %}
+{% block title %}{% trans "create subnetwork" %}{% endblock %}
 
-{% block content_classes %}network{% endblock %}
+{% block header %}{% trans "Create subnetwork" %}{% endblock %}
 
 {% block content %}
-<h2>{% trans "Add New Subnet Network" %}</h2>
-
-<p class="breadcrumbs"><a href="{% url network_list %}">{% trans "networks" %}</a> > {% trans "new subnet network" %}</p>
-
-<form action="" method="POST">
-	{{ form.as_p }}
-	<input type="submit" value="{% trans "Show Host" %}"/>
-</form>
+    <form action="" method="POST">
+        {{ form.as_p }}
+        <input type="submit" value="{% trans "Show hosts" %}"/>
+    </form>
 {% endblock %}
