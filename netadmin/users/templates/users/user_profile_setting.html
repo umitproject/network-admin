@@ -1,8 +1,9 @@
-{% extends "base.html" %}
+{% extends "users/base.html" %}
 {% comment %}
-Copyright (C) 2011 Adriano Monteiro Marques
+Copyright (C) 2012 Adriano Monteiro Marques
 
-Author: Amit Pal <amix.pal@gmail.com>
+Authors: Amit Pal <amix.pal@gmail.com>
+         Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -18,29 +19,22 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% endcomment %}
 {% load i18n %}
-{% block title %}{% trans "user" %} {{ object.username }}{% endblock %}
+{% block title %}{% trans "profile settings" %}{% endblock %}
 
-{% block content_classes %}user{% endblock %}
+{% block header %}{% trans "Profile settings" %}{% endblock %}
 
 {% block content %}
-
-<h3>{% trans "Alert settings" %}</h3>
-
-<form action="" method="POST">{% csrf_token %}
-	{{ alert_form.as_p }}
-	
-<h3>{% trans "Notify settings" %}</h3>
-
-	{{ notify_form.as_p }}
-	<input type="submit" value="{% trans 'Update' %}" />
-</form>
-
+    <form action="" method="POST">{% csrf_token %}
+        <h3>{% trans "Alert settings" %}</h3>
+        {{ alert_form.as_p }}
+        <h3>{% trans "Notify settings" %}</h3>
+        {{ notify_form.as_p }}
+        <input type="submit" value="{% trans 'Update' %}" />
+    </form>
 {% endblock %}
 
-{% block meta %}
-<ul>
-	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-</ul>
+{% block navigation %}
+    <ul>
+        <li><a href="{% url users_list %}">{% trans "Back to list" %}</a></li>
+    </ul>
 {% endblock %}
-
-
