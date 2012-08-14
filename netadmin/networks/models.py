@@ -207,3 +207,15 @@ class NetworkHost(models.Model):
     network = models.ForeignKey(Network)
     host = models.ForeignKey(Host)
 
+class HostCommand(models.Model):
+	"""
+	Required to execute the commands on Host and 
+	scheduled them to execute again and again
+	"""
+	user = models.ForeignKey(User, blank=False)
+	command = models.CharField(max_length=30)
+	scheduling = models.BooleanField(default= False)
+	timestamp = models.DateTimeField(blank=False)
+	days = models.CharField(max_length=20)
+	
+
