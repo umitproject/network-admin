@@ -40,7 +40,7 @@ class UserForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ('is_public', 'in_search','website','skype','irc')
+        fields = ('is_public', 'in_search','website','skype','irc','private_key')
         
 class UserRegistrationForm(UserCreationForm):
     email2 = forms.EmailField(label=_("E-mail"))
