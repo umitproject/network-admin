@@ -38,6 +38,7 @@ class UserProfile(models.Model):
     skype = models.CharField(max_length=20, blank=True)
     irc = models.CharField(max_length=20,blank=True)
     website = models.CharField(max_length=30,blank=True)
+    private_key = models.CharField(max_length=500, blank=True)
     def __unicode__(self):
         return 'Profile for user %s' % self.user.username
     
