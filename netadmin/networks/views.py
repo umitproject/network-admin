@@ -40,7 +40,7 @@ from netadmin.permissions.utils import filter_user_objects, \
 
 from models import Host, Network, NetworkHost
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
-    NetworkUpdateForm, SubnetCreateFrom
+    NetworkUpdateForm, SubnetCreateFrom, RemoteCommandForm
 from utils import get_subnet
 from netadmin.events.utils import filter_user_events, range_check, \
 	get_latlng
@@ -358,3 +358,10 @@ def trace_route(request, object_id):
 		}
 		return direct_to_template(request, 'networks/private_map.html',
 							  extra_context)
+							  
+def remote_command(request, object_id):
+	if request.method == 'POST':
+		form = RemoteCommandForm(request.POST)
+		
+	
+	return direct_to_template(request, 'networks/network_remote_command.html')
