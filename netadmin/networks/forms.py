@@ -24,7 +24,7 @@ import pytz
 from pytz import timezone
 
 from django.contrib.auth.models import User
-from models import Host, Network
+from models import Host, Network, HostCommand
 from netadmin.users.models import UserProfile
 
 
@@ -74,3 +74,12 @@ class NetworkUpdateForm(forms.ModelForm):
     class Meta:
         model = Network
         fields = ('name', 'description')
+        
+class RemoteCommandForm(forms.ModelForm):
+	class Meta:
+		model = HostCommand
+		widgets = {
+			'user': forms.HiddenInput()
+		}
+	
+			
