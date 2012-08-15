@@ -213,9 +213,10 @@ class HostCommand(models.Model):
 	scheduled them to execute again and again
 	"""
 	user = models.ForeignKey(User, blank=False)
-	command = models.CharField(max_length=30)
+	host = models.PositiveIntegerField(null=True, blank=True)
+	command = models.CharField(max_length=30,blank=False)
 	scheduling = models.BooleanField(default= False)
-	timestamp = models.DateTimeField(blank=False)
-	days = models.CharField(max_length=20)
+	timestamp = models.CharField(max_length=30,blank=False)
+	days = models.CharField(max_length=20,blank=False)
 	
 
