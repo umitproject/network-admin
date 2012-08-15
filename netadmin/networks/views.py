@@ -38,7 +38,10 @@ from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
 
-from models import Host, Network, NetworkHost
+import datetime
+now = datetime.datetime.now()
+
+from models import Host, Network, NetworkHost, HostCommand
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
     NetworkUpdateForm, SubnetCreateFrom, RemoteCommandForm
 from utils import get_subnet
@@ -75,9 +78,11 @@ def host_list(request, page=None):
 def host_detail(request, object_id):
     
     host, edit = get_object_or_forbidden(Host, object_id, request.user)
+    remote_command = HostCommand.objects.filter(host=object_id)
     
     extra_context = {
-        'can_edit': edit
+        'can_edit': edit,
+        'remote_command': remote_command
     }
     
     return object_detail(request, Host.objects.all(), object_id,
@@ -103,8 +108,7 @@ def host_create(request):
 @login_required
 def host_update(request, object_id):
     
-    host, edit = get_object_or_forbidden(Host, object_id, request.user)
-    
+    host, edit = get_object_or_forbidden(Host, object_id, request.user)    
     if not edit:
         raise Http404()
     
@@ -362,6 +366,17 @@ def trace_route(request, object_id):
 def remote_command(request, object_id):
 	if request.method == 'POST':
 		form = RemoteCommandForm(request.POST)
-		
+		if form.is_valid():
+			form_inst = form.save(commit=False)
+			form_inst.user = request.user
+			form_inst.host = object_id
+			form_inst.save();
+			return HttpResponseRedirect(reverse('host_list'))
+	else:
+		form = RemoteCommandForm()
 	
-	return direct_to_template(request, 'networks/network_remote_command.html')
+	extra_context = {
+		'form':RemoteCommandForm(initial={'user': request.user.pk})
+    }	
+	return direct_to_template(request, 'networks/network_remote.html',
+							  extra_context=extra_context)
