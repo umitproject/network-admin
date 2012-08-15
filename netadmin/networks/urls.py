@@ -34,6 +34,8 @@ urlpatterns = patterns('netadmin.networks.views',
         'host_update', name="host_update"),
     url(r'^host/delete/(?P<object_id>\d+)/$',
         'host_delete', name="host_delete"),
+    url(r'^host/add/remote/commands/(?P<object_id>\d+)/$',
+        'remote_command', name="remote_command"),
     
     url(r'^network/(?P<object_id>\d+)/$',
         'network_detail', name='network_detail'),
