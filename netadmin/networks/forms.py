@@ -79,7 +79,8 @@ class RemoteCommandForm(forms.ModelForm):
 	class Meta:
 		model = HostCommand
 		widgets = {
-			'user': forms.HiddenInput()
+			'user': forms.HiddenInput(),
+			'host': forms.HiddenInput()
 		}
 	
 			
