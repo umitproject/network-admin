@@ -46,6 +46,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <p>{% trans "TimeZone"%}: {{object.timezone}}</p>
 {% endif %}
 
+{% if remote_command %}
+<p>{% trans "Remote Commands"%}: {% for x in remote_command %}{{x.command}} {% endfor %}</p>
+{% endif %}
+
 {% if object.sharing_users and object.user == request.user %}
 <h3>{% trans "Sharing" %}</h3>
 <p>{% trans "You are sharing this host with" %}: 
@@ -68,6 +72,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	{% if object.user == request.user %}
 	<li class="share"><a href="{% url share_list 'host' object.pk %}">{% trans "Share" %}</a></li>
 	<li class="delete"><a href="{% url host_delete object.pk %}">{% trans "Delete host" %}</a></li>
+	<li class="delete"><a href="{% url remote_command object.pk %}">{% trans "Add Remote Commands" %}</a></li>
+	
 	{% endif %}
 	
 	{% if can_edit %}
