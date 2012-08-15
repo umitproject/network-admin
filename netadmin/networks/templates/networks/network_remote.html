@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Amit pal <amix.pal@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n %}
+{% block title %}{% trans "Add remote command" %} {{ object.name }}{% endblock %}
+
+{% block content_classes %}Remote Command{% endblock%}
+{% block content %}
+
+<head>
+  <title>jQuery timePicker</title>
+  <style type="text/css" media="all">@import url(" {{ STATIC_URL }}css/timePicker.css ");</style>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.js"></script>
+  <script type="text/javascript" src="{{ STATIC_URL }}js/jquery.timePicker.js"></script>
+  <script type="text/javascript">
+  jQuery(function() {
+    $("#id_timestamp").timePicker();
+  });
+  </script>
+</head>
+
+
+<form action="" method="POST">
+	{{ form.as_p }}
+	<input type="submit" value="{% trans "Add" %}" /> <a href="{% url host_list %}">{% trans "Cancel" %}</a>
+</form>
+
+
+{% endblock %}
+{% block meta %}
+<ul>
+	<li class="add"><a href="{% url host_list %}"><span>{% trans "Host list" %}</span></a></li>
+</ul>
+{% endblock %}
