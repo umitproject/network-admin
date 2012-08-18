@@ -22,6 +22,6 @@ from django.conf.urls.defaults import *
 
 
 urlpatterns = patterns('netadmin.analytics.views',
-    url(r'^visual/info/first', 'graph_analysis', name='graph_analysis'),
+    url(r'^visual/info/first', 'event_analysis', name='event_analysis'),
     url(r'^visual/info/second', 'alert_analysis', name='alert_analysis'),
 )
