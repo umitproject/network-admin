@@ -35,7 +35,7 @@ class NetworkObject(models.Model, SharedObject):
     Abstract model class for objects like host or network.
     Every object belongs to specified user
     """
-    name = models.CharField(max_length=250)
+    name = models.CharField(max_length=250, unique=True)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
     subnet = models.BooleanField(default= False)
@@ -209,8 +209,7 @@ class NetworkHost(models.Model):
 
 class HostCommand(models.Model):
 	"""
-	Required to execute the commands on Host and 
-	scheduled them to execute again and again
+	Execute the commands on Remote Host server
 	"""
 	user = models.ForeignKey(User, blank=False)
 	host = models.PositiveIntegerField(null=True, blank=True)

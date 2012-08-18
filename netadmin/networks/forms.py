@@ -20,7 +20,11 @@
 
 from django import forms
 from datetime import datetime
-import pytz
+try:
+	import pytz
+except ImportError:
+	pytz=None
+	
 from pytz import timezone
 
 from django.contrib.auth.models import User

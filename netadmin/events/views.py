@@ -41,6 +41,7 @@ from forms import EventSearchForm, EventSearchSimpleForm,EventCommentForm, \
 from models import Event, EventType, ALERT_LEVELS, EventTypeCategory, EventComment
 from netadmin.networks.models import Host
 from utils import filter_user_events
+
 import datetime
 now = datetime.datetime.now()
 
@@ -348,7 +349,7 @@ def comment_detail(request, object_id):
     }
     return direct_to_template(request, 'events/comment_detail.html', 
                               extra_context)
-
+@login_required
 def map_public(request):
 	events = Event.objects.all()
 	listofobs, geoIP, user_list, timestamp_list = ([] for i in range(4))

@@ -130,6 +130,10 @@ def get_event_data(request, event_dict):
     return event_data
 
 def range_check(ipv4_address):
+	""" 
+	Required for validating ipv4 address with provided latitude and
+	longitude from MaxMind Lite API
+	"""
 	rowx = []
 	f = open(os.path.join(settings.PROJECT_ROOT, 'static', 'csv ', 
 	                      'GeoIPCountryWhois.csv'))
