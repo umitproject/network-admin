@@ -59,6 +59,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 <ul>
 	<li class="user"><a href="{% url user_profile_public object.username %}">{% trans "Show my public profile" %}</a></li>
 	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-	<li class="search"><a href="{% url profile_setting object.username %}">{% trans "Profile setting" %}</a></li>
+	<li class="search"><a href="{% url notification_setting object.username %}">{% trans "Profile setting" %}</a></li>
 </ul>
 {% endblock %}

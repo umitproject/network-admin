@@ -41,6 +41,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 {% block meta %}
 <ul>
 	<li class="search"><a href="{% url user_search %}">{% trans "Search users" %}</a></li>
-	<li class="search"><a href="{% url profile_setting object.username %}">{% trans "Profile setting" %}</a></li>
+	<li class="search"><a href="{% url notification_setting object.username %}">{% trans "Profile setting" %}</a></li>
 </ul>
 {% endblock %}
