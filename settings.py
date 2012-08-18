@@ -50,8 +50,15 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'piston',
-    'haystack'
+    'haystack',
+    'djcelery'
 )
+
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_USER = "guest"
+BROKER_PASSWORD = "guest"
+BROKER_VHOST = "/"
 
 if DEBUG:
     INSTALLED_APPS += ('django.contrib.staticfiles',)
@@ -96,6 +103,9 @@ TEMPLATE_DIRS = (
 )
 ROOT_URLCONF = 'urls'
 LOGIN_URL = '/login/'
+
+import djcelery
+djcelery.setup_loader()
 
 ACTIVATION_FROM_EMAIL = 'your_email@example.com'
 
