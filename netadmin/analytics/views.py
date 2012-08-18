@@ -25,7 +25,7 @@ from netadmin.shortcuts import  get_events, get_hosts, get_eventtypes
 from netadmin.events.models import EventType, Event
 from utils import get_host_count
 
-def graph_analysis(request):
+def event_analysis(request):
 	event_host, event_alerts = ([] for x in range(2))
 	event_alerts.append(['Host Name', 'No. of Events'])
 	host_ipv4 = [et for et in get_hosts(user=request.user)]
