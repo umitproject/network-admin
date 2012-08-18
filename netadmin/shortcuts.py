@@ -20,7 +20,7 @@
 
 from datetime import timedelta
 from events.models import Event, EventType
-from networks.models import Host, Network
+from networks.models import Host, Network, HostCommand
 from users.models import UserProfile
 from netadmin.permissions.utils import filter_user_objects
 from netadmin.notifier.models import Notifier
@@ -89,6 +89,9 @@ def _get_network_objects(subclass, user=None):
     if user:
 		objects = filter_user_objects(user, subclass)
     return objects 
+
+def get_commands(user=None):
+	return HostCommand.objects.filter(user=user)
 
 def get_host(id):
     return Host.objects.get(pk=id)
