@@ -25,8 +25,10 @@ from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from datetime import datetime
-import pytz
-from pytz import timezone
+try:
+	import pytz
+except ImportError:
+	pytz = None
 
 from models import UserProfile
 from netadmin.notifier.models import Notifier
