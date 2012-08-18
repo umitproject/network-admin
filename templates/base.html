@@ -64,7 +64,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 				{% block meta %}
 				 {% if request.user.is_authenticated %}
 				 <ul>	
-					<li class="alert"><a href = "{% url graph_analysis %}">{% trans "visual Info" %}</a></li>
+					<li class="alert"><a href = "{% url event_analysis %}">{% trans "Graph analysis" %}</a></li>
 					<li class="alert"><a href="{% url map_public %}">{% trans "Public Map" %}</a></li>
 					
 				</ul>
