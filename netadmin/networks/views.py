@@ -33,7 +33,8 @@ except ImportError:
     search = None
 
 from netadmin.events.models import Event, EventType
-from netadmin.shortcuts import get_timezone, get_netmask, get_user_events
+from netadmin.shortcuts import get_timezone, get_netmask, get_user_events, \
+	get_hosts
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
@@ -47,7 +48,6 @@ from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
 from utils import get_subnet
 from netadmin.events.utils import filter_user_events, range_check, \
 	get_latlng
-from netadmin.shortcuts import get_hosts
 from netadmin.permissions.models import ObjectPermission
 
 @login_required
@@ -371,6 +371,9 @@ def remote_command(request, object_id):
 			form_inst.user = request.user
 			form_inst.host = object_id
 			form_inst.save();
+			from netadmin.utils.command import exec_scheduler
+			command_obj = HostCommand.objects.get(scheduling=1)
+			exec_scheduler(request.user,command)
 			return HttpResponseRedirect(reverse('host_list'))
 	else:
 		form = RemoteCommandForm()
@@ -380,3 +383,7 @@ def remote_command(request, object_id):
     }	
 	return direct_to_template(request, 'networks/network_remote.html',
 							  extra_context=extra_context)
+
+def delete_command(request, object_id):
+	command_obj = HostCommand.objects.filter(pk=object_id).delete()
+	
