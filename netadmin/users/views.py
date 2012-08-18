@@ -283,17 +283,21 @@ def user_block(request, id):
     return HttpResponseRedirect(reverse('user_list'))   
 
 @login_required
-def profile_setting(request, slug):
+def notification_setting(request, slug):
+	"""
+	User can set the priority to get the notification
+	from different channels
+	"""
 	if request.method == 'POST':
 		notify_form = EventNotifierForm(request.POST, prefix='notifier')
 		if notify_form.is_valid():
 			notify = notify_form.save(commit=False)
 			Notifier.objects.filter(user=request.user.username).delete()
 			notify.save()
-			return HttpResponseRedirect(reverse('profile_setting', args=[slug]))
+			return HttpResponseRedirect(reverse('notification_setting', args=[slug]))
 	
 	extra_context = {
 		'notify_form': EventNotifierForm(prefix='notifier')
 	}
-	return direct_to_template(request,'users/user_profile_setting.html',
+	return direct_to_template(request,'users/user_notification_setting.html',
 					          extra_context)
