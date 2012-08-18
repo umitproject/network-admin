@@ -28,7 +28,12 @@ from django.db import models
 from django.utils.translation import ugettext as _
 from django.contrib.auth.models import User
 from django.template.defaultfilters import slugify
-import pytz
+
+try:
+	import pytz
+except ImportError:
+	pytz=None
+	
 import time
 
 from netadmin.networks.models import Host
@@ -213,7 +218,7 @@ class Event(models.Model):
         }
 
 class EventComment(models.Model):
-	""" Required to Post a comment for events
+	""" Required to Post a comment for each events
 	"""
 	comment = models.TextField()
 	user = models.CharField(max_length=30, null=False, blank=True)
