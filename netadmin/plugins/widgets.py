@@ -54,6 +54,7 @@ class Widget(object):
     template_name = ""
     user = ""
     user_list = []
+    username = []
     
     def __init__(self, user=None):
         self._user = user

@@ -30,17 +30,17 @@ def exec_command(user,command_obj):
 	ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 	ssh.connect(get_host(command_obj.host).ipv4.encode('utf8'), 
 				username=Host.objects.get(id=command_obj.host).name.unicode('utf8'), port=25, pkey=user_obj.private_key.encode('utf8'))
-		stdin, stdout, stderr = ssh.exec_command(command_obj.command.encode('utf8'))
+	stdin, stdout, stderr = ssh.exec_command(command_obj.command.encode('utf8'))
 	return "<strong> Done! </strong>"
 
 def exec_scheduler(user,command_obj):
-	CELERYBEAT_SCHEDULE = {
-		'execute the commands': {
-			'task': 'netadmin.utils.command.exec_command',
-			'schedule': crontab(hour=, minute=, day_of_week=),
-			'args': (user,command_obj)
-		},
-	}
+	#CELERYBEAT_SCHEDULE = {
+	#	'execute the commands': {
+	#		'task': 'netadmin.utils.command.exec_command',
+	#		'schedule': crontab(hour=, minute=, day_of_week=),
+	#		'args': (user,command_obj)
+	#	},
+	#}
 	return "<strong> Scheduler started </strong>"
 	
 	
