@@ -35,7 +35,7 @@ class NetworkObject(models.Model, SharedObject):
     Abstract model class for objects like host or network.
     Every object belongs to specified user
     """
-    name = models.CharField(max_length=250, unique=True)
+    name = models.CharField(max_length=250)
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, blank=False, null=False)
     subnet = models.BooleanField(default= False)
