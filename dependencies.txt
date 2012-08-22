@@ -8,3 +8,4 @@ pytz
 Skype4Py
 paramiko
 django-celery
+Whoosh
