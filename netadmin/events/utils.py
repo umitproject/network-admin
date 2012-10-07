@@ -86,12 +86,17 @@ def get_event_data(request, event_dict):
             if ipv4 and ipv6:
                 source_host = Host.objects.get(ipv4=ipv4, ipv6=ipv6,
                                                user=request.user)
+                latest_event = source_host.latest_event()
             elif ipv4:
                 source_host = Host.objects.get(ipv4=ipv4, user=request.user)
+                latest_event = source_host.latest_event()
             elif ipv6:
                 source_host = Host.objects.get(ipv6=ipv6, user=request.user)
+                latest_event = source_host.latest_event()
             else:
                 source_host = None
+                latest_even = None
+
     except Host.DoesNotExist:
         source_host = Host(name=hostname, ipv4=ipv4, ipv6=ipv6,
                            user=request.user)
@@ -118,12 +123,17 @@ def get_event_data(request, event_dict):
         'fields_class': fields_class,
         'fields_data': fields_data,
         'source_host': source_host,
-        'event_type': event_type
+        'event_type': event_type,
+        'latest_event': latest_event
     }
     
     return event_data
 
 def range_check(ipv4_address):
+	""" 
+	Required for validating ipv4 address with provided latitude and
+	longitude from MaxMind Lite API
+	"""
 	rowx = []
 	f = open(os.path.join(settings.PROJECT_ROOT, 'static', 'csv ', 
 	                      'GeoIPCountryWhois.csv'))

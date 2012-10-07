@@ -35,6 +35,7 @@ class HostWidget(Widget):
     name = _("Host details")
     description = _("Shows basic data for the host")
     template_name = 'host_widget.html'
+    username = []
     
     DAYS_CHOICES = [(i,i) for i in xrange(1,31)]
     SHOW_CHOICES = [('yes', _('Yes')), ('no', _('No'))]

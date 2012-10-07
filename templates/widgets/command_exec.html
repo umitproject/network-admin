@@ -1,0 +1,42 @@
+{% comment %}
+Copyright (C) 2011 Adriano Monteiro Marques
+
+Author: Amit Pal <amix.pal@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+{% endcomment %}
+{% load i18n chart_tools %}
+<table>
+	<thead>
+		<tr>
+			<th>{% trans "Command" %}</th>
+			<th>{% trans "Scheduled Time" %}</th>
+			<th>{% trans "Stop" %}</th>
+		</tr>
+	</thead>
+	<tbody>
+	{% for obj in command_obj %}
+		<tr>
+			<td>{{ obj.command }}</td>
+			<td>{{obj.timestamp}}</td>
+			<td><a href="{% url reverse('delete_command',args=(obj.pk)) %}">{% Trans  "Delete" %}</a></td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% else %}
+<p>{% trans "No command has been executed yet " %}</p>
+{% endif %}
+
+

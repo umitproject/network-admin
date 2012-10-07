@@ -46,10 +46,9 @@ from piston.models import Consumer, Token
 
 from django.conf import settings
 from forms import UserForm, UserProfileForm, UserRegistrationForm, \
-					AlertCountForm, NotifierForm
+	EventNotifierForm
 		
 from models import UserActivationCode, UserProfile
-from netadmin.events.models import AlertCount
 from netadmin.notifier.models import Notifier
 from django.contrib.auth.forms import AdminPasswordChangeForm
 
@@ -287,32 +286,21 @@ def user_block(request, id):
     return HttpResponseRedirect(reverse('user_list'))   
 
 @login_required
-def profile_setting(request, slug):
-	
-	try:
-		model_instance = AlertCount.objects.get(user=request.user.username)
-	except:
-		model_ins = AlertCount.objects.create(user=request.user.username,
-		                                           low=0, high=0, medium=0)
-		AlertCount.save(model_ins)
-		model_instance = AlertCount.objects.get(user=request.user.username)
+def notification_setting(request, slug):
+	"""
+	User can set the priority to get the notification
+	from different channels
+	"""
 	if request.method == 'POST':
-		alert_form = AlertCountForm(request.POST, prefix='alert')
-		notify_form = NotifierForm(request.POST, prefix='notifier')
-		if alert_form.is_valid() and notify_form.is_valid():
-			alert = alert_form.save(commit=False)
+		notify_form = EventNotifierForm(request.POST, prefix='notifier')
+		if notify_form.is_valid():
 			notify = notify_form.save(commit=False)
-			alert.user = request.user.username
-			notify.user_notify = request.user.username
-			AlertCount.objects.filter(user=alert.user).delete()
-			Notifier.objects.filter(user_notify=notify.user_notify).delete()
-			alert.save()
+			Notifier.objects.filter(user=request.user.username).delete()
 			notify.save()
-			return HttpResponseRedirect(reverse('profile_setting', args=[slug]))
+			return HttpResponseRedirect(reverse('notification_setting', args=[slug]))
 	
 	extra_context = {
-		'alert_form': AlertCountForm(prefix='alert', instance=model_instance),
-		'notify_form': NotifierForm(prefix='notifier')
+		'notify_form': EventNotifierForm(prefix='notifier')
 	}
-	return direct_to_template(request,'users/user_profile_setting.html',
+	return direct_to_template(request,'users/user_notification_setting.html',
 					          extra_context)

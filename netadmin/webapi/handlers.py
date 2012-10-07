@@ -251,12 +251,18 @@ class EventHandler(BaseHandler):
                 except EventParseError, e:
                     message = str(e)
                     return api_error(_(message))
+                if latest_event.event_type.alert_level != event_data['latest_event']:
+					dispatch_notify(event.user(), "Event",
+									event_data['event_type'].alert_level)
+        
                 event = Event(**event_data)
                 event.save()
                 
                 if event.event_type.notify:
                     notifier.manager.add(event.short_message, event.message,
-                                         event.user(), event)
+                                         event.user(), event) 
+                    dispatch_notify(event.user(), "Event", 
+                                    event.event_type.alert_level)
             
             return api_ok(_('Events reported successfully'))
         
@@ -265,12 +271,19 @@ class EventHandler(BaseHandler):
         except EventParseError, e:
             message = str(e)
             return api_error(_(message))
+        
+        if latest_event.event_type.alert_level != event_data['latest_event']:
+			dispatch_notify(event.user(), "Event",
+						    event_data['latest_event'].alert_level)
+        
         event = Event(**event_data)
         event.save()
         
         if event.event_type.notify:
             notifier.manager.add(event.short_message, event.message,
                                  event.user(), event)
+            dispatch_notify(event.user(), "Event", event.event_type.alert_level)
+            
         
         return api_ok(_('Event reported successfully'))
     

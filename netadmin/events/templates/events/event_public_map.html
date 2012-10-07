@@ -49,9 +49,10 @@ src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCVSS35Ufsv0aEf0lV4qTIWnWg5
     for(var i in flightPlanCoordinates){
 		var myHtml = "<table style='background:#B3ADB1; color:black' width='300'><tr><td align='center'><strong>Event's Detail</strong></td></tr></table>"
 		+"<table border='3' style='border-color:#AF9BCF; background:#E4DDF0; color:black;' width='300' cellpadding='3' cellspacing='3'>"+
-		"<tr><td width = '100'><strong>Username</strong></td><td width = '200'>" + user[i]+ "</td></tr>"+
+		"<tr><td width = '100'><strong>Username</strong></td><td width = '200'> <a href= {% url user_profile_public user.username %}>" +user[i]+ "</a></td></tr>"+
 		"<tr><td><strong>Timestamp</strong></td><td>" + timestamp[i] + "</td></tr>"+
-		"</table><p style='font-family:verdana,arial,sans-serif;font-size:100%;'>"
+		"</table><table border='3' style='border-color:#AF9BCF; background:#E4DDF0; color:black;' width='300' cellpadding='3' cellspacing='3'>"+
+		"<tr><td>Click to see full <a href= {% url trace_route user.pk %}>trace path</a></td></tr></table><p style='font-family:verdana,arial,sans-serif;font-size:100%;'>"
 		var marker = add_marker(flightPlanCoordinates[i][0], flightPlanCoordinates[i][1],"Event Detail",myHtml);
 		marker.setMap(map);
 		}

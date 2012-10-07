@@ -25,11 +25,12 @@ from django.contrib.auth.forms import AdminPasswordChangeForm
 from django.contrib.auth.models import User
 from django.utils.translation import ugettext as _
 from datetime import datetime
-import pytz
-from pytz import timezone
+try:
+	import pytz
+except ImportError:
+	pytz = None
 
 from models import UserProfile
-from netadmin.events.models import AlertCount
 from netadmin.notifier.models import Notifier
 
 
@@ -41,7 +42,7 @@ class UserForm(forms.ModelForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ('is_public', 'in_search','website','skype','irc')
+        fields = ('is_public', 'in_search','website','skype','irc','private_key')
         
 class UserRegistrationForm(UserCreationForm):
     email2 = forms.EmailField(label=_("E-mail"))
@@ -68,23 +69,13 @@ class UserRegistrationForm(UserCreationForm):
         return user
 
                                             
-class NotifierForm(forms.ModelForm):
+class EventNotifierForm(forms.ModelForm):
 	class Meta:
 		model = Notifier
-		fields = ('high_notify', 'medium_notify', 'low_notify', 
-				  'user_notify')
+		fields = ('high', 'medium', 'low', 
+				  'user')
 		widgets = {
-			'user_notify': forms.HiddenInput()
+			'user': forms.HiddenInput()
 		}
 		
-NotifierFormset = modelformset_factory(Notifier, form=NotifierForm)
-						               
-class AlertCountForm(forms.ModelForm):
-	class Meta:
-		model = AlertCount
-		fields = ('high','medium','low', 'user')
-		widgets = {
-			'user':  forms.HiddenInput()
-		}
-		
-AlertCountFormset = modelformset_factory(AlertCount, form=AlertCountForm)
+NotifierFormset = modelformset_factory(Notifier, form=EventNotifierForm)						               

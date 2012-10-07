@@ -32,17 +32,22 @@ try:
 except ImportError:
     search = None
 
-from netadmin.events.models import Event
-from netadmin.shortcuts import get_timezone, get_netmask
+from netadmin.events.models import Event, EventType
+from netadmin.shortcuts import get_timezone, get_netmask, get_user_events, \
+	get_hosts
 from netadmin.permissions.utils import filter_user_objects, \
     get_object_or_forbidden, grant_access, grant_edit, revoke_access, \
     revoke_edit, user_has_access
 
-from models import Host, Network, NetworkHost
+import datetime
+now = datetime.datetime.now()
+
+from models import Host, Network, NetworkHost, HostCommand
 from forms import HostCreateForm, HostUpdateForm, NetworkCreateForm, \
-    NetworkUpdateForm, SubnetCreateFrom
+    NetworkUpdateForm, SubnetCreateFrom, RemoteCommandForm
 from utils import get_subnet
-from netadmin.shortcuts import get_hosts
+from netadmin.events.utils import filter_user_events, range_check, \
+	get_latlng
 from netadmin.permissions.models import ObjectPermission
 
 @login_required
@@ -74,9 +79,11 @@ def host_list(request, page=None):
 def host_detail(request, object_id):
     
     host, edit = get_object_or_forbidden(Host, object_id, request.user)
+    remote_command = HostCommand.objects.filter(host=object_id)
     
     extra_context = {
-        'can_edit': edit
+        'can_edit': edit,
+        'remote_command': remote_command
     }
     
     return object_detail(request, Host.objects.all(), object_id,
@@ -102,8 +109,7 @@ def host_create(request):
 @login_required
 def host_update(request, object_id):
     
-    host, edit = get_object_or_forbidden(Host, object_id, request.user)
-    
+    host, edit = get_object_or_forbidden(Host, object_id, request.user)    
     if not edit:
         raise Http404()
     
@@ -151,7 +157,6 @@ def network_list(request, page=None):
 
 @login_required
 def network_create(request):
-    
     if request.method == 'POST':
         form = NetworkCreateForm(request.POST)
         if form.is_valid():
@@ -166,7 +171,6 @@ def network_create(request):
 
 @login_required
 def network_update(request, object_id):
-    
     network = Network.objects.get(pk=object_id)
     
     if not network.can_edit(request.user):
@@ -270,7 +274,6 @@ def share_list(request, object_type, object_id):
 
 @login_required
 def subnet_network(request):
-    
     if request.method == 'POST':
         form = SubnetCreateFrom(request.POST)
         if form.is_valid():
@@ -297,7 +300,7 @@ def subnet_network(request):
     
     extra_context = {
         'form':SubnetCreateFrom(initial={'user': request.user.pk})
-        }
+    }
     return direct_to_template(request,'networks/subnet_form.html',
 							  extra_context)
 
@@ -328,7 +331,6 @@ def network_detail(request, object_id):
 
 @login_required
 def network_select(request,object_id):
-    
     if request.method == 'POST':
         host = request.POST.getlist('host')
         NetworkHost.objects.filter(network = object_id).delete()
@@ -337,4 +339,55 @@ def network_select(request,object_id):
 										host_id = hosts.replace("/",""))
             network_entry.save()
     
-    return HttpResponseRedirect('../.././../list')
+    return HttpResponseRedirect(reverse('network_list'))
+
+def trace_route(request, object_id):
+	if object_id == str(request.user.id):
+		geoIP, event_type, event_time, event_mesg, hosts = ([] for i in range(5))
+		for host in get_hosts(user=request.user):
+			geo_range = range_check(host.ipv4)
+			hosts.append(host.ipv4)
+			geoIP.append( '%s' % (geo_range[0][0]))
+		
+		geo_latlng = get_latlng(geoIP)
+		events = get_user_events(user=request.user)
+		for obj in events:
+			event_time.append(str(obj.timestamp))
+			event_mesg.append(obj.message)
+			event_types = EventType.objects.get(pk=obj.event_type_id)
+			event_type.append(event_types.name)
+			
+		extra_context = {
+			'latlng': geo_latlng,
+			'message': event_mesg,
+			'timestamp': event_time,
+			'event_type':event_type,
+			'host':hosts
+		}
+		return direct_to_template(request, 'networks/private_map.html',
+							  extra_context)
+							  
+def remote_command(request, object_id):
+	if request.method == 'POST':
+		form = RemoteCommandForm(request.POST)
+		if form.is_valid():
+			form_inst = form.save(commit=False)
+			form_inst.user = request.user
+			form_inst.host = object_id
+			form_inst.save();
+			from netadmin.utils.command import exec_scheduler
+			command_obj = HostCommand.objects.get(scheduling=1)
+			exec_scheduler(request.user,command)
+			return HttpResponseRedirect(reverse('host_list'))
+	else:
+		form = RemoteCommandForm()
+	
+	extra_context = {
+		'form':RemoteCommandForm(initial={'user': request.user.pk})
+    }	
+	return direct_to_template(request, 'networks/network_remote.html',
+							  extra_context=extra_context)
+
+def delete_command(request, object_id):
+	command_obj = HostCommand.objects.filter(pk=object_id).delete()
+	

@@ -7,3 +7,5 @@ django-haystack==1.2.7
 netaddr==0.7.7
 pytz==2012c
 Skype4Py==1.0.32.0
+paramiko
+django-celery

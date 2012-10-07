@@ -3,7 +3,8 @@
 
 # Copyright (C) 2011 Adriano Monteiro Marques
 #
-# Author: Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
+# Authors: Amit Pal <amix.pal@gmail.com>
+#          Piotrek Wasilewski <wasilewski.piotrek@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,7 +21,23 @@
 
 from django.http import HttpResponse
 
-from netadmin.notifier.utils import dispatcher
+from utils import dispatcher
+from models import Notifier
+	
+def dispatch_notify(request, user, notification_type, notify_type):
+	"""
+	Send the notification on the behalf of user priority
+	"""
+	
+	if notify_type == 0 and 1:
+		notifier = Notifier.objects.get(user=user.username).low
+	elif notify_type == 2:
+		notifier = Notifier.objects.get(user=user.username).medium
+	elif notify_type == 3:
+		notifier = Notifier.objects.get(user=user.username).high
+	notifier_type = get_notifier(notifier)
+	dispatcher.dispatch(notifier_type, notification_type, clear=True, user)
+	return HttpResponse("<p> Done </p>")
 
 
 def dispatch_all(request):

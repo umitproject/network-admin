@@ -53,8 +53,15 @@ INSTALLED_APPS = (
     'django.contrib.auth',
     'django.contrib.sessions',
     'piston',
-    'haystack'
+    'haystack',
+    'djcelery'
 )
+
+BROKER_HOST = "localhost"
+BROKER_PORT = 5672
+BROKER_USER = "guest"
+BROKER_PASSWORD = "guest"
+BROKER_VHOST = "/"
 
 if DEBUG:
     INSTALLED_APPS += ('django.contrib.staticfiles',)
@@ -69,7 +76,8 @@ NETADMIN_APPS = (
     'netadmin.permissions',
     'netadmin.notifier',
     'netadmin.utils.charts',
-    'netadmin.plugins'
+    'netadmin.plugins',
+    'netadmin.analytics'
 )
 
 INSTALLED_APPS += NETADMIN_APPS
@@ -89,22 +97,22 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.media',
 )
 
+PROJECT_ROOT = os.path.dirname(__file__)
+
 TEMPLATE_DIRS = (
     os.path.join(os.path.dirname(__file__), 'templates'),
 )
 ROOT_URLCONF = 'urls'
 LOGIN_URL = '/login/'
 
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
 ACTIVATION_FROM_EMAIL = 'your_email@example.com'
 
 HAYSTACK_SITECONF = 'search_indexes'
 HAYSTACK_SEARCH_ENGINE = 'whoosh'
 HAYSTACK_WHOOSH_PATH = os.path.join(os.path.dirname(__file__), 'whoosh_index')
+
+import djcelery
+djcelery.setup_loader()
 
 try:
     from local_settings import *

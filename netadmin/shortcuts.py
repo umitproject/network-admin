@@ -20,9 +20,10 @@
 
 from datetime import timedelta
 from events.models import Event, EventType
-from networks.models import Host, Network
+from networks.models import Host, Network, HostCommand
 from users.models import UserProfile
 from netadmin.permissions.utils import filter_user_objects
+from netadmin.notifier.models import Notifier
 
 from django.contrib.auth.models import User
 
@@ -46,7 +47,7 @@ def get_events(time_from=None, time_to=None, source_hosts=[], event_types=[]):
         events = events.filter(timestamp__lt=time_to)
     return events
 
-def get_eventtypes(user=None, alert=0):
+def get_eventtypes(user=None, alert=None):
     """
     get_eventtypes(...) -> QuerySet
     
@@ -58,6 +59,9 @@ def get_eventtypes(user=None, alert=0):
         eventtypes = eventtypes.filter(user=user)
     if alert:
         eventtypes = eventtypes.filter(alert_level__gte=alert)
+    if alert and user:
+		eventtypes = eventtypes.filter(user=user)
+		eventtypes = eventtypes.filter(alert_level=alert)
     return eventtypes
 
 def get_user_events(user):
@@ -70,11 +74,24 @@ def get_alerts(user=None):
     ets = [et.pk for et in get_eventtypes(user, 1)]
     return Event.objects.filter(event_type__pk__in=ets, checked=False)
 
+def get_alert_events(alert_type):
+	event_type = EventType.objects.filter(alert_level=alert_type)
+	if event_type: events = get_events(event_types = [et for et in event_type])
+	else: events = []
+	return events
+
+def get_notifier(user=None):
+	notify = Notifier.objects.get(user_notify=user)
+	return notify
+		
 def _get_network_objects(subclass, user=None):
     objects = subclass.objects.all()
     if user:
 		objects = filter_user_objects(user, subclass)
     return objects 
+
+def get_commands(user=None):
+	return HostCommand.objects.filter(user=user)
 
 def get_host(id):
     return Host.objects.get(pk=id)
