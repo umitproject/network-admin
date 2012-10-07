@@ -222,7 +222,7 @@ class EventComment(models.Model):
     event = models.ForeignKey(Event, blank=False, null=False)
 
     def __unicode__(self):
-        return "'%s' at %s" % (self.comment)
+        return "posted by %s at %s" % (self.user, self.timestamp)
 
 class AlertCount(models.Model):
     """Required to set the limit for each type of Alert
