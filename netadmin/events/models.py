@@ -53,7 +53,7 @@ class EventFieldsNotValid(Exception):
 
 class EventTypeCategory(models.Model):
     """Represents category to which an event type may be assigned
-		
+
 	"""
     name = models.CharField(max_length=50, verbose_name=_("Name"))
     slug = models.SlugField(blank=True, verbose_name=_("Message"))
@@ -76,7 +76,7 @@ class EventType(models.Model):
     type is linked with user - its owner. That is because events types are
     created automatically, when events are reported so every user may have
     different set of types.
-    
+
     Alert level has no effect on reporting events or managing them. This field
     only indicates importance of events and is used to distinguish those of
     them which should be treated differently.
@@ -87,25 +87,25 @@ class EventType(models.Model):
     alert_level= models.SmallIntegerField(choices=ALERT_LEVELS, default=0)
     notify = models.BooleanField(default=False)
     category = models.OneToOneField(EventTypeCategory, unique=True, null=True)
-    
+
     def __unicode__(self):
         return self.name
-    
+
     def save(self, *args, **kwargs):
         if not self.pk:
             self.name_slug = slugify(self.name)
         super(EventType, self).save(*args, **kwargs)
-    
+
     def delete(self, *args, **kwargs):
         # delete relations between event type and reports
         related = self.reportmetaeventtype_set.all()
         related.delete()
-        
+
         super(EventType, self).delete(*args, **kwargs)
-        
+
     def events(self):
         return self.event_set.all()
-    
+
     def pending_events(self):
         return self.events().filter(checked=False)
 
@@ -128,7 +128,7 @@ class Event(models.Model):
         * checked - True means that event has been marked by user as known
           (actually this field is important only for alerts, where information
           about event status is really important)
-    
+
     Note: Although event hasn't *user* field specified, we can say that
           event belongs to the user who ownes the source host.
     """
@@ -142,10 +142,10 @@ class Event(models.Model):
     fields_class = models.CharField(max_length=50, null=True, blank=True)
     fields_data = models.TextField(null=True, blank=True)
     checked = models.BooleanField(default=False)
-    
+
     def __unicode__(self):
         return "'%s' at %s" % (self.message, self.timestamp)
-    
+
     def save(self, *args, **kwargs):
         if not self.pk:
             self.message_slug = slugify(self.short_message)
@@ -159,7 +159,7 @@ class Event(models.Model):
             raise EventFieldsNotValid(_("Cannot decode fields data."))
         return fields
     fields = property(get_details)
-    
+
     def get_localized_timestamp(self):
         """Returns event's timestamp localized according to user's time zone
         """
@@ -181,19 +181,19 @@ class Event(models.Model):
             return default
             #raise EventFieldNotFound(_("The field '%s' is not defined for this event.") % field_name)
         return fields[field_name]
-    
+
     def _html_message(self):
         return self.message.replace('\n', '<br />')
     html_message = property(_html_message)
-    
+
     def user(self):
         return self.source_host.user
-    
+
     def get_html(self):
         """Notifier support: returns event data in HTML"""
         title = '%s %s' % (str(self.timestamp), self.event_type.name)
         return '<h2>%s</h2><p>%s</p>' % (title, self.html_message)
-    
+
     def api_detail(self):
         return {
             'event_id': self.pk,
@@ -206,7 +206,7 @@ class Event(models.Model):
             'fields_class': self.fields_class,
             'fields_data': self.fields_data
         }
-        
+
     def api_list(self):
         return {
             'id': self.pk,
@@ -214,20 +214,21 @@ class Event(models.Model):
         }
 
 class EventComment(models.Model):
-	""" Required to Post a comment for events
-	"""
-	comment = models.TextField()
-	user = models.CharField(max_length=30, null=False, blank=True)
-	timestamp = models.DateTimeField(null=False, blank=True)
-	event = models.ForeignKey(Event, blank=False, null=False)
-	def __unicode__(self):
-		return "'%s' at %s" % (self.comment)
+    """ Required to Post a comment for events
+    """
+    comment = models.TextField()
+    user = models.CharField(max_length=30, null=False, blank=True)
+    timestamp = models.DateTimeField(null=False, blank=True)
+    event = models.ForeignKey(Event, blank=False, null=False)
+
+    def __unicode__(self):
+        return "'%s' at %s" % (self.comment)
 
 class AlertCount(models.Model):
-	""" Required to set the limit for each type 
-	of Alert
-	"""
-	user = models.CharField(max_length=30, blank=True)
-	low = models.IntegerField(blank=True, null=True)
-	medium = models.IntegerField(blank=True, null=True)
-	high = models.IntegerField(blank=True, null=True)
+    """Required to set the limit for each type of Alert
+    """
+    user = models.CharField(max_length=30, blank=True)
+    low = models.IntegerField(blank=True, null=True)
+    medium = models.IntegerField(blank=True, null=True)
+    high = models.IntegerField(blank=True, null=True)
+
