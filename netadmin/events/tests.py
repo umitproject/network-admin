@@ -25,7 +25,6 @@ from django.core.urlresolvers import reverse
 from netadmin.events.models import Event, EventType
 from netadmin.networks.models import Host
 from netadmin.utils.testutils import EventBaseTest
-from netadmin.users.models import UserProfile
 
 
 class EventTest(EventBaseTest):
