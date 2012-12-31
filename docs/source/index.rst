@@ -23,6 +23,7 @@ For those of you, who want to keep your networks up and safe using NA.
 
 	features
 	installation
+	integrating_with_NI
 	
 ..  integrating_with_NI
 
